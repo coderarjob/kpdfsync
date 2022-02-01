@@ -20,5 +20,8 @@ javac -d "$BIN_DIR/" src/coderarjob/kpdfsync/lib/*.java || exit
 # Build POC
 javac -d "$BIN_DIR/" src/coderarjob/kpdfsync/poc/*.java || exit
 
+# Generate tags file
+ctags --recurse ./src || exit
+
 # Run
 java coderarjob.kpdfsync.poc.Main
