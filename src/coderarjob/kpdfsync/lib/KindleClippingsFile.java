@@ -11,6 +11,7 @@ import java.util.Enumeration;
 import coderarjob.kpdfsync.lib.clipparser.AbstractParser;
 import coderarjob.kpdfsync.lib.clipparser.ParserResult;
 import coderarjob.kpdfsync.lib.clipparser.KindleParserV1;
+import coderarjob.kpdfsync.lib.clipparser.ParserException;
 
 public class KindleClippingsFile 
 {
@@ -46,10 +47,31 @@ public class KindleClippingsFile
     return new_enu;
   }
 
+  private ParserResult parse() throws Exception
+  {
+    ParserResult result = null;
+    boolean isSuccess = false;
+    do
+    {
+      try
+      {
+        isSuccess = false;
+        result = mParser.parse();
+        isSuccess = true;
+      }
+      catch (ParserException ex)
+      {
+        mParser.moveToNextEntry();
+      }
+    } while (isSuccess == false);
+
+    return result;
+  }
+
   private void readTitlesAndAddOffsets() throws Exception
   {
     ParserResult result;
-    while ((result = mParser.parse()) != null)
+    while ((result = parse()) != null)
     {
       KindleClippingsEntryItem item = KindleClippingsEntryItem.fromParserResult (result);
 
