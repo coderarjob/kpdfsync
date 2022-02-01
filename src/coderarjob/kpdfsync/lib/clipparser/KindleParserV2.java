@@ -1,5 +1,6 @@
 package coderarjob.kpdfsync.lib.clipparser;
 
+import coderarjob.kpdfsync.lib.clipparser.ParserException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -28,7 +29,7 @@ public class KindleParserV2 extends KindleParserV1
   }
 
   protected ParsingStates parse (ParsingStates currentState, String linestr, ParserResult result)
-    throws Exception
+    throws IOException, ParserException
   {
     if (currentState != ParsingStates.ANNOTATION_LINE)
       return super.parse (currentState, linestr, result);

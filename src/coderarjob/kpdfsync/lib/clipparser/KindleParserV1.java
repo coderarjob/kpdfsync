@@ -43,7 +43,7 @@ public class KindleParserV1 extends AbstractParser
    * just looks for the end of block.
    * Returns True, of next block was found, otherwise False.
    */
-  public boolean moveToNextEntry () throws Exception
+  public boolean moveToNextEntry () throws IOException
   {
     String linestr = null;
 
@@ -63,7 +63,7 @@ public class KindleParserV1 extends AbstractParser
   /* 
    * Moves the file pointer and assumes the next line read to be Title.
    */
-  public void moveToEntryAtOffset (long offset) throws Exception
+  public void moveToEntryAtOffset (long offset) throws IOException
   {
     mFile.seek(offset);
     mState = ParsingStates.TITLE;
@@ -74,7 +74,7 @@ public class KindleParserV1 extends AbstractParser
    * Returns a ParserResult object with the parsed result. 
    * Null is returned is EOF was reached, before end of block.
    */
-  public ParserResult parse () throws Exception
+  public ParserResult parse () throws IOException, ParserException
   {
     if (mState != ParsingStates.TITLE)
       throw new ParserException ("Invalid state. Not at Title");
@@ -115,7 +115,7 @@ public class KindleParserV1 extends AbstractParser
    * a state machine.
    */
   protected ParsingStates parse (ParsingStates currentState, String linestr, ParserResult result)
-      throws Exception
+      throws IOException, ParserException
   {
       ParsingStates nextState = ParsingStates.ERROR;
       String value = "";

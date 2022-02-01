@@ -1,6 +1,7 @@
 package coderarjob.kpdfsync.lib.clipparser;
 
 import java.util.Hashtable;
+import coderarjob.kpdfsync.lib.clipparser.ParserException;
 
 public class ParserResult
 {
@@ -15,18 +16,20 @@ public class ParserResult
       mFieldDict.put (field, "");
   }
 
-  public void setFieldValue (String field, String value) throws NullPointerException, Exception
+  public void setFieldValue (String field, String value) 
+      throws NullPointerException, ParserException
   {
       if (mFieldDict.containsKey (field) == false)
-        throw new Exception ("Unsupported field : " + field);
+        throw new ParserException ("Unsupported field : " + field);
 
       mFieldDict.put (field, value);
   }
 
-  public String getFieldValue (String field) throws NullPointerException, Exception
+  public String getFieldValue (String field) 
+      throws NullPointerException, ParserException
   {
       if (mFieldDict.containsKey (field) == false)
-        throw new Exception ("Unsupported field : " + field);
+        throw new ParserException ("Unsupported field : " + field);
 
       return mFieldDict.get (field);
   }
