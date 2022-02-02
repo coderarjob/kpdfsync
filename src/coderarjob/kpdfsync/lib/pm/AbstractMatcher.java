@@ -2,21 +2,6 @@ package coderarjob.kpdfsync.lib.pm;
 
 import java.util.ArrayList;
 
-class Line
-{
-  private int mLineNumber;
-  private int mIndex;
-
-  public Line (int lineNumber, int index)
-  {
-    this.mLineNumber = lineNumber;
-    this.mIndex = index;
-  }
-
-  public int lineNumber () { return this.mLineNumber; }
-  public int index () { return this.mIndex; }
-}
-
 abstract class AbstractMatcher
 {
   protected abstract Match matchPattern(String line, int lineOffset, String pattern);
