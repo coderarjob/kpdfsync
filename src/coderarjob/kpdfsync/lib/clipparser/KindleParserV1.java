@@ -6,13 +6,17 @@ import java.io.IOException;
 
 public class KindleParserV1 extends AbstractParser
 {
-  protected enum ParsingStates { TITLE, ANNOTATION_LINE, TEXT, END, ERROR }
-  protected ParsingStates mState;    /* Invariance: Next readline will read line for this state.*/
+  protected enum ParsingErrors { NO_ERROR, EOF_REACHED, PARSING_ERROR }
+
+  /* On paring error, this is set to true. This indicates, if file pointer is moved to the next
+   * block after the previous parsing error.
+   */
+  protected boolean mIsInvalidState;
 
   public KindleParserV1 (String fileName) throws FileNotFoundException, IOException
   {
     super (fileName);
-    mState = ParsingStates.TITLE;
+    mIsInvalidState = false;
   }
 
   public String getParserVersion ()
@@ -27,36 +31,37 @@ public class KindleParserV1 extends AbstractParser
 
   public String[] getSupportedFields ()
   {
-    return new String[] {
-      "Title", 
-        "FileOffset",
-        "AnnotationType", 
-        "PageNumberOrLocationNumber",
-        "PageNumberType",
-        "Text"
-    };
+    return new String[] { "Title",
+                           "FileOffset",
+                           "AnnotationType",
+                           "PageNumberOrLocationNumber",
+                           "PageNumberType",
+                           "Text"};
   }
 
   /* 
-   * Moves to the Title of the next block from the middle of the current block. If already at
-   * Title, this does nothing and simply returns. This methods, does not actually parse the lines,
-   * just looks for the end of block.
+   * Moves to the Title of the next block from anywhere in the current block.
+   * If already at Title, this does move to the next block. This methods, does not actually parse
+   * the lines, it just looks for the end of block.
+   *
    * Returns True, of next block was found, otherwise False.
    */
   public boolean moveToNextEntry () throws IOException
   {
     String linestr = null;
 
-    while (mState != ParsingStates.TITLE)
+    while (true)
     {
       linestr = readLineWithProperEncoding ();
       if (linestr == null)
         return false;
 
-      if (linestr.equals("==========")) 
-        mState = ParsingStates.TITLE;
+      if (isTerminationLine (linestr))
+        break;
     }
 
+    /* Move past any invalid block.*/
+    mIsInvalidState = false;
     return true;
   }
 
@@ -66,7 +71,6 @@ public class KindleParserV1 extends AbstractParser
   public void moveToEntryAtOffset (long offset) throws IOException
   {
     mFile.seek(offset);
-    mState = ParsingStates.TITLE;
   }
 
   /*
@@ -76,165 +80,201 @@ public class KindleParserV1 extends AbstractParser
    */
   public ParserResult parse () throws IOException, ParserException
   {
-    if (mState != ParsingStates.TITLE)
-      throw new ParserException ("Invalid state. Not at Title");
-
-    boolean isValid = true;
-    String linestr = null;
+    String parsingWhat = "";
     ParserResult result = new ParserResult (this);
+    ParsingErrors parseError;
 
-    while ((linestr = readLineWithProperEncoding()) != null)
+    if (this.mIsInvalidState)
+      throw new ParserException ("Invalid parser state : On an invalid line.");
+
+parse_all_lines:
     {
-      ParsingStates pState = mState;         /* Save the current state for displaying on error*/
-      mState = parse (mState, linestr, result);
+      parsingWhat = "Title line";
+      if ((parseError = parseTitleLine (result)) != ParsingErrors.NO_ERROR)
+        break parse_all_lines;
 
-      isValid = (mState != ParsingStates.ERROR);
-      if (isValid == false)
-        throw new ParserException (String.format ("Parsing error in line '%s' for state '%s'.",
-              linestr, 
-              pState));
+      parsingWhat = "Annotation line";
+      if ((parseError = parseAnnotationLine (result)) != ParsingErrors.NO_ERROR)
+        break parse_all_lines;
 
-      /* Start of next block reached. So thats the end.*/
-      if (mState == ParsingStates.TITLE)
-        break;
+      parsingWhat = "Text line";
+      if ((parseError = parseTextLine (result)) != ParsingErrors.NO_ERROR)
+        break parse_all_lines;
+
+      parsingWhat = "Termination line";
+      parseError = parseTerminationLine (result);
+    }
+
+    /* Parsing failed at some point*/
+    if (parseError == ParsingErrors.PARSING_ERROR)
+    {
+      /* Until we move past the current block to the next block, parser remains in invalid
+       * state. */
+      mIsInvalidState = true;
+
+      throw new ParserException (String.format ("Parsing error: '%s' is not %s.",
+                                                this.lastLineRead(), parsingWhat));
     }
 
     /* End of file was reached before end of block.*/
-    if (linestr == null)
+    if (parseError == ParsingErrors.EOF_REACHED)
       result = null;
 
     return result;
-  } 
+  }
 
   /*
-   * Validates, adds to ParserResult and returns the next state.
-   * If validation fails, ERROR state is returned.
-   * 
-   * TODO: Instead of this method, create separate methods for each of the states. These
-   * methods will be called one after other in the order they occur - there is no need for 
-   * a state machine.
+   * Validates Book Title line and adds to ParserResult and returns true is valid.
+   * If validation fails, false is returned.
    */
-  protected ParsingStates parse (ParsingStates currentState, String linestr, ParserResult result)
+  protected ParsingErrors parseTitleLine (ParserResult result) throws IOException, ParserException
+  {
+    /* Read current line. Cannot be EOF.*/
+    String linestr = readLineWithProperEncoding();
+    if (linestr == null)
+      return ParsingErrors.EOF_REACHED;
+
+    boolean isValid = (linestr.length () > 0);
+    if (isValid == false)
+      return ParsingErrors.PARSING_ERROR;
+
+    result.setFieldValue ("Title", linestr);
+    result.setFieldValue ("FileOffset", String.valueOf(this.lastFilePointer()));
+    return ParsingErrors.NO_ERROR;
+  }
+
+  /*
+   * Validates Book Annotation type line and adds to ParserResult and returns true is valid.
+   * If validation fails, false is returned.
+   */
+  protected ParsingErrors parseAnnotationLine (ParserResult result)
       throws IOException, ParserException
   {
-      ParsingStates nextState = ParsingStates.ERROR;
-      String value = "";
-      boolean isValid = true;
+    /* Read current line. Cannot be EOF.*/
+    String linestr = readLineWithProperEncoding();
+    if (linestr == null)
+      return ParsingErrors.EOF_REACHED;
 
-      String annotationType = "";
+    boolean isValid = false;
+    String value = "";
 
-switchblock:
-      switch (currentState)
-      {
-        case TITLE:
-          isValid = (linestr.length () > 0);
-          if (isValid == false)
-            break;
+    /* Annotation Type */
+    value = trySplitString (linestr, " ", 2);
+    isValid = (value != null)
+                && (value.toLowerCase().equals ("highlight")
+                    || value.toLowerCase().equals ("note")
+                    || value.toLowerCase().equals ("bookmark"));
 
-          result.setFieldValue ("Title", linestr);
-          result.setFieldValue ("FileOffset", String.valueOf(this.lastFilePointer()));
-          nextState = ParsingStates.ANNOTATION_LINE;
-          break;
+    if (isValid == false)
+      return ParsingErrors.PARSING_ERROR;
 
-        case ANNOTATION_LINE:
+    result.setFieldValue ("AnnotationType", value);
+    String annotationType = value;
 
-          /* Annotation Type */
-          value = trySplitString (linestr, " ", 2);
-          isValid = (value != null) 
-            && (value.toLowerCase().equals ("highlight") 
-                || value.toLowerCase().equals ("note")
-                || value.toLowerCase().equals ("bookmark"));
+    /* Page Number Type */
+    value = trySplitString (linestr, " ", 4);
+    isValid = (value != null)
+                && (value.toLowerCase().equals("page")
+                    || value.toLowerCase().equals("location"));
 
-          if (isValid == false)
-            break;
+    if (isValid == false)
+      return ParsingErrors.PARSING_ERROR;
 
-          result.setFieldValue ("AnnotationType", value);
-          annotationType = value;
+    result.setFieldValue ("PageNumberType", value);
 
-          /* Page Number Type */
-          value = trySplitString (linestr, " ", 4);
-          isValid = (value != null)
-            && (value.toLowerCase().equals("page") 
-                || value.toLowerCase().equals("location"));
+    /* Page or Location Number */
+    value = trySplitString (linestr, " ", 5);
+    isValid = (value != null);
+    if (isValid == false)
+      return ParsingErrors.PARSING_ERROR;
 
-          if (isValid == false)
-            break;
-
-          result.setFieldValue ("PageNumberType", value);
-
-          /* Page or Location Number */
-          value = trySplitString (linestr, " ", 5);
-          isValid = (value != null);
-          if (isValid == false)
-            break;
-
-          if (annotationType.toLowerCase().equals("bookmark") == false) 
-          {
-            value = trySplitString (value, "-", 0);
-            isValid = (value != null);
-            if (isValid == false)
-              break;
-          }
-
-          isValid = tryParseUnsigendInt (value);
-          if (isValid == false)
-            break;
-
-          result.setFieldValue ("PageNumberOrLocationNumber", value);
-          nextState = ParsingStates.TEXT;
-          break;
-
-        case TEXT:
-          annotationType = result.getFieldValue("AnnotationType").toLowerCase();
-
-          /* There should be a blank line */
-          isValid = (linestr.length() == 0);
-          if (isValid == false)
-            break;
-
-          /* Read the actual text, in the following lines */
-          StringBuilder sb = new StringBuilder();
-          while ((linestr = readLineWithProperEncoding()).equals("==========") == false)
-          {
-            sb.append(linestr + "\n");
-
-            /* NOTE: This line can also be blank, in case of a bookmark annotation type.*/
-            if (annotationType.equals("bookmark") == false)
-            {
-              isValid = (linestr.length() > 0);
-              if (isValid == false)
-                break switchblock;
-            }
-          } 
-          
-          /* We have read one line too far. Backup */
-          mFile.seek(this.lastFilePointer());
-
-          /* Remove the extra new line at the end*/
-          sb.deleteCharAt(sb.length() - 1);
-
-          result.setFieldValue ("Text", sb.toString());
-          nextState = ParsingStates.END;
-          break;
-
-        case END:
-          /* Check for termination line. */
-          isValid = (linestr.equals("=========="));
-
-          nextState = ParsingStates.TITLE;
-          break;
-        default:
-          assert false : "Invalid state";
-      } // switch
-
+    if (annotationType.toLowerCase().equals("bookmark") == false)
+    {
+      value = trySplitString (value, "-", 0);
+      isValid = (value != null);
       if (isValid == false)
-        nextState = ParsingStates.ERROR;
+        return ParsingErrors.PARSING_ERROR;
+    }
 
-      return nextState;
+    isValid = tryParseUnsigendInt (value);
+    if (isValid == false)
+      return ParsingErrors.PARSING_ERROR;
+
+    result.setFieldValue ("PageNumberOrLocationNumber", value);
+    return ParsingErrors.NO_ERROR;
+  }
+
+  /*
+   * Validates Book highlight/note text line and adds to ParserResult and returns true is valid.
+   * If validation fails, false is returned.
+   */
+  protected ParsingErrors parseTextLine (ParserResult result) throws IOException, ParserException
+  {
+    /* Read current line. Cannot be EOF.*/
+    String linestr = readLineWithProperEncoding();
+    if (linestr == null)
+      return ParsingErrors.EOF_REACHED;
+
+    boolean isValid = false;
+    String annotationType = result.getFieldValue("AnnotationType").toLowerCase();
+
+    /* There should be a blank line */
+    isValid = (linestr.length() == 0);
+    if (isValid == false)
+      return ParsingErrors.PARSING_ERROR;
+
+    /* Read the actual text, in the following lines */
+    StringBuilder sb = new StringBuilder();
+    while (isTerminationLine(linestr = readLineWithProperEncoding()) == false)
+    {
+      sb.append(linestr + "\n");
+
+      /* NOTE: This line can also be blank, in case of a bookmark annotation type.*/
+      if (annotationType.equals("bookmark") == false)
+      {
+        isValid = (linestr.length() > 0);
+        if (isValid == false)
+          return ParsingErrors.PARSING_ERROR;
+      }
+    }
+
+    /* We have read one line too far. Backup */
+    mFile.seek(this.lastFilePointer());
+
+    /* Remove the extra new line at the end*/
+    sb.deleteCharAt(sb.length() - 1);
+
+    result.setFieldValue ("Text", sb.toString());
+    return ParsingErrors.NO_ERROR;
+  }
+
+  /*
+   * Validates entry end/termination line and adds to ParserResult and returns true is valid.
+   * If validation fails, false is returned.
+   */
+  protected ParsingErrors parseTerminationLine (ParserResult result) throws IOException, ParserException
+  {
+    /* Read current line. Cannot be EOF.*/
+    String linestr = readLineWithProperEncoding();
+    if (linestr == null)
+      return ParsingErrors.EOF_REACHED;
+
+    /* Check for termination line. */
+    boolean isValid = isTerminationLine (linestr);
+    return (isValid == true) ? ParsingErrors.NO_ERROR : ParsingErrors.PARSING_ERROR;
+  }
+
+  protected boolean isTerminationLine (String linestr)
+  {
+    assert (linestr != null);
+    return linestr.equals("==========");
   }
 
   protected String trySplitString (String s, String p, int index)
   {
+    assert (s != null);
+    assert (p != null);
+
     try {
       return s.split (p)[index];
     } catch (Exception ex) {
@@ -244,6 +284,8 @@ switchblock:
 
   protected boolean tryParseUnsigendInt (String s)
   {
+    assert (s != null);
+
     try {
       Integer.parseUnsignedInt (s);
       return true;
