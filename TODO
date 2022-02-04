@@ -1,0 +1,41 @@
+Kpdfsync                                                                               THINGS-TO-DO
+---------------------------------------------------------------------------------------------------
+
+# TASKS                                                                 Estimated       Actual
+[X] String comparison algorithm, that can analyze the degree of match. 
+    So that minor differences between the pattern and the read text 
+    from pdf files are handled.
+
+[X] Use PDFClown library to highlight the text which matches the most
+    with the highlighted text from My Clippings file.
+
+[ ] Parse the 'My Clippings.txt' file.
+
+# BUGS:
+[ ] The string matching algo is too simple, and gives wrong match 
+    percentage, if the strings being compared differ in the number 
+    of non-whitespace characters. The two indexes get out of sync 
+    at the first mismatch and never recover. 
+    Example:
+    PDF text      = 123 56 789
+    Clipping text = 123 456 789
+    % match       = 3/8          (Wrong)
+    % match       = 7/8          (What is expected)
+
+[ ] Related to the above bug, we are highlighting more characters - 
+    by that many characters as the diffence in the number of 
+    characters, between the text read from the PDF and the pattern 
+    read from the clippings file.
+    The algorithm matches character by character, the pattern and the
+    text from the pdf. The matching and thus the highlighting is as 
+    long as the shortest string. If the pattern is shorter, the length
+    of the highlight is that. However we humans can see the end of the
+    match should have ended before.
+    Example:
+    PDF text      = 12 67 89
+    Clipping text = 12 45 67
+    Highlighting  = 12 67 89     (Wrong, Because length of Clipping text
+                                  is 8)
+    Highlighting  = 12 67        (Expected, Much more accepatble 
+                                  highlighting)
+
