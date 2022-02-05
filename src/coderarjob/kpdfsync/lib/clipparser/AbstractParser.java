@@ -16,7 +16,6 @@ public abstract class AbstractParser
   public abstract ParserResult parse()                           throws Exception;
   public abstract String       getParserVersion();
   public abstract String[]     getSupportedKindleVersions();
-  public abstract String[]     getSupportedFields();
 
   protected final String           mFileName;
   protected final RandomAccessFile mFile;

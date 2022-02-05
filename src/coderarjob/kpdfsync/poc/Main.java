@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import coderarjob.kpdfsync.lib.*;
-import coderarjob.kpdfsync.lib.KindleClippingsEntryItem.AnnotationType;
-import coderarjob.kpdfsync.lib.KindleClippingsEntryItem.PageNumberType;
+import coderarjob.kpdfsync.lib.clipparser.ParserResult;
+import coderarjob.kpdfsync.lib.clipparser.ParserResult.AnnotationType;
+import coderarjob.kpdfsync.lib.clipparser.ParserResult.PageNumberType;
 
 public class Main
 {
@@ -23,14 +24,13 @@ public class Main
     String bookTitle = titles.get(7);
     System.out.println ("Book: " + bookTitle);
 
-    ArrayList<KindleClippingsEntryItem> entries = Collections.list (
-                                                              file.getBookAnnotations (bookTitle));
-    for (KindleClippingsEntryItem entry : entries)
+    ArrayList<ParserResult> entries = Collections.list (file.getBookAnnotations (bookTitle));
+    for (ParserResult entry : entries)
     {
     	System.out.println ("\t" + entry.title());
     	System.out.println ("\t" + entry.annotationType());
-    	
-    	int pageOrLocationNumber = entry.pageNumberOrLocationNumber();
+
+        int pageOrLocationNumber = entry.pageOrLocationNumber();
     	if (entry.pageNumberType() == PageNumberType.PAGE_NUMBER)
     		System.out.println ("\tPage: " + String.valueOf(pageOrLocationNumber));
     	else

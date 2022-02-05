@@ -34,7 +34,7 @@ public class KindleClippingsFile
     return mTitleOffsetMap.keys();
   }
 
-  public Enumeration<KindleClippingsEntryItem> getBookAnnotations (String bookTitle)
+  public Enumeration<ParserResult> getBookAnnotations (String bookTitle)
     throws Exception
   {
     List<Long> offsetlist = mTitleOffsetMap.getOrDefault(bookTitle, null);
@@ -73,16 +73,14 @@ public class KindleClippingsFile
     ParserResult result;
     while ((result = parse()) != null)
     {
-      KindleClippingsEntryItem item = KindleClippingsEntryItem.fromParserResult (result);
-
-      List<Long> offsetlist = mTitleOffsetMap.getOrDefault(item.title(), null);
+      List<Long> offsetlist = mTitleOffsetMap.getOrDefault(result.title(), null);
       if (offsetlist == null) 
       {
         offsetlist = new ArrayList<Long>();
-        mTitleOffsetMap.put (item.title(), offsetlist);
+        mTitleOffsetMap.put (result.title(), offsetlist);
       }
 
-      offsetlist.add(item.fileOffset());
+      offsetlist.add(result.fileOffset());
     }
   }
 }
