@@ -7,7 +7,7 @@ import java.util.NoSuchElementException;
 import coderarjob.kpdfsync.lib.clipparser.AbstractParser;
 import coderarjob.kpdfsync.lib.clipparser.ParserResult;
 
-public class KindleClippingsEntryEnumeration implements Enumeration<KindleClippingsEntryItem>
+public class KindleClippingsEntryEnumeration implements Enumeration<ParserResult>
 {
   private final List<Long> mFileOffsets;
   private final AbstractParser mParser;
@@ -40,13 +40,12 @@ public class KindleClippingsEntryEnumeration implements Enumeration<KindleClippi
     return mLastResult != null;
   }
 
-  public KindleClippingsEntryItem nextElement() throws NoSuchElementException
+  public ParserResult nextElement() throws NoSuchElementException
   {
     if (mLastResult == null)
       throw new NoSuchElementException();
 
-    KindleClippingsEntryItem item = KindleClippingsEntryItem.fromParserResult (mLastResult);
-    return item;
+    return mLastResult;
   }
   
 }

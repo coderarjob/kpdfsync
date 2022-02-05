@@ -1,22 +1,64 @@
 package coderarjob.kpdfsync.lib.clipparser;
 
 import java.util.Hashtable;
-import coderarjob.kpdfsync.lib.clipparser.ParserException;
+
 
 public class ParserResult
 {
-  Hashtable<String, String> mFieldDict;
+  public enum PageNumberType
+  {
+    UNKNOWN, PAGE_NUMBER, LOCATION_NUMBER;
 
-  public ParserResult (AbstractParser parser)
+    public static PageNumberType fromString (String type)
+    {
+      if (type.toLowerCase().equals("page"))
+        return PAGE_NUMBER;
+      else if (type.toLowerCase().equals("location"))
+        return LOCATION_NUMBER;
+      else
+        return UNKNOWN;
+    }
+  }
+
+  public enum AnnotationType
+  {
+    UNKNOWN, HIGHLIGHT, NOTE, BOOKMARK;
+
+    public static AnnotationType fromString (String type)
+    {
+      switch (type.toLowerCase())
+      {
+        case "highlight":
+          return HIGHLIGHT;
+        case "note":
+          return NOTE;
+        case "bookmark":
+          return BOOKMARK;
+        default:
+          return UNKNOWN;
+      }
+    }
+  }
+
+  enum SupportedFields
+  {
+    TITLE, FILE_OFFSET, ANNOTATION_TYPE, PAGE_OR_LOCATION_NUMBER, PAGE_NUMBER_TYPE, TEXT
+  }
+
+  private Hashtable<SupportedFields, String> mFieldDict;
+
+  public ParserResult ()
   {
     mFieldDict = new Hashtable<>();
 
-    /* Initialize hash table with the supported parser fields */
-    for (String field : parser.getSupportedFields ())
+    /* Add all the supported fields and blank them out.
+     * When reading a field, not supported/filled by the current parser, the default value of emtry
+     * string is returned.*/
+    for (SupportedFields field : SupportedFields.values ())
       mFieldDict.put (field, "");
   }
 
-  public void setFieldValue (String field, String value) 
+  void setFieldValue (SupportedFields field, String value)
       throws NullPointerException, ParserException
   {
       if (mFieldDict.containsKey (field) == false)
@@ -25,12 +67,42 @@ public class ParserResult
       mFieldDict.put (field, value);
   }
 
-  public String getFieldValue (String field) 
-      throws NullPointerException, ParserException
+  public String getFieldValue(SupportedFields field) throws NullPointerException, ParserException
   {
       if (mFieldDict.containsKey (field) == false)
         throw new ParserException ("Unsupported field : " + field);
 
       return mFieldDict.get (field);
+  }
+
+  public String title () throws NullPointerException, ParserException
+  {
+    return this.getFieldValue (SupportedFields.TITLE);
+  }
+
+  public long fileOffset () throws NumberFormatException, NullPointerException, ParserException
+  {
+    return Long.parseUnsignedLong (this.getFieldValue (SupportedFields.FILE_OFFSET));
+  }
+
+  public AnnotationType annotationType () throws NullPointerException, ParserException
+  {
+    return AnnotationType.fromString (this.getFieldValue (SupportedFields.ANNOTATION_TYPE));
+  }
+
+  public PageNumberType pageNumberType () throws NullPointerException, ParserException
+  {
+    return PageNumberType.fromString (this.getFieldValue (SupportedFields.PAGE_NUMBER_TYPE));
+  }
+
+  public int pageOrLocationNumber()
+      throws NumberFormatException, NullPointerException, ParserException
+  {
+    return Integer.parseUnsignedInt (this.getFieldValue (SupportedFields.PAGE_OR_LOCATION_NUMBER));
+  }
+
+  public String text() throws NullPointerException, Exception
+  {
+    return this.getFieldValue (SupportedFields.TEXT);
   }
 }
