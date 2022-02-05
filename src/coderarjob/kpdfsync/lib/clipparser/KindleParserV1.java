@@ -1,3 +1,14 @@
+/*
+ * KindleParserV1 Class
+ *
+ * Contains an implementation of the AbstractParser. Current implementation, parsers the following
+ * fields from the kindle clippings file.
+ * {TITLE, ANNOTATION_TYPE, PAGE_OR_LOCATION_NUMBER, PAGE_NUMBER_TYPE, TEXT}
+ * additionally saves the {FILE_OFFSET} in the ParserResult returned.
+ *
+ * Dated: 5 Feb 2022
+ * Author: arjobmukherjee@gmail.com
+ */
 package coderarjob.kpdfsync.lib.clipparser;
 
 import java.io.File;
@@ -10,8 +21,9 @@ public class KindleParserV1 extends AbstractParser
 {
     protected enum ParsingErrors { NO_ERROR, EOF_REACHED, PARSING_ERROR }
 
-    /* On paring error, this is set to true. This indicates, if file pointer is moved to the next
-     * block after the previous parsing error.
+    /*
+     * On paring error, this is set to true. False indicates, no error, or that file pointer has
+     * moved to the next block after the previous parsing error.
      */
     protected boolean mIsInvalidState;
 
@@ -31,7 +43,7 @@ public class KindleParserV1 extends AbstractParser
         return new String[] {"1.2.4", "1.2.5", "1.2.6"};
     }
 
-    /*
+    /**
      * Moves to the Title of the next block from anywhere in the current block.
      * If already at Title, this does move to the next block. This methods, does not actually parse
      * the lines, it just looks for the end of block.
@@ -57,7 +69,7 @@ public class KindleParserV1 extends AbstractParser
         return true;
     }
 
-    /*
+    /**
      * Moves the file pointer and assumes the next line read to be Title.
      */
     public void moveToEntryAtOffset (long offset) throws IOException
@@ -65,7 +77,7 @@ public class KindleParserV1 extends AbstractParser
         mFile.seek(offset);
     }
 
-    /*
+    /**
      * Parses each line of the current block.
      * Returns a ParserResult object with the parsed result.
      * Null is returned is EOF was reached, before end of block.
@@ -115,7 +127,7 @@ parse_all_lines:
         return result;
     }
 
-    /*
+    /**
      * Validates Book Title line and adds to ParserResult and returns true is valid.
      * If validation fails, false is returned.
      */
@@ -135,7 +147,7 @@ parse_all_lines:
         return ParsingErrors.NO_ERROR;
     }
 
-    /*
+    /**
      * Validates Book Annotation type line and adds to ParserResult and returns true is valid.
      * If validation fails, false is returned.
      */
@@ -196,7 +208,7 @@ parse_all_lines:
         return ParsingErrors.NO_ERROR;
     }
 
-    /*
+    /**
      * Validates Book highlight/note text line and adds to ParserResult and returns true is valid.
      * If validation fails, false is returned.
      */
@@ -240,11 +252,12 @@ parse_all_lines:
         return ParsingErrors.NO_ERROR;
     }
 
-    /*
+    /**
      * Validates entry end/termination line and adds to ParserResult and returns true is valid.
      * If validation fails, false is returned.
      */
-    protected ParsingErrors parseTerminationLine (ParserResult result) throws IOException, ParserException
+    protected ParsingErrors parseTerminationLine (ParserResult result)
+        throws IOException, ParserException
     {
         /* Read current line. Cannot be EOF.*/
         String linestr = readLineWithProperEncoding();

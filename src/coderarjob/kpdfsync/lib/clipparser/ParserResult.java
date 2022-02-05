@@ -1,7 +1,18 @@
+/*
+ * ParserResult Class
+ *
+ * Holds the super set of all the fields supported by any kindle parser.
+ * Why not subclass from ParserResult for each Parser? Well inheritence provides abstraction
+ * (same function but different implementation), but in this case, to be userfull, there will be
+ * new fields per parser; but not at all change in the base functions. So why use inheritence!
+ *
+ * Dated: 5 Feb 2022
+ * Author: arjobmukherjee@gmail.com
+ */
+
 package coderarjob.kpdfsync.lib.clipparser;
 
 import java.util.Hashtable;
-
 
 public class ParserResult
 {
