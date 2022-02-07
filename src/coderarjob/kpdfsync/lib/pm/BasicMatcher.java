@@ -1,6 +1,6 @@
 package coderarjob.kpdfsync.lib.pm;
 
-class BasicMatcher extends AbstractMatcher
+public class BasicMatcher extends AbstractMatcher
 {
   public Match matchPattern(String line, int lineOffset, String pattern) 
   {
