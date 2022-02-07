@@ -2,14 +2,14 @@ package coderarjob.kpdfsync.lib.pm;
 
 import java.util.ArrayList;
 
-abstract class AbstractMatcher
+public abstract class AbstractMatcher
 {
   protected abstract Match matchPattern(String line, int lineOffset, String pattern);
 
   public ArrayList<Match> match (String text, String pattern)
   {
-    String shortlines = text.replaceAll("[  |\n|\r]", "");
-    String shortpattern = pattern.replaceAll("[  |\n|\r]", "");
+    String shortlines = text.replaceAll("[  |\t|\n|\r]", "");
+    String shortpattern = pattern.replaceAll("[  |\t|\n|\r]", "");
 
     int length = shortlines.length() - shortpattern.length() + 1;
 
@@ -44,6 +44,9 @@ abstract class AbstractMatcher
     for (; numc > 0; i++, relIndex++)
     {
       if (line.charAt(i) == ' ') 
+        continue;
+
+      if (line.charAt(i) == '\t')
         continue;
 
       if (line.charAt(i) == '\n') 
