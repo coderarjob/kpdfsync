@@ -1,9 +1,11 @@
 #!/bin/sh
 
-BIN_DIR=bin
+BIN_DIR=build/classes
+
+mkdir -p $BIN_DIR
 rm -rf $BIN_DIR/*
 
-export CLASSPATH="lib/pdfclown.jar:bin/"
+export CLASSPATH="lib/pdfclown.jar:$BIN_DIR"
 
 # Build AJL
 javac -Xlint -d "$BIN_DIR/" src/coderarjob/ajl/file/*.java || exit
