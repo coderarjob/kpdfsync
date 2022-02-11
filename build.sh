@@ -3,6 +3,9 @@
 BIN_DIR=bin
 rm -rf $BIN_DIR/*
 
+# Remove trailing spaces from java source files
+find src -name "*.java" -exec sed -i s/\ \*$//g {} \; || exit
+
 export CLASSPATH="lib/pdfclown.jar:bin/"
 
 # Build AJL
