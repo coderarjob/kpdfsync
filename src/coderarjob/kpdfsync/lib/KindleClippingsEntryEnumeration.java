@@ -25,7 +25,7 @@ public class KindleClippingsEntryEnumeration implements Enumeration<ParserResult
 
   public boolean hasMoreElements()
   {
-    try 
+    try
     {
       mLastResult = null;
 
@@ -47,5 +47,5 @@ public class KindleClippingsEntryEnumeration implements Enumeration<ParserResult
 
     return mLastResult;
   }
-  
+
 }

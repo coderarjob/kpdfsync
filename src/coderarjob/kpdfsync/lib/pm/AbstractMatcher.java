@@ -43,13 +43,13 @@ public abstract class AbstractMatcher
     int i = 0;
     for (; numc > 0; i++, relIndex++)
     {
-      if (line.charAt(i) == ' ') 
+      if (line.charAt(i) == ' ')
         continue;
 
       if (line.charAt(i) == '\t')
         continue;
 
-      if (line.charAt(i) == '\n') 
+      if (line.charAt(i) == '\n')
       {
         lineno++;
         relIndex = -1;

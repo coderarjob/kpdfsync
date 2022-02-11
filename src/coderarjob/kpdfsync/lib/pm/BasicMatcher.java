@@ -2,14 +2,14 @@ package coderarjob.kpdfsync.lib.pm;
 
 public class BasicMatcher extends AbstractMatcher
 {
-  public Match matchPattern(String line, int lineOffset, String pattern) 
+  public Match matchPattern(String line, int lineOffset, String pattern)
   {
     int mc = 0;
     int i = 0;
 
     line = line.substring(lineOffset);
 
-    for (; i < pattern.length() && i < line.length(); i++ ) 
+    for (; i < pattern.length() && i < line.length(); i++ )
     {
       if (line.charAt(i) == pattern.charAt(i))
         mc++;

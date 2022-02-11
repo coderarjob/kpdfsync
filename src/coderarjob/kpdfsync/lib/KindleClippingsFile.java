@@ -10,20 +10,17 @@ import java.util.Enumeration;
 
 import coderarjob.kpdfsync.lib.clipparser.AbstractParser;
 import coderarjob.kpdfsync.lib.clipparser.ParserResult;
-import coderarjob.kpdfsync.lib.clipparser.KindleParserV1;
 import coderarjob.kpdfsync.lib.clipparser.ParserException;
 
-public class KindleClippingsFile 
+public class KindleClippingsFile
 {
-  private String mClippingsFile;
   private AbstractParser mParser;
   private Hashtable<String, List<Long>> mTitleOffsetMap;
 
-  public KindleClippingsFile (String clippingsFileName) 
+  public KindleClippingsFile (AbstractParser parser)
       throws FileNotFoundException, IOException, Exception
   {
-    this.mClippingsFile = clippingsFileName;
-    mParser = new KindleParserV1 (clippingsFileName);
+    this.mParser = parser;
 
     mTitleOffsetMap = new Hashtable<>();
     readTitlesAndAddOffsets();
@@ -38,12 +35,12 @@ public class KindleClippingsFile
     throws Exception
   {
     List<Long> offsetlist = mTitleOffsetMap.getOrDefault(bookTitle, null);
-    if (offsetlist == null) 
+    if (offsetlist == null)
       throw new Exception ("Book title not found.");
 
-    KindleClippingsEntryEnumeration new_enu = 
+    KindleClippingsEntryEnumeration new_enu =
       new KindleClippingsEntryEnumeration (this.mParser, offsetlist);
-    
+
     return new_enu;
   }
 
@@ -74,7 +71,7 @@ public class KindleClippingsFile
     while ((result = parse()) != null)
     {
       List<Long> offsetlist = mTitleOffsetMap.getOrDefault(result.title(), null);
-      if (offsetlist == null) 
+      if (offsetlist == null)
       {
         offsetlist = new ArrayList<Long>();
         mTitleOffsetMap.put (result.title(), offsetlist);
