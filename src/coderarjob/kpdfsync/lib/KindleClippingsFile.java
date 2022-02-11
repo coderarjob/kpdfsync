@@ -10,20 +10,17 @@ import java.util.Enumeration;
 
 import coderarjob.kpdfsync.lib.clipparser.AbstractParser;
 import coderarjob.kpdfsync.lib.clipparser.ParserResult;
-import coderarjob.kpdfsync.lib.clipparser.KindleParserV1;
 import coderarjob.kpdfsync.lib.clipparser.ParserException;
 
 public class KindleClippingsFile
 {
-  private String mClippingsFile;
   private AbstractParser mParser;
   private Hashtable<String, List<Long>> mTitleOffsetMap;
 
-  public KindleClippingsFile (String clippingsFileName)
+  public KindleClippingsFile (AbstractParser parser)
       throws FileNotFoundException, IOException, Exception
   {
-    this.mClippingsFile = clippingsFileName;
-    mParser = new KindleParserV1 (clippingsFileName);
+    this.mParser = parser;
 
     mTitleOffsetMap = new Hashtable<>();
     readTitlesAndAddOffsets();
