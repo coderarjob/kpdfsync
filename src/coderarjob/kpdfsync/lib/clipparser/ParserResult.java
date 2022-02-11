@@ -22,12 +22,9 @@ public class ParserResult
 
     public static PageNumberType fromString (String type)
     {
-      if (type.toLowerCase().equals("page"))
-        return PAGE_NUMBER;
-      else if (type.toLowerCase().equals("location"))
-        return LOCATION_NUMBER;
-      else
-        return UNKNOWN;
+      if (type.toLowerCase().equals("page"))          return PAGE_NUMBER;
+      else if (type.toLowerCase().equals("location")) return LOCATION_NUMBER;
+      else                                            return UNKNOWN;
     }
   }
 
@@ -39,14 +36,10 @@ public class ParserResult
     {
       switch (type.toLowerCase())
       {
-        case "highlight":
-          return HIGHLIGHT;
-        case "note":
-          return NOTE;
-        case "bookmark":
-          return BOOKMARK;
-        default:
-          return UNKNOWN;
+        case "highlight": return HIGHLIGHT;
+        case "note"     : return NOTE;
+        case "bookmark" : return BOOKMARK;
+        default         : return UNKNOWN;
       }
     }
   }
