@@ -19,7 +19,7 @@ public class ByteOrderMark
       fis.read (fileBom, 0, fileBom.length);
 
       /* Compare BOM bytes of each type of BOM to determine the type we have */
-      for (ByteOrderMarkTypes bom : ByteOrderMarkTypes.values()) 
+      for (ByteOrderMarkTypes bom : ByteOrderMarkTypes.values())
       {
         if (isBomMatching (bom.getBomBytes(), fileBom))
           return bom;
@@ -37,7 +37,7 @@ public class ByteOrderMark
       if (bomBytes[i] != fileBom[i])
         return false;
     }
-    
+
     return true;
   }
 }
