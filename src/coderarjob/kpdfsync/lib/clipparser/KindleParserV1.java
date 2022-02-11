@@ -16,11 +16,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import coderarjob.kpdfsync.lib.clipparser.ParserResult.SupportedFields;
+import coderarjob.kpdfsync.lib.clipparser.AbstractParser.ParsingErrors;
 
 public class KindleParserV1 extends AbstractParser
 {
-    protected enum ParsingErrors { NO_ERROR, EOF_REACHED, PARSING_ERROR }
-
     /*
      * On paring error, this is set to true. False indicates, no error, or that file pointer has
      * moved to the next block after the previous parsing error.
@@ -32,6 +31,8 @@ public class KindleParserV1 extends AbstractParser
         super (fileName);
         mIsInvalidState = false;
     }
+
+    /* Implementing abstract methods from AbstractParser*/
 
     public String getParserVersion ()
     {
@@ -45,8 +46,8 @@ public class KindleParserV1 extends AbstractParser
 
     /**
      * Moves to the Title of the next block from anywhere in the current block.
-     * If already at Title, this does move to the next block. This methods, does not actually parse
-     * the lines, it just looks for the end of block.
+     * Moves to the start of the next block. This methods, does not actually parse the lines, it
+     * just looks for the next termination line.
      *
      * Returns True, of next block was found, otherwise False.
      */
@@ -75,57 +76,64 @@ public class KindleParserV1 extends AbstractParser
     public void moveToEntryAtOffset (long offset) throws IOException
     {
         mFile.seek(offset);
+        mIsInvalidState = false;
     }
 
     /**
      * Parses each line of the current block.
      * Returns a ParserResult object with the parsed result.
-     * Null is returned is EOF was reached, before end of block.
+     * Null is returned is EOF was reached.
      */
-    public ParserResult parse () throws IOException, ParserException
+    public ParsingErrors parseLine (int lineIndex, ParserResult result)
+        throws IOException, ParserException
     {
-        String parsingWhat = "";
-        ParserResult result = new ParserResult();
-        ParsingErrors parseError;
+      ParsingErrors err = ParsingErrors.NO_ERROR;
+      switch (lineIndex)
+      {
+        case 0 :
+          err = parseTitleLine (result);
+          err.setTag ("Title line");
+          break;
+        case 1 :
+          err = parseAnnotationLine (result);
+          err.setTag ("Annotation line");
+          break;
+        case 2 :
+          err = parseTextLine (result);
+          err.setTag ("Text line");
+          break;
+        case 3 :
+          err = parseTerminationLine (result);
+          err.setTag ("Termination line");
+          break;
+        default:
+          err =ParsingErrors.END_OF_BLOCK_REACHED;
+          break;
+      }
 
+      return err;
+    }
+
+    protected void onParsingError(String error, ParserResult result) throws Exception
+    {
+        /* Until we move past the current block to the next block, parser remains in invalid
+         * state. */
+        mIsInvalidState = true;
+
+        /* Call base class method */
+        super.onParsingError (error, result);
+    }
+
+    protected void onParsingStart() throws Exception
+    {
         if (this.mIsInvalidState)
             throw new ParserException ("Invalid parser state : On an invalid line.");
 
-parse_all_lines:
-        {
-            parsingWhat = "Title line";
-            if ((parseError = parseTitleLine (result)) != ParsingErrors.NO_ERROR)
-                break parse_all_lines;
-
-            parsingWhat = "Annotation line";
-            if ((parseError = parseAnnotationLine (result)) != ParsingErrors.NO_ERROR)
-                break parse_all_lines;
-
-            parsingWhat = "Text line";
-            if ((parseError = parseTextLine (result)) != ParsingErrors.NO_ERROR)
-                break parse_all_lines;
-
-            parsingWhat = "Termination line";
-            parseError = parseTerminationLine (result);
-        }
-
-        /* Parsing failed at some point*/
-        if (parseError == ParsingErrors.PARSING_ERROR)
-        {
-            /* Until we move past the current block to the next block, parser remains in invalid
-             * state. */
-            mIsInvalidState = true;
-
-            throw new ParserException (String.format ("Parsing error: '%s' is not %s.",
-                        this.lastLineRead(), parsingWhat));
-        }
-
-        /* End of file was reached before end of block.*/
-        if (parseError == ParsingErrors.EOF_REACHED)
-            result = null;
-
-        return result;
+        /* Call base class method */
+        super.onParsingStart();
     }
+
+    /* Class methods */
 
     /**
      * Validates Book Title line and adds to ParserResult and returns true is valid.
@@ -136,7 +144,7 @@ parse_all_lines:
         /* Read current line. Cannot be EOF.*/
         String linestr = readLineWithProperEncoding();
         if (linestr == null)
-            return ParsingErrors.EOF_REACHED;
+            return ParsingErrors.PARSING_ERROR;
 
         boolean isValid = (linestr.length () > 0);
         if (isValid == false)
@@ -157,7 +165,7 @@ parse_all_lines:
         /* Read current line. Cannot be EOF.*/
         String linestr = readLineWithProperEncoding();
         if (linestr == null)
-            return ParsingErrors.EOF_REACHED;
+            return ParsingErrors.PARSING_ERROR;
 
         boolean isValid = false;
         String value = "";
@@ -165,9 +173,9 @@ parse_all_lines:
         /* Annotation Type */
         value = trySplitString (linestr, " ", 2);
         isValid = (value != null)
-            && (value.toLowerCase().equals ("highlight")
-                    || value.toLowerCase().equals ("note")
-                    || value.toLowerCase().equals ("bookmark"));
+                  && (value.toLowerCase().equals ("highlight")
+                      || value.toLowerCase().equals ("note")
+                      || value.toLowerCase().equals ("bookmark"));
 
         if (isValid == false)
             return ParsingErrors.PARSING_ERROR;
@@ -178,8 +186,8 @@ parse_all_lines:
         /* Page Number Type */
         value = trySplitString (linestr, " ", 4);
         isValid = (value != null)
-            && (value.toLowerCase().equals("page")
-                    || value.toLowerCase().equals("location"));
+                  && (value.toLowerCase().equals("page")
+                      || value.toLowerCase().equals("location"));
 
         if (isValid == false)
             return ParsingErrors.PARSING_ERROR;
@@ -217,7 +225,7 @@ parse_all_lines:
         /* Read current line. Cannot be EOF.*/
         String linestr = readLineWithProperEncoding();
         if (linestr == null)
-            return ParsingErrors.EOF_REACHED;
+            return ParsingErrors.PARSING_ERROR;
 
         boolean isValid = false;
         String annotationType = result.getFieldValue(SupportedFields.ANNOTATION_TYPE).toLowerCase();
@@ -262,7 +270,7 @@ parse_all_lines:
         /* Read current line. Cannot be EOF.*/
         String linestr = readLineWithProperEncoding();
         if (linestr == null)
-            return ParsingErrors.EOF_REACHED;
+            return ParsingErrors.PARSING_ERROR;
 
         /* Check for termination line. */
         boolean isValid = isTerminationLine (linestr);
@@ -298,4 +306,4 @@ parse_all_lines:
             return false;
         }
     }
-} 
+}

@@ -11,25 +11,42 @@ import coderarjob.ajl.file.ByteOrderMark;
 
 public abstract class AbstractParser
 {
-  public abstract boolean      moveToNextEntry()                 throws Exception;
-  public abstract void         moveToEntryAtOffset (long offset) throws Exception;
-  public abstract ParserResult parse()                           throws Exception;
-  public abstract String       getParserVersion();
-  public abstract String[]     getSupportedKindleVersions();
+  protected enum ParsingErrors
+  {
+    NO_ERROR, END_OF_BLOCK_REACHED, PARSING_ERROR;
 
+    private String mTag;
+    public void setTag (String name) { this.mTag = name; }
+    public String getTag()           { return this.mTag; }
+
+  }
+
+  /* Abstract public methods */
+  public abstract boolean       moveToNextEntry()                            throws Exception;
+  public abstract void          moveToEntryAtOffset (long offset)            throws Exception;
+  public abstract ParsingErrors parseLine(int linei, ParserResult result)    throws Exception;
+  public abstract String        getParserVersion();
+  public abstract String[]      getSupportedKindleVersions();
+
+  /* Protected fields */
   protected final String           mFileName;
   protected final RandomAccessFile mFile;
   protected final Charset          mCharset;
+  protected       ParserEvents     mParserEvents;
 
+  /* Private fields */
   private long   mLastFilePointer;
   private String mLastLineRead;
 
-  protected long   lastFilePointer() { return mLastFilePointer; }
-  protected String lastLineRead()    { return mLastLineRead;    }
+  /* Getters and setters */
+  protected long         lastFilePointer()                    { return mLastFilePointer;    }
+  protected String       lastLineRead()                       { return mLastLineRead;       }
+  public    Charset      getCharset()                         { return mCharset;            }
+  public    String       getFileName()                        { return mFileName;           }
+  public    ParserEvents getParserEvents()                    { return this.mParserEvents;  }
+  public    void         setParserEvents (ParserEvents value) { this.mParserEvents = value; }
 
-  public Charset getCharset()        { return mCharset;         }
-  public String  getFileName()       { return mFileName;        }
-
+  /* Contrtructor and public methods */
   public AbstractParser (String fileName) throws FileNotFoundException, IOException
   {
     mFileName = fileName;
@@ -44,6 +61,7 @@ public abstract class AbstractParser
     mFile = new RandomAccessFile (fileName, "r");
 
     /* Default values*/
+    this.mParserEvents = null;
     this.mLastLineRead = null;
     this.mLastFilePointer = -1;
   }
@@ -52,27 +70,64 @@ public abstract class AbstractParser
   {
     switch (type)
     {
-      case UTF8:
-        return StandardCharsets.UTF_8;
-      case UTF16_LE:
-        return StandardCharsets.UTF_16LE;
-      case UTF16_BE:
-        return StandardCharsets.UTF_16BE;
-      default:
-        return Charset.defaultCharset();
+      case UTF8    : return StandardCharsets.UTF_8;
+      case UTF16_LE: return StandardCharsets.UTF_16LE;
+      case UTF16_BE: return StandardCharsets.UTF_16BE;
+      default      : return Charset.defaultCharset();
     }
   }
 
-  /*
+  /**
+   * Parses each line of the current block.
+   * Returns a ParserResult object with the parsed result.
+   * Null is returned is EOF was reached.
+   */
+  public ParserResult parse() throws Exception
+  {
+    ParsingErrors parseError = ParsingErrors.NO_ERROR;
+    ParserResult result = new ParserResult();
+
+    /* End of file was reached before */
+    if (isEOF() == true)
+    {
+      onParsingError("EOF was reached", null);
+      return null;
+    }
+
+    try {
+      onParsingStart();
+      for (int i = 0; parseError == ParsingErrors.NO_ERROR; i++)
+        parseError = parseLine(i, result);
+
+    } catch (Exception ex) {
+
+      onParsingError(ex.getMessage(), result);
+      throw ex;
+    }
+
+    /* Parsing failed at some point*/
+    if (parseError == ParsingErrors.PARSING_ERROR)
+    {
+      String errDes = String.format ("Parsing error: '%s' is not '%s'.",
+                                      (isEOF() == true) ? "<EOF>" : this.lastLineRead(),
+                                      parseError.getTag());
+      onParsingError(errDes, result);
+      throw new ParserException (errDes);
+    }
+
+    onParsingSuccess (result);
+    return result;
+  }
+
+  /**
    * Checks if End of File has been reached.
    */
   protected boolean isEOF() throws IOException
   {
-    return mFile.getFilePointer() < mFile.length() - 1;
+    return mFile.getFilePointer() >= mFile.length() - 1;
   }
 
-
-  /*
+  /**
    * Reads a line from the file and converts it as per the BOM in the file.
    */
   protected String readLineWithProperEncoding () throws IOException
@@ -87,4 +142,22 @@ public abstract class AbstractParser
     return this.mLastLineRead;
   }
 
+  /* Hook methods */
+  protected void onParsingStart() throws Exception { }
+
+  protected void onParsingSuccess (ParserResult result) throws Exception
+  {
+    ParserEvents e = this.mParserEvents;
+    if (e == null) return;
+
+    e.onSuccess (this.mFileName, this.mFile.getFilePointer(), result);
+  }
+
+  protected void onParsingError(String error, ParserResult result) throws Exception
+  {
+    ParserEvents e = this.mParserEvents;
+    if (e == null) return;
+
+    e.onError (this.mFileName, this.mFile.getFilePointer(), error, result);
+  }
 }

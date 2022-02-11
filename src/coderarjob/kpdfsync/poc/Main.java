@@ -5,17 +5,31 @@ import java.util.Collections;
 
 import coderarjob.kpdfsync.lib.*;
 import coderarjob.kpdfsync.lib.clipparser.ParserResult;
+import coderarjob.kpdfsync.lib.clipparser.ParserEvents;
 import coderarjob.kpdfsync.lib.clipparser.ParserResult.AnnotationType;
 import coderarjob.kpdfsync.lib.clipparser.ParserResult.PageNumberType;
+import coderarjob.kpdfsync.lib.clipparser.AbstractParser;
+import coderarjob.kpdfsync.lib.clipparser.KindleParserV1;
 
 import coderarjob.kpdfsync.lib.annotator.AnnotatorInterface;
 import coderarjob.kpdfsync.lib.annotator.PdfAnnotatorV1;
 
-public class Main
+public class Main implements ParserEvents
 {
-  public static void main(String[] args) throws Exception 
+  /* ParserEvents Methods */
+  public void onError (String fileName, long offset, String error, ParserResult result)
   {
-    KindleClippingsFile file = new KindleClippingsFile("test-files/My Clippings.txt");
+    System.out.println (error);
+  }
+  public void onSuccess (String fileName, long offset, ParserResult result) { }
+
+  /* Class methods */
+  public static void main(String[] args) throws Exception
+  {
+    AbstractParser parser = new KindleParserV1 ("test-files/My Clippings.txt");
+    parser.setParserEvents (new Main());
+
+    KindleClippingsFile file = new KindleClippingsFile(parser);
     ArrayList<String> titles = Collections.list(file.getBookTitles());
 
     System.out.println ("Book titles");
@@ -36,6 +50,10 @@ public class Main
     {
       if (entry.annotationType() != AnnotationType.HIGHLIGHT)
         continue;
+
+      if (entry.pageNumberType() != PageNumberType.PAGE_NUMBER)
+        continue;
+
       /*if (entry.pageOrLocationNumber() != 53)
         continue;*/
 
