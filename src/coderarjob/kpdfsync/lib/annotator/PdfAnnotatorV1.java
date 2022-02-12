@@ -1,12 +1,10 @@
 package coderarjob.kpdfsync.lib.annotator;
 
-import java.lang.Exception;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.Rectangle2D.Double;
 
 import org.pdfclown.documents.Document;
 import org.pdfclown.documents.Page;
@@ -20,26 +18,27 @@ import org.pdfclown.files.SerializationModeEnum;
 import org.pdfclown.documents.contents.TextChar;
 
 import coderarjob.kpdfsync.lib.pm.AbstractMatcher;
-import coderarjob.kpdfsync.lib.pm.BasicMatcher;
 import coderarjob.kpdfsync.lib.pm.Match;
 
-public class PdfAnnotatorV1 implements AnnotatorInterface
+public class PdfAnnotatorV1 extends AbstractAnnotator
 {
-  private String mSourcePdfFileName;
-  private int mSkipNumberOfPages;
+  private final String mSourcePdfFileName;
+  private final int mSkipNumberOfPages;
+
   private boolean mIsOpen;
 
   private File mFile;
   private Document mDoc;
 
-  public PdfAnnotatorV1 (String sourcePdfFileName, int skipNumberOfPages)
+  public PdfAnnotatorV1 (AbstractMatcher matcher, String sourcePdfFileName, int skipNumberOfPages)
   {
+	super (matcher);
     this.mSourcePdfFileName = sourcePdfFileName;
     this.mSkipNumberOfPages = skipNumberOfPages;
     this.mIsOpen = false;
   }
 
-  /* AnnotatorInterface methods */
+  /* AbstractAnnotator methods */
   public String getAnnotatorVersion ()
   {
     return "1.0";
@@ -78,8 +77,7 @@ public class PdfAnnotatorV1 implements AnnotatorInterface
   public void close (String fileName) throws Exception
   {
     this.mIsOpen = false;
-
-    /* TODO: Actually close file */
+    this.mFile.close();
   }
 
   /* Private methods */
@@ -97,27 +95,14 @@ public class PdfAnnotatorV1 implements AnnotatorInterface
     /* Removes the extra newline at the end. */
     pagetext.deleteCharAt(pagetext.length() - 1);
 
-    /*System.out.println("--------\nText:\n----------");
-    System.out.println(pagetext.toString());
-
-    System.out.println("--------\nPattern:\n----------");
-    System.out.println(pattern);*/
-
-    AbstractMatcher matcher = new BasicMatcher ();
-    ArrayList<Match> matches = matcher.match (pagetext.toString(), pattern);
+    ArrayList<Match> matches = this.mAbstractMatcher.match (pagetext.toString(), pattern);
 
     boolean matchfound = false;
     List<Quad> highlights = new ArrayList<>();
 
     for (Match m : matches)
     {
-      double matchPercent = (float)m.matchCount()/m.totalCount() * 100;
-
-      if (matchPercent < 80.0) continue;
-      System.out.println (String.format("Match: %f : (%d:%d - %d:%d)",
-            matchPercent,
-            m.beginFrom().lineNumber(), m.beginFrom().index(),
-            m.endAt().lineNumber(), m.endAt().index()));
+      if (m.matchPercent() < 80.0) continue;
 
       Rectangle2D highlightrect;
 
