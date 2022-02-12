@@ -4,15 +4,27 @@ import java.util.ArrayList;
 
 public abstract class AbstractMatcher
 {
+  /* Abstract methods */
   protected abstract Match matchPattern(String line, int lineOffset, String pattern);
 
+  /* Private fields */
+  private PatternMatcherEvents mMatcherEventsHandler;
+
+  /* Getter and Setters */
+  public void setPatternMatcherEventsHandler (PatternMatcherEvents matcherEventsHandler)
+  {
+	this.mMatcherEventsHandler = matcherEventsHandler;
+  }
+
+  /* Class method */
   public ArrayList<Match> match (String text, String pattern)
   {
     String shortlines = text.replaceAll("[  |\t|\n|\r]", "");
     String shortpattern = pattern.replaceAll("[  |\t|\n|\r]", "");
 
-    int length = shortlines.length() - shortpattern.length() + 1;
+    onMatchStart(text, pattern);
 
+    int length = shortlines.length() - shortpattern.length() + 1;
     ArrayList<Match> matches = new ArrayList<>();
 
     for (int j = 0; j < length; j++)
@@ -23,8 +35,10 @@ public abstract class AbstractMatcher
       Line firstLine = remapLine (res.beginFrom().index(), text);
       Line endLine = remapLine (res.endAt().index(), text);
 
-      matches.add(new Match(res.matchCount(), res.totalCount(), firstLine, endLine));
+      Match thisMatch = new Match(res.matchCount(), res.totalCount(), firstLine, endLine);
+      onMatchEnd (thisMatch);
 
+      matches.add(thisMatch);
     }
 
     return matches;
@@ -60,6 +74,19 @@ public abstract class AbstractMatcher
     }
 
     return new Line(lineno, --relIndex);
+  }
+
+  /* Hook methods */
+  protected void onMatchEnd (Match match)
+  {
+	if (this.mMatcherEventsHandler != null)
+	  this.mMatcherEventsHandler.onMatchEnd(match);
+  }
+
+  protected void onMatchStart (String text, String pattern)
+  {
+	if (this.mMatcherEventsHandler != null)
+	  this.mMatcherEventsHandler.onMatchStart(text, pattern);
   }
 }
 
