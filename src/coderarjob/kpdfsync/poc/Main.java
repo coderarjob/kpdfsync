@@ -11,10 +11,15 @@ import coderarjob.kpdfsync.lib.clipparser.ParserResult.PageNumberType;
 import coderarjob.kpdfsync.lib.clipparser.AbstractParser;
 import coderarjob.kpdfsync.lib.clipparser.KindleParserV1;
 
-import coderarjob.kpdfsync.lib.annotator.AnnotatorInterface;
 import coderarjob.kpdfsync.lib.annotator.PdfAnnotatorV1;
+import coderarjob.kpdfsync.lib.annotator.AbstractAnnotator;
 
-public class Main implements ParserEvents
+import coderarjob.kpdfsync.lib.pm.AbstractMatcher;
+import coderarjob.kpdfsync.lib.pm.Match;
+import coderarjob.kpdfsync.lib.pm.BasicMatcher;
+import coderarjob.kpdfsync.lib.pm.PatternMatcherEvents;
+
+public class Main implements ParserEvents, PatternMatcherEvents
 {
   /* ParserEvents Methods */
   public void onError (String fileName, long offset, String error, ParserResult result)
@@ -22,6 +27,16 @@ public class Main implements ParserEvents
     System.out.println (error);
   }
   public void onSuccess (String fileName, long offset, ParserResult result) { }
+
+  /* PatternMatcherEvents Methods */
+  public void onMatchStart (String text, String pattern)
+  { }
+
+  public void onMatchEnd (Match result)
+  {
+	if (result.matchPercent() > 80.0)
+	  System.out.println (String.format("Match %f", result.matchPercent()));
+  }
 
   /* Class methods */
   public static void main(String[] args) throws Exception
@@ -38,8 +53,10 @@ public class Main implements ParserEvents
 
     System.out.println ("---------------------------------");
 
+	AbstractMatcher matcher = new BasicMatcher();
+	matcher.setPatternMatcherEventsHandler(new Main());
 
-    AnnotatorInterface ann = new PdfAnnotatorV1 ("test-files/progit.pdf", 6);
+    AbstractAnnotator ann = new PdfAnnotatorV1 (matcher, "test-files/progit.pdf", 6);
     ann.open ();
 
     String bookTitle = titles.get(3);
