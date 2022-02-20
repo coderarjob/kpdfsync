@@ -154,6 +154,8 @@ public class MainFrame extends javax.swing.JFrame
 
   private void exitButtonActionPerformed(ActionEvent evt)
   {
+    // TODO: Possibly add confirmation before closing.
+    System.exit (0);
   }
 
   /* Other private class methods*/
