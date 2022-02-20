@@ -35,7 +35,7 @@ public abstract class AbstractMatcher
       Line firstLine = remapLine (res.beginFrom().index(), text);
       Line endLine = remapLine (res.endAt().index(), text);
 
-      Match thisMatch = new Match(res.matchCount(), res.totalCount(), firstLine, endLine);
+      Match thisMatch = new Match(res.matchCount(), res.totalCount(), firstLine, endLine, pattern);
       onMatchEnd (thisMatch);
 
       matches.add(thisMatch);

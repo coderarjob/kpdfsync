@@ -17,6 +17,6 @@ public class BasicMatcher extends AbstractMatcher
 
     Line begin = new Line(1, lineOffset);
     Line end = new Line(1, lineOffset + i - 1);
-    return new Match(mc, i, begin, end);
+    return new Match(mc, i, begin, end, pattern);
   }
 }
