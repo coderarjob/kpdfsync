@@ -11,12 +11,10 @@
  */
 package coderarjob.kpdfsync.lib.clipparser;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import coderarjob.kpdfsync.lib.clipparser.ParserResult.SupportedFields;
-import coderarjob.kpdfsync.lib.clipparser.AbstractParser.ParsingErrors;
 
 public class KindleParserV1 extends AbstractParser
 {
@@ -26,14 +24,19 @@ public class KindleParserV1 extends AbstractParser
      */
     protected boolean mIsInvalidState;
 
+    public KindleParserV1 ()
+    {
+      /* No clippings file is provided. Need to call openClippingsFile later on. */
+      super ();
+    }
+
     public KindleParserV1 (String fileName) throws FileNotFoundException, IOException
     {
+        /* Clippings file is opened and onClippingsFileOpen hook method is called. */
         super (fileName);
-        mIsInvalidState = false;
     }
 
     /* Implementing abstract methods from AbstractParser*/
-
     public String getParserVersion ()
     {
         return "1.0";
@@ -112,6 +115,15 @@ public class KindleParserV1 extends AbstractParser
       }
 
       return err;
+    }
+
+    protected void onClippingsFileOpen (String fileName)
+    {
+      /* New file was opened. So not in Invalid state anymore */
+      mIsInvalidState = false;
+
+      /* Call base class method */
+      super.onClippingsFileOpen (fileName);
     }
 
     protected void onParsingError(String error, ParserResult result) throws Exception

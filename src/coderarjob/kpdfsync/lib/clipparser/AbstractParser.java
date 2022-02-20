@@ -29,10 +29,10 @@ public abstract class AbstractParser
   public abstract String[]      getSupportedKindleVersions();
 
   /* Protected fields */
-  protected final String           mFileName;
-  protected final RandomAccessFile mFile;
-  protected final Charset          mCharset;
-  protected       ParserEvents     mParserEvents;
+  protected String           mFileName;
+  protected RandomAccessFile mFile;
+  protected Charset          mCharset;
+  protected ParserEvents     mParserEvents;
 
   /* Private fields */
   private long   mLastFilePointer;
@@ -46,8 +46,40 @@ public abstract class AbstractParser
   public    ParserEvents getParserEvents()                    { return this.mParserEvents;  }
   public    void         setParserEvents (ParserEvents value) { this.mParserEvents = value; }
 
+  /* Hook methods */
+  protected void onClippingsFileOpen (String fileName) { }
+
+  protected void onParsingStart() throws Exception { }
+
+  protected void onParsingSuccess (ParserResult result) throws Exception
+  {
+    ParserEvents e = this.mParserEvents;
+    if (e == null) return;
+
+    e.onSuccess (this.mFileName, this.mFile.getFilePointer(), result);
+  }
+  protected void onParsingError(String error, ParserResult result) throws Exception
+  {
+    ParserEvents e = this.mParserEvents;
+    if (e == null) return;
+
+    e.onError (this.mFileName, this.mFile.getFilePointer(), error, result);
+  }
+
   /* Contrtructor and public methods */
+  public AbstractParser ()
+  {
+    /* Default values*/
+    this.mParserEvents = null;
+  }
+
   public AbstractParser (String fileName) throws FileNotFoundException, IOException
+  {
+    this ();
+    openClippingsFile (fileName);
+  }
+
+  public void openClippingsFile (String fileName) throws FileNotFoundException, IOException
   {
     mFileName = fileName;
 
@@ -61,9 +93,11 @@ public abstract class AbstractParser
     mFile = new RandomAccessFile (fileName, "r");
 
     /* Default values*/
-    this.mParserEvents = null;
     this.mLastLineRead = null;
     this.mLastFilePointer = -1;
+
+    /* Call hook method */
+    onClippingsFileOpen (fileName);
   }
 
   protected Charset getCharsetFromByteOrderMarkType (ByteOrderMarkTypes type)
@@ -96,6 +130,7 @@ public abstract class AbstractParser
 
     try {
       onParsingStart();
+
       for (int i = 0; parseError == ParsingErrors.NO_ERROR; i++)
         parseError = parseLine(i, result);
 
@@ -140,24 +175,5 @@ public abstract class AbstractParser
 
     this.mLastLineRead = new String (line.getBytes("ISO-8859-1"), mCharset);
     return this.mLastLineRead;
-  }
-
-  /* Hook methods */
-  protected void onParsingStart() throws Exception { }
-
-  protected void onParsingSuccess (ParserResult result) throws Exception
-  {
-    ParserEvents e = this.mParserEvents;
-    if (e == null) return;
-
-    e.onSuccess (this.mFileName, this.mFile.getFilePointer(), result);
-  }
-
-  protected void onParsingError(String error, ParserResult result) throws Exception
-  {
-    ParserEvents e = this.mParserEvents;
-    if (e == null) return;
-
-    e.onError (this.mFileName, this.mFile.getFilePointer(), error, result);
   }
 }
