@@ -41,7 +41,10 @@ public class Main implements ParserEvents, PatternMatcherEvents
   /* Class methods */
   public static void main(String[] args) throws Exception
   {
-    AbstractParser parser = new KindleParserV1 ("test-files/My Clippings.txt");
+    MainFrame mainFrame = new MainFrame();
+    mainFrame.setVisible (true);
+
+    /*AbstractParser parser = new KindleParserV1 ("test-files/My Clippings.txt");
     parser.setParserEvents (new Main());
 
     KindleClippingsFile file = new KindleClippingsFile(parser);
@@ -71,15 +74,12 @@ public class Main implements ParserEvents, PatternMatcherEvents
       if (entry.pageNumberType() != PageNumberType.PAGE_NUMBER)
         continue;
 
-      /*if (entry.pageOrLocationNumber() != 53)
-        continue;*/
-
       //displayParserResult (entry);
       System.out.print ("Highlighting page: " + entry.pageOrLocationNumber() + " ");
       ann.highlight (entry.pageOrLocationNumber(), entry.text(), "Test highlight");
     }
 
-    ann.save ("output.pdf");
+    ann.save ("output.pdf");*/
 
   }
 
