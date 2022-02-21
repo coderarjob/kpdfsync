@@ -102,7 +102,7 @@ public class PdfAnnotatorV1 extends AbstractAnnotator
 
     for (Match m : matches)
     {
-      if (m.matchPercent() < 80.0) continue;
+      if (m.matchPercent() < 70.0) continue;
 
       Rectangle2D highlightrect;
 
