@@ -162,7 +162,7 @@ public class KindleParserV1 extends AbstractParser
         if (isValid == false)
             return ParsingErrors.PARSING_ERROR;
 
-        result.setFieldValue (SupportedFields.TITLE, linestr);
+        result.setFieldValue (SupportedFields.TITLE, linestr.trim());
         result.setFieldValue (SupportedFields.FILE_OFFSET, String.valueOf(this.lastFilePointer()));
         return ParsingErrors.NO_ERROR;
     }
