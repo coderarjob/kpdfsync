@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 import coderarjob.kpdfsync.lib.clipparser.*;
@@ -24,6 +25,11 @@ public class MainFrame extends javax.swing.JFrame
   private enum ApplicationStatus
   {
     NOT_STARTED, CLIPPINGS_FILE_SELECTED, PDF_SELECTED
+  }
+
+  private enum StatusTypes
+  {
+    PARSER_ERROR, INPUT_ERROR, MATCH_FOUND, MATCH_NOT_FOUND, OTHER
   }
 
   /* Private fields */
@@ -48,23 +54,14 @@ public class MainFrame extends javax.swing.JFrame
   /* Kindle Parser event handler*/
   private void parserErrorHander (String fileName, long offset, String error, ParserResult result)
   {
-    statusListModel.addElement (String.format("Parser error: '%s' at %d", error, offset));
+    addStatusLine (StatusTypes.PARSER_ERROR, "'%s' at %d", error, offset);
   }
 
   /* Matcher event handler */
   private void matchCompletedEventHandler (Match match)
   {
-    if (match.matchPercent() > 80.0f)
-    {
-      String pattern = match.pattern();
-      String shortPattern = pattern.substring (0
-                                        , (pattern.length() > 30) ? 30 : pattern.length() - 1);
-
-      statusListModel.addElement (String.format ("%s... %.0f%% matched on page %d."
-                                                , shortPattern
-                                                , match.matchPercent()
-                                                , match.beginFrom().lineNumber()));
-    }
+    if (match.matchPercent() > 70.0f)
+      addStatusLine (StatusTypes.MATCH_FOUND, match);
   }
 
   /* Button and other UI event handlers*/
@@ -131,13 +128,22 @@ public class MainFrame extends javax.swing.JFrame
       ArrayList<ParserResult> entries = Collections.list (mClippingsFile.getBookAnnotations (bookTitle));
       for (ParserResult entry : entries)
       {
+        System.out.println ("Here");
         if (entry.annotationType() != AnnotationType.HIGHLIGHT)
           continue;
 
         if (entry.pageNumberType() != PageNumberType.PAGE_NUMBER)
           continue;
 
-        ann.highlight (entry.pageOrLocationNumber(), entry.text(), "Test highlight");
+        System.out.println (String.format("Page: %d for '%s'"
+                    , entry.pageOrLocationNumber()
+                    , entry.text()));
+
+        boolean okay;
+        okay = ann.highlight (entry.pageOrLocationNumber(), entry.text(), "Test highlight");
+        if (!okay) {
+          addStatusLine (StatusTypes.MATCH_NOT_FOUND, entry.text());
+        }
 
         // Save pdf to a new file.
         ann.save (destinationPdfFileName);
@@ -176,7 +182,11 @@ public class MainFrame extends javax.swing.JFrame
     mMatcher.setPatternMatcherEventsHandler(new PatternMatcherEvents ()
         {
           public void onMatchStart (String text, String pattern)
-          { }
+          {
+            System.out.println (text);
+            System.out.println ("-----------------");
+            System.out.println (pattern);
+          }
           public void onMatchEnd (Match result)
           {
             matchCompletedEventHandler (result);
@@ -189,6 +199,43 @@ public class MainFrame extends javax.swing.JFrame
       System.err.println (ex.getMessage());
       for (StackTraceElement s: ex.getStackTrace())
         System.err.println (s.toString());
+  }
+
+  private void addStatusLine (StatusTypes type, Object... values)
+  {
+    String newEntryString;
+    String fmt;
+
+    switch (type)
+    {
+      case MATCH_FOUND:
+        fmt = "%.30s... %.0f%% matched on line %d.";
+        Match match = (Match)values[0];
+        newEntryString = String.format (fmt
+                                        , match.pattern()
+                                        , match.matchPercent()
+                                        , match.beginFrom().lineNumber());
+        break;
+      case MATCH_NOT_FOUND:
+        fmt = "%.30s... not found.";
+        String pattern = (String)values[0];
+        newEntryString = String.format (fmt, pattern);
+        break;
+      case INPUT_ERROR:
+        fmt = (String)values[0];
+        values = Arrays.copyOfRange (values, 1, values.length);
+        newEntryString = String.format ("Input Error : " + fmt, values);
+        break;
+      case PARSER_ERROR:
+        fmt = (String)values[0];
+        values = Arrays.copyOfRange (values, 1, values.length);
+        newEntryString = String.format ("Parser Error : " + fmt, values);
+        break;
+      default:
+        fmt = (String)values[0];
+        newEntryString = String.format (fmt, values);
+    }
+    statusListModel.addElement (newEntryString);
   }
 
   private void setStatus (ApplicationStatus status)
