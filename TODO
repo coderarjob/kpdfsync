@@ -9,7 +9,7 @@ Kpdfsync                                                                        
 [X] Use PDFClown library to highlight the text which matches the most
     with the highlighted text from My Clippings file.
 
-[ ] Parse the 'My Clippings.txt' file.
+[X] Parse the 'My Clippings.txt' file.
 
 # BUGS:
 [ ] The string matching algo is too simple, and gives wrong match 
@@ -39,3 +39,8 @@ Kpdfsync                                                                        
     Highlighting  = 12 67        (Expected, Much more accepatble 
                                   highlighting)
 
+[ ] For some PDF files, org.pdfclown.tools.TextExtractor.extract() is returning null.
+    This is seen with the Concrete Mathematics original PDF file.
+
+[ ] Highlight is not visible on the output PDF file. This was seen on the Concrete Mathematics
+    cropped PDF file.
