@@ -7,7 +7,7 @@ public abstract class AbstractAnnotator
   /* Abstract methods */
   public abstract String getAnnotatorVersion ();
   public abstract void open () throws Exception;
-  public abstract void close (String fileName) throws Exception;
+  public abstract void close () throws Exception;
   public abstract boolean highlight (int pageOrLocationNumber, String toHighlight, String note) throws Exception;
   public abstract void save (String fileName) throws Exception;
 

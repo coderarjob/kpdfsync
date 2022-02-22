@@ -74,7 +74,7 @@ public class PdfAnnotatorV1 extends AbstractAnnotator
     this.mFile.save(fileName, SerializationModeEnum.Standard);
   }
 
-  public void close (String fileName) throws Exception
+  public void close () throws Exception
   {
     this.mIsOpen = false;
     this.mFile.close();
