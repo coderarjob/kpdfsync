@@ -46,7 +46,6 @@ public class MainFrame extends javax.swing.JFrame
     statusListModel = new DefaultListModel<> ();
 
 	initComponents();
-    initParser ();
 
     setStatus (ApplicationStatus.NOT_STARTED);
   }
@@ -75,7 +74,7 @@ public class MainFrame extends javax.swing.JFrame
       clippingsFileTextBox.setText (file.getAbsolutePath());
 
       try {
-        mParser.openClippingsFile (file.getAbsolutePath());
+        createNewParser (file.getAbsolutePath());
         mClippingsFile = new KindleClippingsFile(mParser);
         ArrayList<String> titles = Collections.list(mClippingsFile.getBookTitles());
 
@@ -128,7 +127,6 @@ public class MainFrame extends javax.swing.JFrame
       ArrayList<ParserResult> entries = Collections.list (mClippingsFile.getBookAnnotations (bookTitle));
       for (ParserResult entry : entries)
       {
-        System.out.println ("Here");
         if (entry.annotationType() != AnnotationType.HIGHLIGHT)
           continue;
 
@@ -165,9 +163,9 @@ public class MainFrame extends javax.swing.JFrame
   }
 
   /* Other private class methods*/
-  private void initParser ()
+  private void createNewParser (String fileName) throws FileNotFoundException, IOException
   {
-    mParser = new KindleParserV1 ();
+    mParser = new KindleParserV1 (fileName);
     mParser.setParserEvents (new ParserEvents ()
         {
           public void onError (String fileName, long offset, String error, ParserResult result)
@@ -197,8 +195,7 @@ public class MainFrame extends javax.swing.JFrame
   private void printExceptionStackTrace (Exception ex)
   {
       System.err.println (ex.getMessage());
-      for (StackTraceElement s: ex.getStackTrace())
-        System.err.println (s.toString());
+      ex.printStackTrace();
   }
 
   private void addStatusLine (StatusTypes type, Object... values)
