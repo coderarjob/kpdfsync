@@ -11,6 +11,12 @@ Kpdfsync                                                                        
 
 [X] Parse the 'My Clippings.txt' file.
 
+[-] Gui POC
+
+[ ] Finalize GUI
+
+[ ] Optimization and cleanup objects.
+
 # BUGS:
 [ ] The string matching algo is too simple, and gives wrong match 
     percentage, if the strings being compared differ in the number 
