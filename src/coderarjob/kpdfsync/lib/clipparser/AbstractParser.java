@@ -47,8 +47,6 @@ public abstract class AbstractParser
   public    void         setParserEvents (ParserEvents value) { this.mParserEvents = value; }
 
   /* Hook methods */
-  protected void onClippingsFileOpen (String fileName) { }
-
   protected void onParsingStart() throws Exception { }
 
   protected void onParsingSuccess (ParserResult result) throws Exception
@@ -67,19 +65,7 @@ public abstract class AbstractParser
   }
 
   /* Contrtructor and public methods */
-  public AbstractParser ()
-  {
-    /* Default values*/
-    this.mParserEvents = null;
-  }
-
   public AbstractParser (String fileName) throws FileNotFoundException, IOException
-  {
-    this ();
-    openClippingsFile (fileName);
-  }
-
-  public void openClippingsFile (String fileName) throws FileNotFoundException, IOException
   {
     mFileName = fileName;
 
@@ -95,9 +81,7 @@ public abstract class AbstractParser
     /* Default values*/
     this.mLastLineRead = null;
     this.mLastFilePointer = -1;
-
-    /* Call hook method */
-    onClippingsFileOpen (fileName);
+    this.mParserEvents = null;
   }
 
   protected Charset getCharsetFromByteOrderMarkType (ByteOrderMarkTypes type)
