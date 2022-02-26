@@ -32,7 +32,7 @@ public class PdfAnnotatorV1 extends AbstractAnnotator
 
   public PdfAnnotatorV1 (AbstractMatcher matcher, String sourcePdfFileName, int skipNumberOfPages)
   {
-	super (matcher);
+	super (matcher, 70);
     this.mSourcePdfFileName = sourcePdfFileName;
     this.mSkipNumberOfPages = skipNumberOfPages;
     this.mIsOpen = false;
@@ -102,7 +102,7 @@ public class PdfAnnotatorV1 extends AbstractAnnotator
 
     for (Match m : matches)
     {
-      if (m.matchPercent() < 70.0) continue;
+      if (m.matchPercent() < getMatchThreshold()) continue;
 
       Rectangle2D highlightrect;
 

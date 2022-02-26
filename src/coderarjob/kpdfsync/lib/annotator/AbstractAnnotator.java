@@ -13,10 +13,24 @@ public abstract class AbstractAnnotator
 
   /* Protected field */
   protected final AbstractMatcher mAbstractMatcher;
+  protected float mMatchThreshold;
 
   /* Constructor */
-  public AbstractAnnotator (AbstractMatcher matcher)
+  public AbstractAnnotator (AbstractMatcher matcher, float defaultMatchThreshold)
   {
 	this.mAbstractMatcher = matcher;
+    this.mMatchThreshold = defaultMatchThreshold;
   }
+
+  /* Instance methods */
+  public float getMatchThreshold ()
+  {
+    return this.mMatchThreshold;
+  }
+
+  public void setMatchThreshold (float v)
+  {
+    this.mMatchThreshold = v;
+  }
+
 }
