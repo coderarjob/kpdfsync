@@ -1,3 +1,37 @@
-# kpdfsync
+## About kpdfsync
 
-Creates annotation and highlights in PDF files from the Kindle clippings file.
+If you use Kindle to read PDF books or documents, you might have seen that the highlights or notes
+made on the Kindle are not saved on the PDF file itself. This means, if you take the file and
+read on another device, you will not see those highlights and notes make on the Kindle.
+
+This software tries to provide a solution. The basis on which this solution stands is the
+Clippings.txt file on your Kindle.
+
+This is the file, where Kindle saves the page numbers of all the highlights and notes done on the
+Kindle device.
+
+Currently it is in development, so not all the features work or even present. Here is the rough
+roadmap.
+
+## Roadmap
+
+[ ] Milestone 1
+  [X] Parsing the Clippings.txt file
+  [X] Search for the highlighted text in a page of the PDF file.
+  [X] Annotate highlight and notes on the PDF file.
+  [X] Graphical User Interface testing.
+  [ ] Comments to notes mapping. This is required, because the clippings text file does not provide
+  information which can used to determine which comments are related to which note on a single
+  page.
+  [ ] Debug loggings
+
+[ ] Milestone 2
+  [ ] Fine tune the rough edges in the supporting library.
+  [ ] Memory/Resource optimization.
+  [ ] Finalizing and optimizing the Graphical User Interface.
+
+## 3rd-party License
+
+* PDF Clown library is used to read and highlight on PDF files. PDF Clown library is covered under
+LGPL (GNU Lesser General Public License).
+More information and source code can be found here [http://www.pdfclown.org](http://www.pdfclown.org)
