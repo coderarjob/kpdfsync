@@ -32,4 +32,11 @@ javac -Xlint -d "$BIN_DIR/" src/coderarjob/kpdfsync/poc/*.java || exit
 ctags --recurse ./src || exit
 
 # Run
+GTKLOOK="com.sun.java.swing.plaf.gtk.GTKLookAndFeel"
+MOTIFLOOK="com.sun.java.swing.plaf.motif.MotifLookAndFeel"
+METALLOOK="javax.swing.plaf.metal.MetalLookAndFeel"
+WINLOOK="com.sun.java.swing.plaf.windows.WindowsLookAndFeel"
+NIMBUSLLOOK="com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"
+LOOK=$METALLOOK
+#java -Dswing.defaultlaf=$LOOK \
 java coderarjob.kpdfsync.poc.Main
