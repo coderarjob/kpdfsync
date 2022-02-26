@@ -23,18 +23,24 @@ public class MainFrame extends javax.swing.JFrame
 {
   private enum ApplicationStatus
   {
-    NOT_STARTED, CLIPPINGS_FILE_SELECTED, PDF_SELECTED
+    NOT_STARTED,
+    CLIPPINGS_FILE_PARSE_STARTED, CLIPPINGS_FILE_PARSE_COMPLETED, CLIPPINGS_FILE_PARSE_FAILED,
+    PDF_SELECTED,
+    HIGHLIGHT_STARTED, HIGHLIGHT_COMPLETED, HIGHLIGHT_FAILED
   }
 
   private enum StatusTypes
   {
-    PARSER_ERROR, INPUT_ERROR, MATCH_FOUND, MATCH_NOT_FOUND, OTHER
+    PARSER_ERROR, INPUT_ERROR, MATCH_FOUND, MATCH_NOT_FOUND, OTHER, ERROR, INFORMATION
   }
 
   /* Private fields */
   AbstractParser mParser;
   KindleClippingsFile mClippingsFile;
+  AbstractAnnotator mAnnotator;
   AbstractMatcher mMatcher;
+
+  Thread highlightThread, parseClippingsThread;
 
   // Other Swing variable declarations
   DefaultListModel<String> statusListModel;
@@ -43,9 +49,7 @@ public class MainFrame extends javax.swing.JFrame
   public MainFrame()
   {
     statusListModel = new DefaultListModel<> ();
-
 	initComponents();
-
     setStatus (ApplicationStatus.NOT_STARTED);
   }
 
@@ -58,7 +62,7 @@ public class MainFrame extends javax.swing.JFrame
   /* Matcher event handler */
   private void matchCompletedEventHandler (Match match)
   {
-    if (match.matchPercent() > 70.0f)
+    if (match.matchPercent() > mAnnotator.getMatchThreshold())
       addStatusLine (StatusTypes.MATCH_FOUND, match);
   }
 
@@ -67,12 +71,12 @@ public class MainFrame extends javax.swing.JFrame
   {
     if (fileChooser.showOpenDialog (this) == JFileChooser.APPROVE_OPTION)
     {
-      setStatus (ApplicationStatus.NOT_STARTED);
+      setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_STARTED);
 
       File file= fileChooser.getSelectedFile ();
       clippingsFileTextBox.setText (file.getAbsolutePath());
 
-      Thread t = new Thread (new Runnable () {
+      parseClippingsThread = new Thread (new Runnable () {
         public void run () {
           try {
             addStatusLine (StatusTypes.OTHER, "Parsing %s ...", file.getName());
@@ -83,16 +87,21 @@ public class MainFrame extends javax.swing.JFrame
             for (String title : titles)
               updateUIBooksComboBox (title);
 
+            if (statusList.getModel().getSize() == 0)
+              throw new Exception ("Empty or invalid clippings file.");
+
+            addStatusLine (StatusTypes.OTHER, "Parsing complete");
+            setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_COMPLETED);
+
           } catch (Exception ex)
           {
+            addStatusLine (StatusTypes.OTHER, "Parsing failed: " + ex.getMessage());
+            setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_FAILED);
             printExceptionStackTrace (ex);
           }
-
-          addStatusLine (StatusTypes.OTHER, "Parsing complete");
-          setStatus (ApplicationStatus.CLIPPINGS_FILE_SELECTED);
         }
       });
-      t.start();
+      parseClippingsThread.start();
     }
   }
 
@@ -119,18 +128,22 @@ public class MainFrame extends javax.swing.JFrame
   {
     String bookTitle = (String)selectBookNameComboBox.getSelectedItem();
     String pdfFileName = selectPdfFileTextBox.getText();
-    int numberOfPagesToSkip = (Integer)(pdfSkipPagesSpinner.getValue());
+    int numberOfPagesToSkip = (Integer)pdfSkipPagesSpinner.getValue();
+    int matchThreshold = (Integer)matchThressholdSpinner.getValue();
 
     if (fileChooser.showSaveDialog (this) != JFileChooser.APPROVE_OPTION)
       return;
 
+
     String destinationPdfFileName = fileChooser.getSelectedFile().getAbsolutePath();
 
-    Thread t = new Thread (new Runnable () {
+    highlightThread = new Thread (new Runnable () {
       public void run() {
         try {
-          AbstractAnnotator ann = new PdfAnnotatorV1 (mMatcher, pdfFileName, numberOfPagesToSkip);
-          ann.open ();
+          setStatus (ApplicationStatus.HIGHLIGHT_STARTED);
+          mAnnotator = new PdfAnnotatorV1 (mMatcher, pdfFileName, numberOfPagesToSkip);
+          mAnnotator.setMatchThreshold (matchThreshold);
+          mAnnotator.open ();
 
           ArrayList<ParserResult> entries = Collections.list (mClippingsFile.getBookAnnotations (bookTitle));
           for (int i = 0; i < entries.size(); i++)
@@ -145,7 +158,7 @@ public class MainFrame extends javax.swing.JFrame
             //addStatusLine (StatusTypes.OTHER, "At page number %d.", entry.pageOrLocationNumber());
 
             boolean okay;
-            okay = ann.highlight (entry.pageOrLocationNumber(), entry.text(), "Test highlight");
+            okay = mAnnotator.highlight (entry.pageOrLocationNumber(), entry.text(), "Test highlight");
             if (!okay)
               addStatusLine (StatusTypes.MATCH_NOT_FOUND, entry.text());
 
@@ -154,14 +167,20 @@ public class MainFrame extends javax.swing.JFrame
           }
 
           // Save pdf to a new file.
-          ann.save (destinationPdfFileName);
+          addStatusLine (StatusTypes.OTHER, "Saving to file " + destinationPdfFileName);
+          mAnnotator.save (destinationPdfFileName);
+
+          addStatusLine (StatusTypes.OTHER, "Highlighting complete");
+          setStatus (ApplicationStatus.HIGHLIGHT_COMPLETED);
         } catch (Exception ex)
         {
+          addStatusLine (StatusTypes.OTHER, "Highlighting failed");
+          setStatus (ApplicationStatus.HIGHLIGHT_FAILED);
           printExceptionStackTrace (ex);
         }
       }
     });
-    t.start();
+    highlightThread.start();
   }
 
 
@@ -171,8 +190,24 @@ public class MainFrame extends javax.swing.JFrame
 
   private void exitButtonActionPerformed(ActionEvent evt)
   {
-    // TODO: Possibly add confirmation before closing.
-    System.exit (0);
+    String buttonText = exitButton.getText().toUpperCase ();
+    if (buttonText.equals ("EXIT"))
+    {
+      // TODO: Possibly add confirmation before closing.
+      System.exit (0);
+    }
+    else
+    {
+      if (highlightThread != null && highlightThread.isAlive ()) {
+        System.out.println ("highlight thread interrupted");
+        highlightThread.interrupt();
+      }
+
+      if (parseClippingsThread != null && parseClippingsThread.isAlive ()) {
+        System.out.println ("parser thread interrupted");
+        parseClippingsThread.interrupt();
+      }
+    }
   }
 
   /* Other private class methods*/
@@ -217,8 +252,14 @@ public class MainFrame extends javax.swing.JFrame
     SwingUtilities.invokeLater (r);
   }
 
+  int pvalue = 0;
   private void updateUIProgressBar (final int value)
   {
+    if (pvalue == value)
+      return;
+
+    pvalue = value;
+
     Runnable r = new Runnable () {
       public void run () {
         jProgressBar1.setValue (value);
@@ -239,9 +280,9 @@ public class MainFrame extends javax.swing.JFrame
         fmt = "%.30s... %.0f%% matched on line %d.";
         Match match = (Match)values[0];
         newEntryString = String.format (fmt
-            , match.pattern()
-            , match.matchPercent()
-            , match.beginFrom().lineNumber());
+                                        , match.pattern()
+                                        , match.matchPercent()
+                                        , match.beginFrom().lineNumber());
         break;
       case MATCH_NOT_FOUND:
         fmt = "%.30s... not found.";
@@ -286,31 +327,49 @@ public class MainFrame extends javax.swing.JFrame
       return;
     }
 
-    System.out.println (Thread.currentThread().getName());
-
-    selectBookNameComboBox.setEnabled (false);
+    // Always keep the text boxes disabled.
     selectPdfFileTextBox.setEnabled (false);
+    clippingsFileTextBox.setEnabled (false);
+
+    // Disable all controls first, then enable each based on status.
+    browseClippingsFileButton.setEnabled (false);
+    selectBookNameComboBox.setEnabled (false);
     browsePdfFileButton.setEnabled (false);
     updateMapButton.setEnabled (false);
     cancelMapButton.setEnabled (false);
     proceedButton.setEnabled (false);
     pdfSkipPagesSpinner.setEnabled (false);
+    matchThressholdSpinner.setEnabled (false);
+    exitButton.setText ("Exit");
 
     switch (status)
     {
       case NOT_STARTED:
         statusListModel.clear ();
         selectBookNameComboBox.removeAllItems ();
+        browseClippingsFileButton.setEnabled (true);
         break;
+      case HIGHLIGHT_COMPLETED: // intentional falling
+      case HIGHLIGHT_FAILED: // intentional falling
       case PDF_SELECTED:
         updateMapButton.setEnabled (true);
         cancelMapButton.setEnabled (true);
         proceedButton.setEnabled (true);
         pdfSkipPagesSpinner.setEnabled (true);
-      case CLIPPINGS_FILE_SELECTED:
+        matchThressholdSpinner.setEnabled (true);
+        // intentional falling
+      case CLIPPINGS_FILE_PARSE_COMPLETED:
         selectBookNameComboBox.setEnabled (true);
         selectPdfFileTextBox.setEnabled (true);
         browsePdfFileButton.setEnabled (true);
+        // intentional falling
+      case CLIPPINGS_FILE_PARSE_FAILED:
+        browseClippingsFileButton.setEnabled (true);
+        break;
+      case CLIPPINGS_FILE_PARSE_STARTED: // intentional falling
+      case HIGHLIGHT_STARTED:
+        jProgressBar1.setValue (0);
+        exitButton.setText ("Cancel");
         break;
     }
   }
@@ -357,6 +416,9 @@ public class MainFrame extends javax.swing.JFrame
     pdfSkipPagesSpinner = new javax.swing.JSpinner();
     updateMapButton = new javax.swing.JButton();
     cancelMapButton = new javax.swing.JButton();
+    matchThressholdLabel = new javax.swing.JLabel();
+    matchThressholdSpinner = new javax.swing.JSpinner();
+    percentLabel = new javax.swing.JLabel();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
     setTitle("mk-float-kpdfsync-gui");
@@ -495,6 +557,14 @@ public class MainFrame extends javax.swing.JFrame
       }
     });
 
+    matchThressholdLabel.setLabelFor(matchThressholdSpinner);
+    matchThressholdLabel.setText("Match acceptance thresshold:");
+
+    matchThressholdSpinner.setModel(new javax.swing.SpinnerNumberModel());
+
+    percentLabel.setLabelFor(pdfSkipPagesSpinner);
+    percentLabel.setText("%");
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
@@ -532,14 +602,20 @@ public class MainFrame extends javax.swing.JFrame
                     .addGroup(layout.createSequentialGroup()
                       .addComponent(selectHighlightLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
                       .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(selectNoteLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE))
+                    .addComponent(selectNoteLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE))
                   .addGap(190, 190, 190))
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                   .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(selectPdfFileTextBox)
                     .addGroup(layout.createSequentialGroup()
                       .addComponent(pdfSkipPagesSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                      .addGap(0, 0, Short.MAX_VALUE)))
+                      .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                      .addComponent(matchThressholdLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
+                      .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                      .addComponent(matchThressholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                      .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                      .addComponent(percentLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                      .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                   .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                   .addComponent(browsePdfFileButton))
                 .addComponent(highlightsScrollPane)
@@ -567,7 +643,10 @@ public class MainFrame extends javax.swing.JFrame
           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
             .addComponent(pdfSkipPagesLabel)
-            .addComponent(pdfSkipPagesSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addComponent(pdfSkipPagesSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(matchThressholdLabel)
+            .addComponent(matchThressholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(percentLabel))
           .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
               .addComponent(pageNumbersLabel)
@@ -613,6 +692,8 @@ public class MainFrame extends javax.swing.JFrame
   private javax.swing.JScrollPane highlightsScrollPane;
   private javax.swing.JProgressBar jProgressBar1;
   private javax.swing.JLabel logoLabel;
+  private javax.swing.JLabel matchThressholdLabel;
+  private javax.swing.JSpinner matchThressholdSpinner;
   private javax.swing.JList<String> notesList;
   private javax.swing.JScrollPane notesScrollPane;
   private javax.swing.JButton optionsButton;
@@ -623,6 +704,7 @@ public class MainFrame extends javax.swing.JFrame
   private javax.swing.JScrollPane pageNumbersScrollPane1;
   private javax.swing.JLabel pdfSkipPagesLabel;
   private javax.swing.JSpinner pdfSkipPagesSpinner;
+  private javax.swing.JLabel percentLabel;
   private javax.swing.JButton proceedButton;
   private javax.swing.JPanel proceedPanel;
   private javax.swing.JComboBox<String> selectBookNameComboBox;

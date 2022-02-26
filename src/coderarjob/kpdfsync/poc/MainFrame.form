@@ -67,7 +67,7 @@
                                       <Component id="selectHighlightLabel" min="-2" pref="239" max="-2" attributes="0"/>
                                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                                   </Group>
-                                  <Component id="selectNoteLabel" pref="500" max="32767" attributes="0"/>
+                                  <Component id="selectNoteLabel" pref="518" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace min="-2" pref="190" max="-2" attributes="0"/>
                           </Group>
@@ -76,7 +76,13 @@
                                   <Component id="selectPdfFileTextBox" max="32767" attributes="0"/>
                                   <Group type="102" attributes="0">
                                       <Component id="pdfSkipPagesSpinner" min="-2" pref="63" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="matchThressholdLabel" min="-2" pref="183" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="matchThressholdSpinner" min="-2" pref="63" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="percentLabel" min="-2" pref="18" max="-2" attributes="0"/>
+                                      <EmptySpace max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
@@ -116,6 +122,9 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="pdfSkipPagesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="pdfSkipPagesSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="matchThressholdLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="matchThressholdSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="percentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -463,6 +472,29 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelMapButtonActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="matchThressholdLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="matchThressholdSpinner"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="Match acceptance thresshold:"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JSpinner" name="matchThressholdSpinner">
+      <Properties>
+        <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
+          <SpinnerModel initial="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="percentLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="pdfSkipPagesSpinner"/>
+        </Property>
+        <Property name="text" type="java.lang.String" value="%"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>
