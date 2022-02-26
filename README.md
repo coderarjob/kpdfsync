@@ -15,20 +15,22 @@ roadmap.
 
 ## Roadmap
 
-[ ] Milestone 1
-  [X] Parsing the Clippings.txt file
-  [X] Search for the highlighted text in a page of the PDF file.
-  [X] Annotate highlight and notes on the PDF file.
-  [X] Graphical User Interface testing.
-  [ ] Comments to notes mapping. This is required, because the clippings text file does not provide
+- [X] Parsing the Clippings.txt file
+- [X] Search for the highlighted text in a page of the PDF file.
+- [X] Annotate highlight and notes on the PDF file.
+- [X] Graphical User Interface testing.
+- [ ] Comments to notes mapping. This is required, because the clippings text file does not provide
   information which can used to determine which comments are related to which note on a single
   page.
-  [ ] Debug loggings
+- [ ] Debug loggings
+- [ ] **Alpha Release**
 
-[ ] Milestone 2
-  [ ] Fine tune the rough edges in the supporting library.
-  [ ] Memory/Resource optimization.
-  [ ] Finalizing and optimizing the Graphical User Interface.
+----
+
+- [ ] Fine tune the rough edges in the supporting library.
+- [ ] Memory/Resource optimization.
+- [ ] Finalizing and optimizing the Graphical User Interface.
+- [ ] **Beta Release**
 
 ## 3rd-party License
 
