@@ -82,7 +82,7 @@ public class PdfAnnotatorV1 extends AbstractAnnotator
 
   /* Private methods */
   private boolean doHighlight (Page page, String pattern, List<ITextString> linelist, String note)
-      throws CloneNotSupportedException
+      throws CloneNotSupportedException, InterruptedException
   {
     /* 1. Concatinate all the lines to one place. */
     StringBuilder pagetext = new StringBuilder();
@@ -102,6 +102,8 @@ public class PdfAnnotatorV1 extends AbstractAnnotator
 
     for (Match m : matches)
     {
+      if (Thread.interrupted() == true) throw new InterruptedException();
+
       if (m.matchPercent() < getMatchThreshold()) continue;
 
       Rectangle2D highlightrect;

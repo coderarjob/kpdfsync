@@ -116,10 +116,16 @@ public abstract class AbstractParser
       onParsingStart();
 
       for (int i = 0; parseError == ParsingErrors.NO_ERROR; i++)
+      {
+        if (Thread.interrupted() == true)
+          throw new InterruptedException();
         parseError = parseLine(i, result);
+      }
 
-    } catch (Exception ex) {
-
+    } catch (InterruptedException ex) {
+      throw ex;
+    }
+    catch (Exception ex) {
       onParsingError(ex.getMessage(), result);
       throw ex;
     }

@@ -93,7 +93,12 @@ public class MainFrame extends javax.swing.JFrame
             addStatusLine (StatusTypes.OTHER, "Parsing complete");
             setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_COMPLETED);
 
-          } catch (Exception ex)
+          } catch (InterruptedException ex) {
+            addStatusLine (StatusTypes.OTHER, "Parsing canceled");
+            setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_FAILED);
+            printExceptionStackTrace (ex);
+          }
+          catch (Exception ex)
           {
             addStatusLine (StatusTypes.OTHER, "Parsing failed: " + ex.getMessage());
             setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_FAILED);
@@ -170,11 +175,15 @@ public class MainFrame extends javax.swing.JFrame
           addStatusLine (StatusTypes.OTHER, "Saving to file " + destinationPdfFileName);
           mAnnotator.save (destinationPdfFileName);
 
-          addStatusLine (StatusTypes.OTHER, "Highlighting complete");
+          addStatusLine (StatusTypes.OTHER, "Highlighting complete.");
           setStatus (ApplicationStatus.HIGHLIGHT_COMPLETED);
+        } catch (InterruptedException ex) {
+            addStatusLine (StatusTypes.OTHER, "Highlight canceled.");
+            setStatus (ApplicationStatus.HIGHLIGHT_FAILED);
+            printExceptionStackTrace (ex);
         } catch (Exception ex)
         {
-          addStatusLine (StatusTypes.OTHER, "Highlighting failed");
+          addStatusLine (StatusTypes.OTHER, "Highlighting failed.");
           setStatus (ApplicationStatus.HIGHLIGHT_FAILED);
           printExceptionStackTrace (ex);
         }
