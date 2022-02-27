@@ -50,3 +50,15 @@ Kpdfsync                                                                        
 
 [ ] Highlight is not visible on the output PDF file. This was seen on the Concrete Mathematics
     cropped PDF file.
+
+[ ] If there are too many highlights per page, then 'sometimes' there is a 'heap full' 
+    exception at 'new TextMarkup(page, note, MarkupTypeEnum.Highlight, highlights)' place.
+
+    Exception can be reproduced by:
+    1. Clippings file: My Clippings_8Feb22.txt
+    2. Book          : progit
+    3. Skip pages    : 6
+    4. Threshold     : 10
+    5. Begin highlighting.
+
+    The times, this exception occures, it occures around the 73% mark.
