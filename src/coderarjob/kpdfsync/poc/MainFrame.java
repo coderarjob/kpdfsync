@@ -1,7 +1,6 @@
 package coderarjob.kpdfsync.poc;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.*;
 
 import java.io.File;
@@ -14,10 +13,11 @@ import java.util.Collections;
 
 import coderarjob.kpdfsync.lib.clipparser.*;
 import coderarjob.kpdfsync.lib.clipparser.ParserResult.AnnotationType;
-import coderarjob.kpdfsync.lib.clipparser.ParserResult.PageNumberType;
 import coderarjob.kpdfsync.lib.*;
 import coderarjob.kpdfsync.lib.pm.*;
 import coderarjob.kpdfsync.lib.annotator.*;
+
+import javax.swing.JOptionPane;
 
 public class MainFrame extends javax.swing.JFrame
 {
@@ -35,20 +35,31 @@ public class MainFrame extends javax.swing.JFrame
   }
 
   /* Private fields */
-  AbstractParser mParser;
-  KindleClippingsFile mClippingsFile;
-  AbstractAnnotator mAnnotator;
-  AbstractMatcher mMatcher;
+  private AbstractParser mParser;
+  private KindleClippingsFile mClippingsFile;
+  private AbstractAnnotator mAnnotator;
+  private AbstractMatcher mMatcher;
 
-  Thread highlightThread, parseClippingsThread;
+  private Thread highlightThread, parseClippingsThread;
 
   // Other Swing variable declarations
-  DefaultListModel<String> statusListModel;
+  private DefaultListModel<String> statusListModel,
+                                   pageNumbersListModel,
+                                   highlightsListModel,
+                                   notesListModel,
+                                   highlightNotesMapListModel;
+
+  private HighlightNotePairManager mPairManager;
 
   /* Constructor and other methods*/
   public MainFrame()
   {
     statusListModel = new DefaultListModel<> ();
+    pageNumbersListModel = new DefaultListModel<> ();
+    highlightsListModel = new DefaultListModel<> ();
+    notesListModel = new DefaultListModel<> ();
+    highlightNotesMapListModel = new DefaultListModel<> ();
+
 	initComponents();
     setStatus (ApplicationStatus.NOT_STARTED);
   }
@@ -69,45 +80,45 @@ public class MainFrame extends javax.swing.JFrame
   /* Button and other UI event handlers*/
   private void browseClippingsFileButtonActionPerformed(ActionEvent evt)
   {
-    if (fileChooser.showOpenDialog (this) == JFileChooser.APPROVE_OPTION)
-    {
-      setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_STARTED);
+    if (fileChooser.showOpenDialog (this) != JFileChooser.APPROVE_OPTION)
+      return;
 
-      File file= fileChooser.getSelectedFile ();
-      clippingsFileTextBox.setText (file.getAbsolutePath());
+    setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_STARTED);
 
-      parseClippingsThread = new Thread (new Runnable () {
-        public void run () {
-          try {
-            addStatusLine (StatusTypes.OTHER, "Parsing %s ...", file.getName());
-            createNewParser (file.getAbsolutePath());
-            mClippingsFile = new KindleClippingsFile(mParser);
-            ArrayList<String> titles = Collections.list(mClippingsFile.getBookTitles());
+    File file= fileChooser.getSelectedFile ();
+    clippingsFileTextBox.setText (file.getAbsolutePath());
 
-            for (String title : titles)
-              updateUIBooksComboBox (title);
+    parseClippingsThread = new Thread (new Runnable () {
+      public void run () {
+        try {
+          addStatusLine (StatusTypes.OTHER, "Parsing %s ...", file.getName());
+          createNewParser (file.getAbsolutePath());
+          mClippingsFile = new KindleClippingsFile(mParser);
 
-            if (statusList.getModel().getSize() == 0)
-              throw new Exception ("Empty or invalid clippings file.");
+          ArrayList<String> titles = Collections.list(mClippingsFile.getBookTitles());
 
-            addStatusLine (StatusTypes.OTHER, "Parsing complete");
-            setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_COMPLETED);
+          for (String title : titles)
+            updateUIBooksComboBox (title);
 
-          } catch (InterruptedException ex) {
-            addStatusLine (StatusTypes.OTHER, "Parsing canceled");
-            setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_FAILED);
-            printExceptionStackTrace (ex);
-          }
-          catch (Exception ex)
-          {
-            addStatusLine (StatusTypes.OTHER, "Parsing failed: " + ex.getMessage());
-            setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_FAILED);
-            printExceptionStackTrace (ex);
-          }
+          if (statusList.getModel().getSize() == 0)
+            throw new Exception ("Empty or invalid clippings file.");
+
+          addStatusLine (StatusTypes.OTHER, "Parsing complete");
+          setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_COMPLETED);
+
+        } catch (InterruptedException ex) {
+          addStatusLine (StatusTypes.OTHER, "Parsing canceled");
+          setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_FAILED);
         }
-      });
-      parseClippingsThread.start();
-    }
+        catch (Exception ex)
+        {
+          addStatusLine (StatusTypes.OTHER, "Parsing failed: " + ex.getMessage());
+          setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_FAILED);
+          printExceptionStackTrace (ex);
+        }
+      }
+    });
+    parseClippingsThread.start();
   }
 
   private void browsePdfFileButtonActionPerformed(ActionEvent evt)
@@ -117,16 +128,58 @@ public class MainFrame extends javax.swing.JFrame
       File file= fileChooser.getSelectedFile ();
       selectPdfFileTextBox.setText (file.getAbsolutePath());
 
+      String bookTitle = (String)selectBookNameComboBox.getSelectedItem();
+      populateHighlightNotesListBoxes (bookTitle);
+
       setStatus (ApplicationStatus.PDF_SELECTED);
     }
   }
 
   private void updateMapButtonActionPerformed(ActionEvent evt)
   {
+    if (pageNumbersList.getSelectedValue() == null ||
+        highlightsList.getSelectedValue() == null  ||
+        notesList.getSelectedValue() == null)
+      return;
+
+    int pageNumber = Integer.valueOf (pageNumbersList.getSelectedValue());
+    System.out.println ("Page number selected is " + pageNumber);
+
+    String highlightText = highlightsList.getSelectedValue();
+    String noteText = notesList.getSelectedValue();
+
+    System.out.println ("Highlight: " + highlightText);
+    System.out.println ("Note: " + noteText);
+
+    PageResource r = mPairManager.getPageResourceByPageNumber (pageNumber);
+    try{
+      r.pair (highlightText, noteText);
+      updateHighlightNotesPairsList ();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+
   }
 
   private void cancelMapButtonActionPerformed(ActionEvent evt)
   {
+    if (highlightNotesMapList.getSelectedValue() == null ||
+        highlightsList.getSelectedValue() == null)
+      return;
+
+    int pageNumber = Integer.valueOf (highlightNotesMapList.getSelectedValue());
+    System.out.println ("Page number selected is " + pageNumber);
+
+    String highlightText = highlightsList.getSelectedValue();
+    System.out.println ("Highlight: " + highlightText);
+
+    PageResource r = mPairManager.getPageResourceByPageNumber (pageNumber);
+    try{
+      r.unpair (highlightText);
+      updateHighlightNotesPairsList ();
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
   }
 
   private void proceedButtonActionPerformed(ActionEvent evt)
@@ -139,7 +192,6 @@ public class MainFrame extends javax.swing.JFrame
     if (fileChooser.showSaveDialog (this) != JFileChooser.APPROVE_OPTION)
       return;
 
-
     String destinationPdfFileName = fileChooser.getSelectedFile().getAbsolutePath();
 
     highlightThread = new Thread (new Runnable () {
@@ -150,25 +202,35 @@ public class MainFrame extends javax.swing.JFrame
           mAnnotator.setMatchThreshold (matchThreshold);
           mAnnotator.open ();
 
-          ArrayList<ParserResult> entries = Collections.list (mClippingsFile.getBookAnnotations (bookTitle));
-          for (int i = 0; i < entries.size(); i++)
+          if (mPairManager.isComplete() == false)
           {
-            ParserResult entry = entries.get (i);
-            if (entry.annotationType() != AnnotationType.HIGHLIGHT)
-              continue;
+            int option =
+            JOptionPane.showOptionDialog (null,
+                                          "Not all notes have been paired. Continue?",
+                                          "Continue?",
+                                          JOptionPane.YES_NO_OPTION,
+                                          JOptionPane.QUESTION_MESSAGE,
+                                          null, null, null);
+            if (option == JOptionPane.NO_OPTION)
+                throw new Exception ("Cannot continue. Please ensure all the notes are mapped.");
+          }
 
-            if (entry.pageNumberType() != PageNumberType.PAGE_NUMBER)
-              continue;
+          int totalHighlightCount = mPairManager.count();
+          int highlightIndex = 0;
+          for (Integer pageNum : mPairManager.getPageNumbers())
+          {
+            PageResource res = mPairManager.getPageResourceByPageNumber (pageNum);
+            for (HighlightNotePair pair : res.getPairs())
+            {
+              boolean okay;
+              okay = mAnnotator.highlight (pageNum, pair.getHighlightText(), pair.getNoteText());
+              if (!okay)
+                addStatusLine (StatusTypes.MATCH_NOT_FOUND, pair.getHighlightText());
 
-            //addStatusLine (StatusTypes.OTHER, "At page number %d.", entry.pageOrLocationNumber());
-
-            boolean okay;
-            okay = mAnnotator.highlight (entry.pageOrLocationNumber(), entry.text(), "Test highlight");
-            if (!okay)
-              addStatusLine (StatusTypes.MATCH_NOT_FOUND, entry.text());
-
-            float progress = (float)i/(entries.size() - 1) * 100;
-            updateUIProgressBar ((int)progress);
+              float progress = (float) highlightIndex/(totalHighlightCount - 1) * 100;
+              updateUIProgressBar ((int)progress);
+              highlightIndex++;
+            }
           }
 
           // Save pdf to a new file.
@@ -178,9 +240,9 @@ public class MainFrame extends javax.swing.JFrame
           addStatusLine (StatusTypes.OTHER, "Highlighting complete.");
           setStatus (ApplicationStatus.HIGHLIGHT_COMPLETED);
         } catch (InterruptedException ex) {
-            addStatusLine (StatusTypes.OTHER, "Highlight canceled.");
-            setStatus (ApplicationStatus.HIGHLIGHT_FAILED);
-            printExceptionStackTrace (ex);
+          addStatusLine (StatusTypes.OTHER, "Highlight canceled.");
+          setStatus (ApplicationStatus.HIGHLIGHT_FAILED);
+          printExceptionStackTrace (ex);
         } catch (Exception ex)
         {
           addStatusLine (StatusTypes.OTHER, "Highlighting failed.");
@@ -192,6 +254,81 @@ public class MainFrame extends javax.swing.JFrame
     highlightThread.start();
   }
 
+  private void pageNumbersListValueChanged(javax.swing.event.ListSelectionEvent evt)
+  {
+    if (evt.getValueIsAdjusting() == true)
+      return;
+
+    if (pageNumbersList.getSelectedValue() == null)
+      return;
+
+    int pageNumber = Integer.valueOf (pageNumbersList.getSelectedValue());
+    System.out.println ("Page number selected is " + pageNumber);
+
+    // Clear highlights and notes
+    highlightsListModel.clear();
+    notesListModel.clear();
+
+    // Add highlights and notes
+    PageResource res = mPairManager.getPageResourceByPageNumber (pageNumber);
+    if (res == null)
+    {
+      System.out.println ("Not found");
+      return;
+    }
+
+    try {
+      for (HighlightNotePair pair : res.getPairs())
+        highlightsListModel.addElement (pair.getHighlightText());
+
+      for (String unpairedNote : res.getNoteList())
+        notesListModel.addElement (unpairedNote);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+  }
+
+  private void highlightsListValueChanged(javax.swing.event.ListSelectionEvent evt)
+  {
+  }
+
+  private void notesListValueChanged(javax.swing.event.ListSelectionEvent evt)
+  {
+  }
+
+  private void highlightNotesMapListValueChanged(javax.swing.event.ListSelectionEvent evt)
+  {
+    if (evt.getValueIsAdjusting() == true)
+      return;
+
+    if (highlightNotesMapList.getSelectedValue() == null)
+      return;
+
+    int pageNumber = Integer.valueOf (highlightNotesMapList.getSelectedValue());
+    System.out.println ("Page number selected is " + pageNumber);
+
+    // Clear highlights and notes
+    highlightsListModel.clear();
+    notesListModel.clear();
+
+    // Add highlights and notes
+    PageResource res = mPairManager.getPageResourceByPageNumber (pageNumber);
+    if (res == null)
+    {
+      System.out.println ("Not found");
+      return;
+    }
+
+    try {
+      for (HighlightNotePair pair : res.getPairs())
+      {
+        highlightsListModel.addElement (pair.getHighlightText());
+        notesListModel.addElement (pair.getNoteText());
+      }
+    } catch (Exception ex) {
+      ex.printStackTrace();
+    }
+  }
 
   private void optionsButtonActionPerformed(ActionEvent evt)
   {
@@ -220,6 +357,60 @@ public class MainFrame extends javax.swing.JFrame
   }
 
   /* Other private class methods*/
+  private void populateHighlightNotesListBoxes (String bookTitle)
+  {
+    try {
+      ArrayList<ParserResult> entries = Collections.list (mClippingsFile.getBookAnnotations (bookTitle));
+      mPairManager = new HighlightNotePairManager ();
+      for (ParserResult entry : entries)
+      {
+        if (entry.annotationType() != AnnotationType.HIGHLIGHT &&
+            entry.annotationType() != AnnotationType.NOTE)
+          continue;
+
+        if (entry.annotationType () == AnnotationType.HIGHLIGHT)
+          mPairManager.addHighlight (entry.pageOrLocationNumber(), entry.text());
+
+        if (entry.annotationType () == AnnotationType.NOTE)
+          mPairManager.addNote (entry.pageOrLocationNumber(), entry.text());
+      }
+    } catch (Exception ex) {
+      addStatusLine (StatusTypes.ERROR, "", ex.getMessage ());
+      printExceptionStackTrace (ex);
+    }
+
+    // Automatic pair for pages with only one highlight and note
+    try {
+      mPairManager.pairAutomatic();
+      updateHighlightNotesPairsList();
+    } catch (Exception ex) {
+      addStatusLine (StatusTypes.ERROR, "", ex.getMessage ());
+      printExceptionStackTrace (ex);
+    }
+  }
+
+  private void updateHighlightNotesPairsList ()
+  {
+    pageNumbersListModel.clear();
+    highlightNotesMapListModel.clear();
+    highlightsListModel.clear();
+    notesListModel.clear();
+
+    try {
+      for (int pageNumber : mPairManager.getPageNumbers())
+      {
+        PageResource r = mPairManager.getPageResourceByPageNumber (pageNumber);
+        if (r.isPairsComplete())
+          highlightNotesMapListModel.addElement (String.valueOf (pageNumber));
+        else
+          pageNumbersListModel.addElement (String.valueOf (pageNumber));
+      }
+    } catch (Exception ex) {
+      addStatusLine (StatusTypes.ERROR, "", ex.getMessage ());
+      printExceptionStackTrace (ex);
+    }
+  }
+
   private void createNewParser (String fileName) throws FileNotFoundException, IOException
   {
     mParser = new KindleParserV1 (fileName);
@@ -289,9 +480,9 @@ public class MainFrame extends javax.swing.JFrame
         fmt = "%.30s... %.0f%% matched on line %d.";
         Match match = (Match)values[0];
         newEntryString = String.format (fmt
-                                        , match.pattern()
-                                        , match.matchPercent()
-                                        , match.beginFrom().lineNumber());
+            , match.pattern()
+            , match.matchPercent()
+            , match.beginFrom().lineNumber());
         break;
       case MATCH_NOT_FOUND:
         fmt = "%.30s... not found.";
@@ -420,7 +611,7 @@ public class MainFrame extends javax.swing.JFrame
     statusList = new javax.swing.JList<>();
     statusLabel = new javax.swing.JLabel();
     pageNumbersScrollPane1 = new javax.swing.JScrollPane();
-    pageNumbersList1 = new javax.swing.JList<>();
+    highlightNotesMapList = new javax.swing.JList<>();
     pdfSkipPagesLabel = new javax.swing.JLabel();
     pdfSkipPagesSpinner = new javax.swing.JSpinner();
     updateMapButton = new javax.swing.JButton();
@@ -434,7 +625,7 @@ public class MainFrame extends javax.swing.JFrame
 
     headerPanel.setBackground(new java.awt.Color(25, 66, 97));
 
-    logoLabel.setIcon(new javax.swing.ImageIcon("/home/coder/NetBeansProjects/GuiHelloWorld/Resources/LogoHori.png")); // NOI18N
+    logoLabel.setIcon(new javax.swing.ImageIcon("src/coderarjob/kpdfsync/poc/Logo.png"));
     logoLabel.setToolTipText("");
 
     exitButton.setText("Exit");
@@ -499,16 +690,34 @@ public class MainFrame extends javax.swing.JFrame
       }
     });
 
+    pageNumbersList.setModel(pageNumbersListModel);
+    pageNumbersList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+      public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+        pageNumbersListValueChanged(evt);
+      }
+    });
     pageNumbersScrollPane.setViewportView(pageNumbersList);
 
     pageNumbersLabel.setText("Page numbers:");
 
     selectHighlightLabel.setText("Select a highlight from the selected page:");
 
+    highlightsList.setModel(highlightsListModel);
+    highlightsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+      public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+        highlightsListValueChanged(evt);
+      }
+    });
     highlightsScrollPane.setViewportView(highlightsList);
 
     selectNoteLabel.setText("Select the note from the selected page, that corresponds with the above highlight:");
 
+    notesList.setModel(notesListModel);
+    notesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+      public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+        notesListValueChanged(evt);
+      }
+    });
     notesScrollPane.setViewportView(notesList);
 
     proceedButton.setText("Proceed");
@@ -545,7 +754,13 @@ public class MainFrame extends javax.swing.JFrame
 
     statusLabel.setText("Status:");
 
-    pageNumbersScrollPane1.setViewportView(pageNumbersList1);
+    highlightNotesMapList.setModel(highlightNotesMapListModel);
+    highlightNotesMapList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+      public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+        highlightNotesMapListValueChanged(evt);
+      }
+    });
+    pageNumbersScrollPane1.setViewportView(highlightNotesMapList);
 
     pdfSkipPagesLabel.setLabelFor(pdfSkipPagesSpinner);
     pdfSkipPagesLabel.setText("Number of pages to skip:");
@@ -623,8 +838,7 @@ public class MainFrame extends javax.swing.JFrame
                       .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                       .addComponent(matchThressholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
                       .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                      .addComponent(percentLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
-                      .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                      .addComponent(percentLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)))
                   .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                   .addComponent(browsePdfFileButton))
                 .addComponent(highlightsScrollPane)
@@ -688,6 +902,7 @@ public class MainFrame extends javax.swing.JFrame
   }// </editor-fold>//GEN-END:initComponents
 
 
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton browseClippingsFileButton;
   private javax.swing.JButton browsePdfFileButton;
@@ -697,6 +912,7 @@ public class MainFrame extends javax.swing.JFrame
   private javax.swing.JButton exitButton;
   private javax.swing.JFileChooser fileChooser;
   private javax.swing.JPanel headerPanel;
+  private javax.swing.JList<String> highlightNotesMapList;
   private javax.swing.JList<String> highlightsList;
   private javax.swing.JScrollPane highlightsScrollPane;
   private javax.swing.JProgressBar jProgressBar1;
@@ -708,7 +924,6 @@ public class MainFrame extends javax.swing.JFrame
   private javax.swing.JButton optionsButton;
   private javax.swing.JLabel pageNumbersLabel;
   private javax.swing.JList<String> pageNumbersList;
-  private javax.swing.JList<String> pageNumbersList1;
   private javax.swing.JScrollPane pageNumbersScrollPane;
   private javax.swing.JScrollPane pageNumbersScrollPane1;
   private javax.swing.JLabel pdfSkipPagesLabel;
