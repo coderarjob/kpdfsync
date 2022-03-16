@@ -1,5 +1,7 @@
 ## About kpdfsync
 
+![Screenshot](/docs/images/screenshot.png)
+
 If you use Kindle to read PDF books or documents, you might have seen that the highlights or notes
 made on the Kindle are not saved on the PDF file itself. This means, if you take the file and
 read on another device, you will not see those highlights and notes make on the Kindle.
@@ -19,7 +21,7 @@ roadmap.
 - [X] Search for the highlighted text in a page of the PDF file.
 - [X] Annotate highlight and notes on the PDF file.
 - [X] Graphical User Interface testing.
-- [ ] Comments to notes mapping. This is required, because the clippings text file does not provide
+- [X] Comments to notes mapping. This is required, because the clippings text file does not provide
   information which can used to determine which comments are related to which note on a single
   page.
 - [ ] Debug loggings
