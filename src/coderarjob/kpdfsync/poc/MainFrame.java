@@ -43,11 +43,9 @@ public class MainFrame extends javax.swing.JFrame
   private Thread highlightThread, parseClippingsThread;
 
   // Other Swing variable declarations
-  private DefaultListModel<String> statusListModel,
-                                   pageNumbersListModel,
-                                   highlightsListModel,
-                                   notesListModel,
-                                   highlightNotesMapListModel;
+  private DefaultListModel<String> statusListModel;
+  private DefaultListModel<HighlightNotePair> highlightsListModel;
+  private DefaultListModel<PageResource> pageNumbersListModel;
 
   private HighlightNotePairManager mPairManager;
 
@@ -57,8 +55,6 @@ public class MainFrame extends javax.swing.JFrame
     statusListModel = new DefaultListModel<> ();
     pageNumbersListModel = new DefaultListModel<> ();
     highlightsListModel = new DefaultListModel<> ();
-    notesListModel = new DefaultListModel<> ();
-    highlightNotesMapListModel = new DefaultListModel<> ();
 
 	initComponents();
     setStatus (ApplicationStatus.NOT_STARTED);
@@ -137,7 +133,7 @@ public class MainFrame extends javax.swing.JFrame
 
   private void updateMapButtonActionPerformed(ActionEvent evt)
   {
-    if (pageNumbersList.getSelectedValue() == null ||
+    /*if (pageNumbersList.getSelectedValue() == null ||
         highlightsList.getSelectedValue() == null  ||
         notesList.getSelectedValue() == null)
       return;
@@ -158,12 +154,12 @@ public class MainFrame extends javax.swing.JFrame
     } catch (Exception ex) {
       ex.printStackTrace();
     }
-
+    */
   }
 
   private void cancelMapButtonActionPerformed(ActionEvent evt)
   {
-    if (highlightNotesMapList.getSelectedValue() == null ||
+    /*if (highlightNotesMapList.getSelectedValue() == null ||
         highlightsList.getSelectedValue() == null)
       return;
 
@@ -179,7 +175,7 @@ public class MainFrame extends javax.swing.JFrame
       updateHighlightNotesPairsList ();
     } catch (Exception ex) {
       ex.printStackTrace();
-    }
+    }*/
   }
 
   private void proceedButtonActionPerformed(ActionEvent evt)
@@ -262,27 +258,19 @@ public class MainFrame extends javax.swing.JFrame
     if (pageNumbersList.getSelectedValue() == null)
       return;
 
-    int pageNumber = Integer.valueOf (pageNumbersList.getSelectedValue());
+    PageResource res = (PageResource)pageNumbersList.getSelectedValue();
+    int pageNumber = res.getPageNumber();
     System.out.println ("Page number selected is " + pageNumber);
 
     // Clear highlights and notes
     highlightsListModel.clear();
-    notesListModel.clear();
 
     // Add highlights and notes
-    PageResource res = mPairManager.getPageResourceByPageNumber (pageNumber);
-    if (res == null)
-    {
-      System.out.println ("Not found");
-      return;
-    }
-
     try {
-      for (HighlightNotePair pair : res.getPairs())
-        highlightsListModel.addElement (pair.getHighlightText());
-
-      for (String unpairedNote : res.getNoteList())
-        notesListModel.addElement (unpairedNote);
+      for (HighlightNotePair pair : res.getPairs()) {
+        System.out.println ("Here");
+        highlightsListModel.addElement (pair);
+      }
     } catch (Exception ex) {
       ex.printStackTrace();
     }
@@ -290,44 +278,6 @@ public class MainFrame extends javax.swing.JFrame
 
   private void highlightsListValueChanged(javax.swing.event.ListSelectionEvent evt)
   {
-  }
-
-  private void notesListValueChanged(javax.swing.event.ListSelectionEvent evt)
-  {
-  }
-
-  private void highlightNotesMapListValueChanged(javax.swing.event.ListSelectionEvent evt)
-  {
-    if (evt.getValueIsAdjusting() == true)
-      return;
-
-    if (highlightNotesMapList.getSelectedValue() == null)
-      return;
-
-    int pageNumber = Integer.valueOf (highlightNotesMapList.getSelectedValue());
-    System.out.println ("Page number selected is " + pageNumber);
-
-    // Clear highlights and notes
-    highlightsListModel.clear();
-    notesListModel.clear();
-
-    // Add highlights and notes
-    PageResource res = mPairManager.getPageResourceByPageNumber (pageNumber);
-    if (res == null)
-    {
-      System.out.println ("Not found");
-      return;
-    }
-
-    try {
-      for (HighlightNotePair pair : res.getPairs())
-      {
-        highlightsListModel.addElement (pair.getHighlightText());
-        notesListModel.addElement (pair.getNoteText());
-      }
-    } catch (Exception ex) {
-      ex.printStackTrace();
-    }
   }
 
   private void optionsButtonActionPerformed(ActionEvent evt)
@@ -354,6 +304,19 @@ public class MainFrame extends javax.swing.JFrame
         parseClippingsThread.interrupt();
       }
     }
+  }
+
+  private void highlightsListMouseClicked(java.awt.event.MouseEvent evt)
+  {
+    JList list = (JList)evt.getSource();
+    HighlightNotePair pair = (HighlightNotePair) list.getSelectedValue();
+
+    if (pair == null) return;               /* Nothing is selected. */
+    if (evt.getClickCount() != 2) return;   /* Not double click. */
+
+    NoteAssociationDialog form = new NoteAssociationDialog(this, true);
+    form.setTitle ("mk-float-Associate/Disassociate note");
+    form.setVisible(true);
   }
 
   /* Other private class methods*/
@@ -392,18 +355,17 @@ public class MainFrame extends javax.swing.JFrame
   private void updateHighlightNotesPairsList ()
   {
     pageNumbersListModel.clear();
-    highlightNotesMapListModel.clear();
     highlightsListModel.clear();
-    notesListModel.clear();
 
     try {
       for (int pageNumber : mPairManager.getPageNumbers())
       {
         PageResource r = mPairManager.getPageResourceByPageNumber (pageNumber);
-        if (r.isPairsComplete())
+        pageNumbersListModel.addElement (r);
+        /*if (r.isPairsComplete())
           highlightNotesMapListModel.addElement (String.valueOf (pageNumber));
         else
-          pageNumbersListModel.addElement (String.valueOf (pageNumber));
+          pageNumbersListModel.addElement (String.valueOf (pageNumber));*/
       }
     } catch (Exception ex) {
       addStatusLine (StatusTypes.ERROR, "", ex.getMessage ());
@@ -535,8 +497,6 @@ public class MainFrame extends javax.swing.JFrame
     browseClippingsFileButton.setEnabled (false);
     selectBookNameComboBox.setEnabled (false);
     browsePdfFileButton.setEnabled (false);
-    updateMapButton.setEnabled (false);
-    cancelMapButton.setEnabled (false);
     proceedButton.setEnabled (false);
     pdfSkipPagesSpinner.setEnabled (false);
     matchThressholdSpinner.setEnabled (false);
@@ -552,8 +512,6 @@ public class MainFrame extends javax.swing.JFrame
       case HIGHLIGHT_COMPLETED: // intentional falling
       case HIGHLIGHT_FAILED: // intentional falling
       case PDF_SELECTED:
-        updateMapButton.setEnabled (true);
-        cancelMapButton.setEnabled (true);
         proceedButton.setEnabled (true);
         pdfSkipPagesSpinner.setEnabled (true);
         matchThressholdSpinner.setEnabled (true);
@@ -601,21 +559,14 @@ public class MainFrame extends javax.swing.JFrame
     selectHighlightLabel = new javax.swing.JLabel();
     highlightsScrollPane = new javax.swing.JScrollPane();
     highlightsList = new javax.swing.JList<>();
-    selectNoteLabel = new javax.swing.JLabel();
-    notesScrollPane = new javax.swing.JScrollPane();
-    notesList = new javax.swing.JList<>();
     proceedPanel = new javax.swing.JPanel();
     proceedButton = new javax.swing.JButton();
     jProgressBar1 = new javax.swing.JProgressBar();
     statusScrollPane = new javax.swing.JScrollPane();
     statusList = new javax.swing.JList<>();
     statusLabel = new javax.swing.JLabel();
-    pageNumbersScrollPane1 = new javax.swing.JScrollPane();
-    highlightNotesMapList = new javax.swing.JList<>();
     pdfSkipPagesLabel = new javax.swing.JLabel();
     pdfSkipPagesSpinner = new javax.swing.JSpinner();
-    updateMapButton = new javax.swing.JButton();
-    cancelMapButton = new javax.swing.JButton();
     matchThressholdLabel = new javax.swing.JLabel();
     matchThressholdSpinner = new javax.swing.JSpinner();
     percentLabel = new javax.swing.JLabel();
@@ -625,7 +576,7 @@ public class MainFrame extends javax.swing.JFrame
 
     headerPanel.setBackground(new java.awt.Color(25, 66, 97));
 
-    logoLabel.setIcon(new javax.swing.ImageIcon("src/coderarjob/kpdfsync/poc/Logo.png"));
+    logoLabel.setIcon(new javax.swing.ImageIcon("/home/coder/NetBeansProjects/GuiHelloWorld/Resources/LogoHori.png")); // NOI18N
     logoLabel.setToolTipText("");
 
     exitButton.setText("Exit");
@@ -645,24 +596,24 @@ public class MainFrame extends javax.swing.JFrame
     javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(headerPanel);
     headerPanel.setLayout(headerPanelLayout);
     headerPanelLayout.setHorizontalGroup(
-        headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addGroup(headerPanelLayout.createSequentialGroup()
-          .addComponent(logoLabel)
-          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-          .addComponent(optionsButton)
-          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-          .addComponent(exitButton)
-          .addContainerGap())
-        );
+      headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(headerPanelLayout.createSequentialGroup()
+        .addComponent(logoLabel)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        .addComponent(optionsButton)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+        .addComponent(exitButton)
+        .addContainerGap())
+    );
     headerPanelLayout.setVerticalGroup(
-        headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addComponent(logoLabel, javax.swing.GroupLayout.Alignment.TRAILING)
-        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, headerPanelLayout.createSequentialGroup()
-          .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-            .addComponent(exitButton)
-            .addComponent(optionsButton))
-          .addGap(24, 24, 24))
-        );
+      headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addComponent(logoLabel, javax.swing.GroupLayout.Alignment.TRAILING)
+      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, headerPanelLayout.createSequentialGroup()
+        .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(exitButton)
+          .addComponent(optionsButton))
+        .addGap(24, 24, 24))
+    );
 
     clippingsFileLabel.setForeground(new java.awt.Color(0, 0, 0));
     clippingsFileLabel.setLabelFor(clippingsFileTextBox);
@@ -691,6 +642,8 @@ public class MainFrame extends javax.swing.JFrame
     });
 
     pageNumbersList.setModel(pageNumbersListModel);
+    pageNumbersList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+    pageNumbersList.setCellRenderer(new PageNumberListRenderer());
     pageNumbersList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
       public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
         pageNumbersListValueChanged(evt);
@@ -700,25 +653,22 @@ public class MainFrame extends javax.swing.JFrame
 
     pageNumbersLabel.setText("Page numbers:");
 
-    selectHighlightLabel.setText("Select a highlight from the selected page:");
+    selectHighlightLabel.setText("Highlight as associated notes. (Double-click to change)");
 
     highlightsList.setModel(highlightsListModel);
+    highlightsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+    highlightsList.setCellRenderer(new HighlightNotePairListRenderer());
+    highlightsList.addMouseListener(new java.awt.event.MouseAdapter() {
+      public void mouseClicked(java.awt.event.MouseEvent evt) {
+        highlightsListMouseClicked(evt);
+      }
+    });
     highlightsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
       public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
         highlightsListValueChanged(evt);
       }
     });
     highlightsScrollPane.setViewportView(highlightsList);
-
-    selectNoteLabel.setText("Select the note from the selected page, that corresponds with the above highlight:");
-
-    notesList.setModel(notesListModel);
-    notesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-      public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-        notesListValueChanged(evt);
-      }
-    });
-    notesScrollPane.setViewportView(notesList);
 
     proceedButton.setText("Proceed");
     proceedButton.addActionListener(new java.awt.event.ActionListener() {
@@ -732,59 +682,38 @@ public class MainFrame extends javax.swing.JFrame
     javax.swing.GroupLayout proceedPanelLayout = new javax.swing.GroupLayout(proceedPanel);
     proceedPanel.setLayout(proceedPanelLayout);
     proceedPanelLayout.setHorizontalGroup(
-        proceedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, proceedPanelLayout.createSequentialGroup()
-          .addContainerGap()
-          .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-          .addComponent(proceedButton)
-          .addContainerGap())
-        );
+      proceedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, proceedPanelLayout.createSequentialGroup()
+        .addContainerGap()
+        .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(proceedButton)
+        .addContainerGap())
+    );
     proceedPanelLayout.setVerticalGroup(
-        proceedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addGroup(proceedPanelLayout.createSequentialGroup()
-          .addGap(0, 12, Short.MAX_VALUE)
-          .addGroup(proceedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-            .addComponent(proceedButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-        );
+      proceedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(proceedPanelLayout.createSequentialGroup()
+        .addGap(0, 12, Short.MAX_VALUE)
+        .addGroup(proceedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+          .addComponent(proceedButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+          .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+    );
 
     statusList.setModel(this.statusListModel);
     statusScrollPane.setViewportView(statusList);
 
     statusLabel.setText("Status:");
 
-    highlightNotesMapList.setModel(highlightNotesMapListModel);
-    highlightNotesMapList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-      public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-        highlightNotesMapListValueChanged(evt);
-      }
-    });
-    pageNumbersScrollPane1.setViewportView(highlightNotesMapList);
-
     pdfSkipPagesLabel.setLabelFor(pdfSkipPagesSpinner);
     pdfSkipPagesLabel.setText("Number of pages to skip:");
 
     pdfSkipPagesSpinner.setModel(new javax.swing.SpinnerNumberModel());
 
-    updateMapButton.setText("Update map");
-    updateMapButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        updateMapButtonActionPerformed(evt);
-      }
-    });
-
-    cancelMapButton.setText("Cancel map");
-    cancelMapButton.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        cancelMapButtonActionPerformed(evt);
-      }
-    });
-
     matchThressholdLabel.setLabelFor(matchThressholdSpinner);
     matchThressholdLabel.setText("Match acceptance thresshold:");
 
     matchThressholdSpinner.setModel(new javax.swing.SpinnerNumberModel());
+    matchThressholdSpinner.setValue(90);
 
     percentLabel.setLabelFor(pdfSkipPagesSpinner);
     percentLabel.setText("%");
@@ -792,140 +721,116 @@ public class MainFrame extends javax.swing.JFrame
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
-        layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addComponent(headerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        .addComponent(proceedPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        .addGroup(layout.createSequentialGroup()
-          .addContainerGap()
-          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(statusScrollPane)
-            .addGroup(layout.createSequentialGroup()
-              .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                  .addComponent(selectBookNameLabel)
-                  .addComponent(clippingsFileLabel)
-                  .addComponent(pageNumbersLabel)
-                  .addComponent(pageNumbersScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
-                  .addComponent(statusLabel)
-                  .addComponent(pdfSkipPagesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                  .addComponent(pageNumbersScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                  .addComponent(selectPdfFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                  .addComponent(cancelMapButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                  .addComponent(updateMapButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-              .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-              .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(clippingsFileTextBox)
-                    .addComponent(selectBookNameComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                  .addComponent(browseClippingsFileButton))
-                .addGroup(layout.createSequentialGroup()
-                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                      .addComponent(selectHighlightLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
-                      .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(selectNoteLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE))
-                  .addGap(190, 190, 190))
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                  .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(selectPdfFileTextBox)
-                    .addGroup(layout.createSequentialGroup()
-                      .addComponent(pdfSkipPagesSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                      .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                      .addComponent(matchThressholdLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
-                      .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                      .addComponent(matchThressholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                      .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                      .addComponent(percentLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                  .addComponent(browsePdfFileButton))
-                .addComponent(highlightsScrollPane)
-                .addComponent(notesScrollPane))))
-                .addContainerGap())
-                );
-    layout.setVerticalGroup(
-        layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addGroup(layout.createSequentialGroup()
-          .addComponent(headerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-            .addComponent(clippingsFileLabel)
-            .addComponent(clippingsFileTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(browseClippingsFileButton))
-          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-            .addComponent(selectBookNameLabel)
-            .addComponent(selectBookNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-            .addComponent(selectPdfFileLabel)
-            .addComponent(selectPdfFileTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(browsePdfFileButton))
-          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-            .addComponent(pdfSkipPagesLabel)
-            .addComponent(pdfSkipPagesSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(matchThressholdLabel)
-            .addComponent(matchThressholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addComponent(percentLabel))
-          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+      layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addComponent(headerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+      .addComponent(proceedPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+      .addGroup(layout.createSequentialGroup()
+        .addContainerGap()
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addComponent(statusScrollPane)
+          .addGroup(layout.createSequentialGroup()
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+              .addComponent(selectBookNameLabel)
+              .addComponent(clippingsFileLabel)
+              .addComponent(statusLabel)
+              .addComponent(pdfSkipPagesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+              .addComponent(selectPdfFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
               .addComponent(pageNumbersLabel)
-              .addComponent(selectHighlightLabel))
-          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-              .addComponent(highlightsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
-              .addComponent(pageNumbersScrollPane))
-          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-              .addComponent(updateMapButton)
-              .addComponent(selectNoteLabel))
-          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+              .addComponent(pageNumbersScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
               .addGroup(layout.createSequentialGroup()
-                .addComponent(cancelMapButton)
+                .addComponent(pdfSkipPagesSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pageNumbersScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE))
-              .addComponent(notesScrollPane))
-          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-          .addComponent(proceedPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-          .addComponent(statusLabel)
-          .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-          .addComponent(statusScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-          .addContainerGap())
-          );
+                .addComponent(matchThressholdLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(matchThressholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(percentLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+              .addComponent(highlightsScrollPane)
+              .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                  .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                      .addComponent(selectBookNameComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                      .addComponent(clippingsFileTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, 665, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(browseClippingsFileButton))
+                  .addGroup(layout.createSequentialGroup()
+                    .addComponent(selectPdfFileTextBox)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(browsePdfFileButton)))
+                .addGap(6, 6, 6))
+              .addComponent(selectHighlightLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+        .addGap(5, 5, 5))
+    );
+    layout.setVerticalGroup(
+      layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(layout.createSequentialGroup()
+        .addComponent(headerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(clippingsFileLabel)
+          .addComponent(clippingsFileTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(browseClippingsFileButton))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(selectBookNameLabel)
+          .addComponent(selectBookNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(selectPdfFileLabel)
+          .addComponent(selectPdfFileTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(browsePdfFileButton))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(pdfSkipPagesLabel)
+          .addComponent(pdfSkipPagesSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(matchThressholdLabel)
+          .addComponent(matchThressholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(percentLabel))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(pageNumbersLabel)
+          .addComponent(selectHighlightLabel))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addComponent(highlightsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 481, Short.MAX_VALUE)
+          .addComponent(pageNumbersScrollPane))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(proceedPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(statusLabel)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(statusScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addContainerGap())
+    );
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
 
 
 
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton browseClippingsFileButton;
   private javax.swing.JButton browsePdfFileButton;
-  private javax.swing.JButton cancelMapButton;
   private javax.swing.JLabel clippingsFileLabel;
   private javax.swing.JTextField clippingsFileTextBox;
   private javax.swing.JButton exitButton;
   private javax.swing.JFileChooser fileChooser;
   private javax.swing.JPanel headerPanel;
-  private javax.swing.JList<String> highlightNotesMapList;
-  private javax.swing.JList<String> highlightsList;
+  private javax.swing.JList<HighlightNotePair> highlightsList;
   private javax.swing.JScrollPane highlightsScrollPane;
   private javax.swing.JProgressBar jProgressBar1;
   private javax.swing.JLabel logoLabel;
   private javax.swing.JLabel matchThressholdLabel;
   private javax.swing.JSpinner matchThressholdSpinner;
-  private javax.swing.JList<String> notesList;
-  private javax.swing.JScrollPane notesScrollPane;
   private javax.swing.JButton optionsButton;
   private javax.swing.JLabel pageNumbersLabel;
-  private javax.swing.JList<String> pageNumbersList;
+  private javax.swing.JList<PageResource> pageNumbersList;
   private javax.swing.JScrollPane pageNumbersScrollPane;
-  private javax.swing.JScrollPane pageNumbersScrollPane1;
   private javax.swing.JLabel pdfSkipPagesLabel;
   private javax.swing.JSpinner pdfSkipPagesSpinner;
   private javax.swing.JLabel percentLabel;
@@ -934,13 +839,11 @@ public class MainFrame extends javax.swing.JFrame
   private javax.swing.JComboBox<String> selectBookNameComboBox;
   private javax.swing.JLabel selectBookNameLabel;
   private javax.swing.JLabel selectHighlightLabel;
-  private javax.swing.JLabel selectNoteLabel;
   private javax.swing.JLabel selectPdfFileLabel;
   private javax.swing.JTextField selectPdfFileTextBox;
   private javax.swing.JLabel statusLabel;
   private javax.swing.JList<String> statusList;
   private javax.swing.JScrollPane statusScrollPane;
-  private javax.swing.JButton updateMapButton;
   // End of variables declaration//GEN-END:variables
 
 }
