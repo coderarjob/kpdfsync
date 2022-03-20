@@ -1,17 +1,93 @@
 package coderarjob.kpdfsync.poc;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+import java.util.List;
+
 /**
  *
  * @author coder
  */
-public class NoteAssociationDialog extends javax.swing.JDialog {
+public class NoteAssociationDialog extends javax.swing.JDialog
+{
+  public enum NoteAssociationDialogOptions
+  {
+    DELETE, CREATE, CANCEL
+  }
+
+  private NoteAssociationDialogOptions mSelectedDialogOption;
+  private String mSelectedNoteText;
+  private DefaultListModel<String> mNotesListModel;
 
   /**
    * Creates new form NoteAssociationDialog
    */
-  public NoteAssociationDialog(java.awt.Frame parent, boolean modal) {
-	super(parent, modal);
-	initComponents();
+  public NoteAssociationDialog(Frame parent)
+  {
+    super(parent, true);
+    mNotesListModel = new DefaultListModel<>();
+    initComponents();
+  }
+
+  private void reset()
+  {
+    mSelectedDialogOption = NoteAssociationDialogOptions.CANCEL;
+    mSelectedNoteText = null;
+    mNotesListModel.clear();
+    notesList.setEnabled (true);
+    createMappingButton.setEnabled (true);
+  }
+
+  private void populateUI (PageResource res)
+  {
+    pageNumberLabel.setText (String.valueOf(res.getPageNumber()));
+    List<String> notesTextList = res.getNoteList();
+
+    if (notesTextList.size() == 0) {
+      // There are no notes in this page. Show a pop-up and close.
+      mNotesListModel.addElement ("No unpaired note on this page.");
+      notesList.setEnabled (false);
+      createMappingButton.setEnabled (false);
+      return;
+    }
+
+    // Display notes on the list.
+    for (String note : notesTextList)
+      mNotesListModel.addElement (note);
+  }
+
+  public String getSelectedNoteText()
+  {
+    return mSelectedNoteText;
+  }
+
+  public NoteAssociationDialogOptions showDialog(Frame parent, PageResource pageResource)
+  {
+    this.reset();
+    this.populateUI (pageResource);
+    this.setVisible(true);
+
+    return this.mSelectedDialogOption;
+  }
+
+  private void closeButtonActionPerformed(ActionEvent evt)
+  {
+    this.setVisible (false);
+  }
+
+  private void createMappingButtonActionPerformed(ActionEvent evt)
+  {
+    mSelectedNoteText = notesList.getSelectedValue();
+    mSelectedDialogOption = NoteAssociationDialogOptions.CREATE;
+    this.setVisible (false);
+  }
+
+  private void deleteMappingButtonActionPerformed(ActionEvent evt)
+  {
+    mSelectedDialogOption = NoteAssociationDialogOptions.DELETE;
+    this.setVisible (false);
   }
 
   /**
@@ -24,51 +100,67 @@ public class NoteAssociationDialog extends javax.swing.JDialog {
 
     jLabel1 = new javax.swing.JLabel();
     jLabel2 = new javax.swing.JLabel();
-    jLabel3 = new javax.swing.JLabel();
-    jButton1 = new javax.swing.JButton();
     jScrollPane1 = new javax.swing.JScrollPane();
-    jList1 = new javax.swing.JList<>();
+    notesList = new javax.swing.JList<>();
     jPanel1 = new javax.swing.JPanel();
-    jButton2 = new javax.swing.JButton();
-    jButton3 = new javax.swing.JButton();
+    createMappingButton = new javax.swing.JButton();
+    closeButton = new javax.swing.JButton();
+    deleteMappingButton = new javax.swing.JButton();
     jLabel4 = new javax.swing.JLabel();
-    jLabel5 = new javax.swing.JLabel();
+    pageNumberLabel = new javax.swing.JLabel();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+    setTitle("Note association dialog");
+    setAlwaysOnTop(true);
+    setName("noteAssociationDialog"); // NOI18N
+    setResizable(false);
+    setType(java.awt.Window.Type.POPUP);
 
-    jLabel1.setFont(new java.awt.Font("Dialog", 1, 11)); // NOI18N
+    jLabel1.setFont(new java.awt.Font("Dialog", 1, 12)); // NOI18N
     jLabel1.setIcon(new javax.swing.ImageIcon("/home/coder/Work/Java/Projects/kpdfsync/src/coderarjob/kpdfsync/poc/res/sticky-note.png")); // NOI18N
     jLabel1.setText("Select the note associated with the highlight");
 
     jLabel2.setText("Open the book to the page, and check which note goes with the highlight.");
 
-    jLabel3.setBackground(new java.awt.Color(255, 255, 255));
-    jLabel3.setText("<highlight>");
-    jLabel3.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-    jLabel3.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-    jLabel3.setOpaque(true);
+    notesList.setModel(mNotesListModel);
+    notesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+    jScrollPane1.setViewportView(notesList);
 
-    jButton1.setText("Delete mapping");
-    jButton1.setToolTipText("");
+    createMappingButton.setText("Create mapping");
+    createMappingButton.setToolTipText("");
+    createMappingButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        createMappingButtonActionPerformed(evt);
+      }
+    });
 
-    jList1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-    jScrollPane1.setViewportView(jList1);
+    closeButton.setText("Close");
+    closeButton.setToolTipText("");
+    closeButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        closeButtonActionPerformed(evt);
+      }
+    });
 
-    jButton2.setText("Create mapping");
-    jButton2.setToolTipText("");
-
-    jButton3.setText("Close");
-    jButton3.setToolTipText("");
+    deleteMappingButton.setText("Delete mapping");
+    deleteMappingButton.setToolTipText("");
+    deleteMappingButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        deleteMappingButtonActionPerformed(evt);
+      }
+    });
 
     javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
     jPanel1.setLayout(jPanel1Layout);
     jPanel1Layout.setHorizontalGroup(
       jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        .addComponent(jButton2)
+        .addContainerGap()
+        .addComponent(deleteMappingButton)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        .addComponent(createMappingButton)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(jButton3)
+        .addComponent(closeButton)
         .addContainerGap())
     );
     jPanel1Layout.setVerticalGroup(
@@ -76,38 +168,36 @@ public class NoteAssociationDialog extends javax.swing.JDialog {
       .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-          .addComponent(jButton2)
-          .addComponent(jButton3))
+          .addComponent(createMappingButton)
+          .addComponent(closeButton)
+          .addComponent(deleteMappingButton))
         .addContainerGap())
     );
 
     jLabel4.setText("Page number:");
 
-    jLabel5.setFont(new java.awt.Font("Dialog", 1, 11)); // NOI18N
-    jLabel5.setText("<Page number>");
+    pageNumberLabel.setFont(new java.awt.Font("Dialog", 1, 11)); // NOI18N
+    pageNumberLabel.setText("<Page number>");
 
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
           .addGroup(layout.createSequentialGroup()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
               .addComponent(jLabel1)
-              .addComponent(jLabel2))
-            .addGap(0, 81, Short.MAX_VALUE))
-          .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-          .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-            .addComponent(jLabel4)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(jLabel5)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jButton1))
-          .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING))
+              .addComponent(jLabel2)
+              .addGroup(layout.createSequentialGroup()
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(pageNumberLabel)))
+            .addGap(0, 81, Short.MAX_VALUE)))
         .addContainerGap())
-      .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -117,15 +207,11 @@ public class NoteAssociationDialog extends javax.swing.JDialog {
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(jLabel2)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(jLabel4)
+          .addComponent(pageNumberLabel))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(jButton1)
-          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-            .addComponent(jLabel4)
-            .addComponent(jLabel5)))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE)
+        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
     );
@@ -133,59 +219,17 @@ public class NoteAssociationDialog extends javax.swing.JDialog {
     pack();
   }// </editor-fold>//GEN-END:initComponents
 
-  /**
-   * @param args the command line arguments
-   */
-  public static void main(String args[]) {
-	/* Set the Nimbus look and feel */
-	//<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-	/* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-	 */
-	try {
-	  for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-		if ("Nimbus".equals(info.getName())) {
-		  javax.swing.UIManager.setLookAndFeel(info.getClassName());
-		  break;
-		}
-	  }
-	} catch (ClassNotFoundException ex) {
-	  java.util.logging.Logger.getLogger(NoteAssociationDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-	} catch (InstantiationException ex) {
-	  java.util.logging.Logger.getLogger(NoteAssociationDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-	} catch (IllegalAccessException ex) {
-	  java.util.logging.Logger.getLogger(NoteAssociationDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-	} catch (javax.swing.UnsupportedLookAndFeelException ex) {
-	  java.util.logging.Logger.getLogger(NoteAssociationDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-	}
-	//</editor-fold>
-
-	/* Create and display the dialog */
-	java.awt.EventQueue.invokeLater(new Runnable() {
-	  public void run() {
-		NoteAssociationDialog dialog = new NoteAssociationDialog(new javax.swing.JFrame(), true);
-		dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-		  @Override
-		  public void windowClosing(java.awt.event.WindowEvent e) {
-			System.exit(0);
-		  }
-		});
-		dialog.setVisible(true);
-	  }
-	});
-  }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private javax.swing.JButton jButton1;
-  private javax.swing.JButton jButton2;
-  private javax.swing.JButton jButton3;
+  private javax.swing.JButton closeButton;
+  private javax.swing.JButton createMappingButton;
+  private javax.swing.JButton deleteMappingButton;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
-  private javax.swing.JLabel jLabel3;
   private javax.swing.JLabel jLabel4;
-  private javax.swing.JLabel jLabel5;
-  private javax.swing.JList<String> jList1;
   private javax.swing.JPanel jPanel1;
   private javax.swing.JScrollPane jScrollPane1;
+  private javax.swing.JList<String> notesList;
+  private javax.swing.JLabel pageNumberLabel;
   // End of variables declaration//GEN-END:variables
 }

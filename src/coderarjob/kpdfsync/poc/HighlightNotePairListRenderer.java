@@ -10,24 +10,25 @@ public class HighlightNotePairListRenderer extends JPanel implements ListCellRen
 
   private JLabel highlightLabel;
   private JLabel pairedNoteLabel;
-  private ImageIcon highlightIcon;
+  private Color alternateColor;
 
   public HighlightNotePairListRenderer()
   {
     this.setLayout (new BorderLayout());
 
-    highlightIcon = new ImageIcon ("src/coderarjob/kpdfsync/poc/res/highlighter.png");
-
     highlightLabel = new JLabel();
-    highlightLabel.setIcon (highlightIcon);
-    highlightLabel.setForeground (Color.BLUE);
+    highlightLabel.setIcon (new ImageIcon ("src/coderarjob/kpdfsync/poc/res/highlighter.png"));
+    highlightLabel.setForeground (Color.BLACK);
     highlightLabel.setOpaque (false);
     this.add (highlightLabel, BorderLayout.PAGE_START);
 
     pairedNoteLabel = new JLabel();
-    pairedNoteLabel.setBackground (Color.DARK_GRAY);
+    pairedNoteLabel.setForeground (Color.DARK_GRAY);
     pairedNoteLabel.setOpaque (false);
     this.add (pairedNoteLabel, BorderLayout.PAGE_END);
+
+    alternateColor = new Color (237, 244, 249);
+    this.setBorder (BorderFactory.createEmptyBorder (5, 2, 5, 0));
   }
 
   public Component getListCellRendererComponent(JList<? extends HighlightNotePair> list,
@@ -37,10 +38,12 @@ public class HighlightNotePairListRenderer extends JPanel implements ListCellRen
     highlightLabel.setText (value.getHighlightText());
     pairedNoteLabel.setText (value.getNoteText());
 
+    Color normalBackgroundColor = (index % 2 == 0) ? alternateColor : list.getBackground();
+
     if (isSelected)
       this.setBackground (list.getSelectionBackground());
     else
-      this.setBackground (list.getBackground());
+      this.setBackground (normalBackgroundColor);
 
     return this;
   }
