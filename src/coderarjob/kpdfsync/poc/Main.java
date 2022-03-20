@@ -1,109 +1,30 @@
 package coderarjob.kpdfsync.poc;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import javax.swing.*;
+import javax.swing.plaf.FontUIResource;
 
-import coderarjob.kpdfsync.lib.*;
-import coderarjob.kpdfsync.lib.clipparser.ParserResult;
-import coderarjob.kpdfsync.lib.clipparser.ParserEvents;
-import coderarjob.kpdfsync.lib.clipparser.ParserResult.AnnotationType;
-import coderarjob.kpdfsync.lib.clipparser.ParserResult.PageNumberType;
-import coderarjob.kpdfsync.lib.clipparser.AbstractParser;
-import coderarjob.kpdfsync.lib.clipparser.KindleParserV1;
-
-import coderarjob.kpdfsync.lib.annotator.PdfAnnotatorV1;
-import coderarjob.kpdfsync.lib.annotator.AbstractAnnotator;
-
-import coderarjob.kpdfsync.lib.pm.AbstractMatcher;
-import coderarjob.kpdfsync.lib.pm.Match;
-import coderarjob.kpdfsync.lib.pm.BasicMatcher;
-import coderarjob.kpdfsync.lib.pm.PatternMatcherEvents;
-
-public class Main implements ParserEvents, PatternMatcherEvents
+public class Main
 {
-  /* ParserEvents Methods */
-  public void onError (String fileName, long offset, String error, ParserResult result)
-  {
-    System.out.println (error);
-  }
-  public void onSuccess (String fileName, long offset, ParserResult result) { }
-
-  /* PatternMatcherEvents Methods */
-  public void onMatchStart (String text, String pattern)
-  { }
-
-  public void onMatchEnd (Match result)
-  {
-	if (result.matchPercent() > 80.0)
-	  System.out.println (String.format("Match %f", result.matchPercent()));
+  public static void setUIFont (FontUIResource f){
+    java.util.Enumeration keys = UIManager.getDefaults().keys();
+    while (keys.hasMoreElements()) {
+      Object key = keys.nextElement();
+      Object value = UIManager.get (key);
+      if (value instanceof FontUIResource)
+        UIManager.put (key, f);
+    }
   }
 
   /* Class methods */
   public static void main(String[] args) throws Exception
   {
+    JFrame.setDefaultLookAndFeelDecorated (true);
+    JDialog.setDefaultLookAndFeelDecorated (true);
+    setUIFont (new FontUIResource ("Dialog", FontUIResource.PLAIN, 11));
+
     MainFrame mainFrame = new MainFrame();
     mainFrame.setVisible (true);
 
-    /*AbstractParser parser = new KindleParserV1 ("test-files/My Clippings.txt");
-    parser.setParserEvents (new Main());
 
-    KindleClippingsFile file = new KindleClippingsFile(parser);
-    ArrayList<String> titles = Collections.list(file.getBookTitles());
-
-    System.out.println ("Book titles");
-    for (String title : titles)
-      System.out.println ("\t" + title);
-
-    System.out.println ("---------------------------------");
-
-	AbstractMatcher matcher = new BasicMatcher();
-	matcher.setPatternMatcherEventsHandler(new Main());
-
-    AbstractAnnotator ann = new PdfAnnotatorV1 (matcher, "test-files/progit.pdf", 6);
-    ann.open ();
-
-    String bookTitle = titles.get(3);
-    System.out.println ("Book: " + bookTitle);
-
-    ArrayList<ParserResult> entries = Collections.list (file.getBookAnnotations (bookTitle));
-    for (ParserResult entry : entries)
-    {
-      if (entry.annotationType() != AnnotationType.HIGHLIGHT)
-        continue;
-
-      if (entry.pageNumberType() != PageNumberType.PAGE_NUMBER)
-        continue;
-
-      //displayParserResult (entry);
-      System.out.print ("Highlighting page: " + entry.pageOrLocationNumber() + " ");
-      ann.highlight (entry.pageOrLocationNumber(), entry.text(), "Test highlight");
-    }
-
-    ann.save ("output.pdf");*/
-
-  }
-
-  private static void displayClippingsForFile (KindleClippingsFile file, String bookTitle)
-      throws Exception
-  {
-    ArrayList<ParserResult> entries = Collections.list (file.getBookAnnotations (bookTitle));
-    for (ParserResult entry : entries)
-      displayParserResult (entry);
-  }
-
-  private static void displayParserResult (ParserResult entry) throws Exception
-  {
-    System.out.println ("\t" + entry.title());
-    System.out.println ("\t" + entry.annotationType());
-
-    int pageOrLocationNumber = entry.pageOrLocationNumber();
-    if (entry.pageNumberType() == PageNumberType.PAGE_NUMBER)
-      System.out.println ("\tPage: " + String.valueOf(pageOrLocationNumber));
-    else
-      System.out.println ("\tLocation: " + String.valueOf(pageOrLocationNumber));
-
-    if (entry.annotationType() != AnnotationType.BOOKMARK)
-      System.out.println ("\t" + entry.text());
-    System.out.println ("---------------------------------");
   }
 }
