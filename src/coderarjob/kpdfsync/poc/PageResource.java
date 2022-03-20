@@ -114,7 +114,7 @@ public class PageResource
     }
 
     if (pairsListIndex < 0)
-      throw new Exception ("Unpair failed. Highlight is not found.");
+      throw new Exception ("Unpair failed. Highlight text is not found or already unpaired.");
 
     // Remove the note from the pairs list and add it to the unpaired notes list.
     String note = mPairs.get (pairsListIndex).getNoteText();
