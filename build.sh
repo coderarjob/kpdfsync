@@ -10,23 +10,34 @@ find src -name "*.java" -exec sed -i s/\ \*$//g {} \; || exit
 
 export CLASSPATH="lib/pdfclown.jar:$BIN_DIR"
 
+JDK_VER_TARGET=8
+
 # Build AJL
-javac -Xlint -d "$BIN_DIR/" src/coderarjob/ajl/file/*.java || exit
+javac --release $JDK_VER_TARGET -Xlint -d "$BIN_DIR/" \
+      src/coderarjob/ajl/file/*.java || exit
 
 # Build Pattern Matcher
-javac -Xlint -d "$BIN_DIR/" src/coderarjob/kpdfsync/lib/pm/*.java || exit
+javac --release $JDK_VER_TARGET -Xlint -d "$BIN_DIR/" \
+      src/coderarjob/kpdfsync/lib/pm/*.java || exit
 
 # Build Annotator
-javac -Xlint -d "$BIN_DIR/" src/coderarjob/kpdfsync/lib/annotator/*.java || exit
+javac --release $JDK_VER_TARGET -Xlint -d "$BIN_DIR/" \
+      src/coderarjob/kpdfsync/lib/annotator/*.java || exit
 
 # Build Kindle Clippings File Parser
-javac -Xlint -d "$BIN_DIR/" src/coderarjob/kpdfsync/lib/clipparser/*.java || exit
+javac --release $JDK_VER_TARGET -Xlint -d "$BIN_DIR/" \
+      src/coderarjob/kpdfsync/lib/clipparser/*.java || exit
 
 # Build kpdfsync library
-javac -Xlint -d "$BIN_DIR/" src/coderarjob/kpdfsync/lib/*.java || exit
+javac --release $JDK_VER_TARGET -Xlint -d "$BIN_DIR/" \
+      src/coderarjob/kpdfsync/lib/*.java || exit
 
 # Build POC
-javac -Xlint -d "$BIN_DIR/" src/coderarjob/kpdfsync/poc/*.java || exit
+javac --release $JDK_VER_TARGET -Xlint -d "$BIN_DIR/" \
+      src/coderarjob/kpdfsync/poc/*.java || exit
+
+# Copy resources
+cp -r src/coderarjob/kpdfsync/poc/res $BIN_DIR/coderarjob/kpdfsync/poc || exit
 
 # Generate tags file
 ctags --recurse ./src || exit
