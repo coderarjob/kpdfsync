@@ -29,7 +29,7 @@ public class MainFrame extends javax.swing.JFrame
 
   private enum StatusTypes
   {
-    PARSER_ERROR, INPUT_ERROR, MATCH_FOUND, MATCH_NOT_FOUND, OTHER, ERROR, INFORMATION
+    PARSER_ERROR, MATCH_FOUND, MATCH_NOT_FOUND, OTHER, ERROR, INFORMATION
   }
 
   /* Private fields */
@@ -59,9 +59,6 @@ public class MainFrame extends javax.swing.JFrame
 
 	initComponents();
     setStatus (ApplicationStatus.NOT_STARTED);
-
-    System.out.println (selectBookNameLabel.getFont().getFontName());
-    System.out.println (selectBookNameLabel.getFont().isBold());
   }
 
   /* Kindle Parser event handler*/
@@ -216,7 +213,7 @@ public class MainFrame extends javax.swing.JFrame
     if (pageNumbersList.getSelectedValue() == null)
       return;
 
-    PageResource res = (PageResource)pageNumbersList.getSelectedValue();
+    PageResource res = pageNumbersList.getSelectedValue();
     int pageNumber = res.getPageNumber();
     System.out.println ("Page number selected is " + pageNumber);
 
@@ -267,7 +264,7 @@ public class MainFrame extends javax.swing.JFrame
   private void highlightsListMouseClicked(java.awt.event.MouseEvent evt)
   {
     JList<HighlightNotePair> list = (JList<HighlightNotePair>)evt.getSource();
-    HighlightNotePair pair = (HighlightNotePair) list.getSelectedValue();
+    HighlightNotePair pair = list.getSelectedValue();
 
     if (pair == null) return;               // Nothing is selected.
     if (evt.getClickCount() != 2) return;   // Not double click.
@@ -428,11 +425,6 @@ public class MainFrame extends javax.swing.JFrame
         String pattern = (String)values[0];
         newEntryString = String.format (fmt, pattern);
         break;
-      case INPUT_ERROR:
-        fmt = (String)values[0];
-        args = Arrays.copyOfRange (values, 1, values.length);
-        newEntryString = String.format ("Input Error : " + fmt, args);
-        break;
       case PARSER_ERROR:
         fmt = (String)values[0];
         args = Arrays.copyOfRange (values, 1, values.length);
@@ -553,7 +545,7 @@ public class MainFrame extends javax.swing.JFrame
 
     headerPanel.setBackground(new java.awt.Color(25, 66, 97));
 
-    logoLabel.setIcon(new javax.swing.ImageIcon("/home/coder/NetBeansProjects/GuiHelloWorld/Resources/LogoHori.png")); // NOI18N
+    logoLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/coderarjob/kpdfsync/poc/res/Logo.png"))); // NOI18N
     logoLabel.setToolTipText("");
 
     exitButton.setText("Exit");
@@ -787,7 +779,7 @@ public class MainFrame extends javax.swing.JFrame
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(selectHighlightLabel)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(highlightsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
+        .addComponent(highlightsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(proceedPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)

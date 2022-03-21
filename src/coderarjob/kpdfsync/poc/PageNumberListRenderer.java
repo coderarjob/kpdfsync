@@ -13,11 +13,16 @@ public class PageNumberListRenderer extends JLabel implements ListCellRenderer<P
 
   public PageNumberListRenderer()
   {
-    okayIcon = new ImageIcon ("src/coderarjob/kpdfsync/poc/res/check-mark.png");
-    warningIcon = new ImageIcon ("src/coderarjob/kpdfsync/poc/res/attention.png");
-    errorIcon = new ImageIcon ("src/coderarjob/kpdfsync/poc/res/problems.png");
+    okayIcon = getIconResource ("/coderarjob/kpdfsync/poc/res/check-mark.png");
+    warningIcon = getIconResource ("/coderarjob/kpdfsync/poc/res/attention.png");
+    errorIcon = getIconResource ("/coderarjob/kpdfsync/poc/res/problems.png");
 
     this.setOpaque (true);
+  }
+
+  private ImageIcon getIconResource (String resourceName)
+  {
+    return new ImageIcon (getClass().getResource (resourceName));
   }
 
   public Component getListCellRendererComponent(JList<? extends PageResource> list,

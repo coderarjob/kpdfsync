@@ -17,7 +17,8 @@ public class HighlightNotePairListRenderer extends JPanel implements ListCellRen
     this.setLayout (new BorderLayout());
 
     highlightLabel = new JLabel();
-    highlightLabel.setIcon (new ImageIcon ("src/coderarjob/kpdfsync/poc/res/highlighter.png"));
+    String iconResourceName = "/coderarjob/kpdfsync/poc/res/highlighter.png";
+    highlightLabel.setIcon (new ImageIcon (getClass().getResource (iconResourceName)));
     highlightLabel.setForeground (Color.BLACK);
     highlightLabel.setOpaque (false);
     this.add (highlightLabel, BorderLayout.PAGE_START);

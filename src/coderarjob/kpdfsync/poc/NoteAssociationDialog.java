@@ -117,7 +117,7 @@ public class NoteAssociationDialog extends javax.swing.JDialog
     setType(java.awt.Window.Type.POPUP);
 
     jLabel1.setFont(new java.awt.Font("Dialog", 1, 12)); // NOI18N
-    jLabel1.setIcon(new javax.swing.ImageIcon("/home/coder/Work/Java/Projects/kpdfsync/src/coderarjob/kpdfsync/poc/res/sticky-note.png")); // NOI18N
+    jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/coderarjob/kpdfsync/poc/res/sticky-note.png"))); // NOI18N
     jLabel1.setText("Select the note associated with the highlight");
 
     jLabel2.setText("Open the book to the page, and check which note goes with the highlight.");

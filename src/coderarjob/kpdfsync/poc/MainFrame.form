@@ -132,7 +132,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="selectHighlightLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="highlightsScrollPane" pref="431" max="32767" attributes="0"/>
+              <Component id="highlightsScrollPane" pref="458" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="proceedPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
@@ -182,7 +182,7 @@
         <Component class="javax.swing.JLabel" name="logoLabel">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="/home/coder/NetBeansProjects/GuiHelloWorld/Resources/LogoHori.png"/>
+              <Image iconType="3" name="/coderarjob/kpdfsync/poc/res/Logo.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value=""/>
           </Properties>
