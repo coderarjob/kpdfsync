@@ -418,13 +418,11 @@ public class MainFrame extends javax.swing.JFrame
     System.err.println (exceptionMessage);
     ex.printStackTrace();
 
-    Log.getInstance().log (LogType.ERROR, "Exception: %s", exceptionMessage);
+    Log.getInstance().logException (ex);
 
     Throwable cause = ex.getCause();
     for (int i = 1; cause != null; i++)
     {
-      Log.getInstance().log (LogType.ERROR, "\tCause %d: %s", i, cause.getMessage());
-
       System.err.println (":: Cause #" + i);
       cause.printStackTrace();
       cause = cause.getCause();

@@ -17,6 +17,7 @@ public class Log
   public static final String LOG_FILE;
 
   private BufferedWriter mWriter;
+  private PrintWriter mPrinter;
   private DateTimeFormatter mLogDateTimeFormatter;
   private LocalTime mPrev;      /* Used to determine passage of time from last log. */
 
@@ -31,6 +32,7 @@ public class Log
   private Log (String fileName) throws IOException
   {
     mWriter = new BufferedWriter (new FileWriter (fileName, false));
+    mPrinter = new PrintWriter (mWriter);
     mLogDateTimeFormatter = DateTimeFormatter.ofPattern ("HH:mm:ss");
     mPrev = LocalTime.now();
   }
@@ -47,6 +49,21 @@ public class Log
     }
 
     return mInstance;
+  }
+
+  public void logException (Exception ex)
+  {
+    String exceptionMessage = ex.getMessage() == null ? ex.toString() : ex.getMessage();
+
+    log (LogType.ERROR, "Exception :" + exceptionMessage);
+    ex.printStackTrace (mPrinter);
+
+    Throwable cause = ex.getCause();
+    while (cause != null)
+    {
+      cause.printStackTrace(mPrinter);
+      cause = cause.getCause();
+    }
   }
 
   public void log (LogType type, String fmt, Object... values)
