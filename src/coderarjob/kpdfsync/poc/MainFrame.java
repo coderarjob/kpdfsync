@@ -17,6 +17,9 @@ import coderarjob.kpdfsync.lib.pm.*;
 import coderarjob.kpdfsync.poc.Log.LogType;
 import coderarjob.kpdfsync.lib.annotator.*;
 
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 public class MainFrame extends javax.swing.JFrame
 {
   private enum ApplicationStatus
@@ -49,6 +52,9 @@ public class MainFrame extends javax.swing.JFrame
   private HighlightNotePairManager mPairManager;
   private NoteAssociationDialog mNoteForm;
 
+  private FileFilter clippingsFileFilter;
+  private FileFilter pdfFileFilter;
+
   /* Constructor and other methods*/
   public MainFrame()
   {
@@ -57,6 +63,9 @@ public class MainFrame extends javax.swing.JFrame
     highlightsListModel = new DefaultListModel<> ();
 
     mNoteForm = new NoteAssociationDialog (this);
+
+    clippingsFileFilter = new FileNameExtensionFilter ("Kindle Clippings file", "txt");
+    pdfFileFilter = new FileNameExtensionFilter ("PDF file", "pdf");
 
 	initComponents();
     setStatus (ApplicationStatus.NOT_STARTED);
@@ -85,6 +94,8 @@ public class MainFrame extends javax.swing.JFrame
   /* Button and other UI event handlers*/
   private void browseClippingsFileButtonActionPerformed(ActionEvent evt)
   {
+    fileChooser.removeChoosableFileFilter (pdfFileFilter);
+    fileChooser.addChoosableFileFilter (clippingsFileFilter);
     if (fileChooser.showOpenDialog (this) != JFileChooser.APPROVE_OPTION)
       return;
 
@@ -128,6 +139,8 @@ public class MainFrame extends javax.swing.JFrame
 
   private void browsePdfFileButtonActionPerformed(ActionEvent evt)
   {
+    fileChooser.removeChoosableFileFilter (clippingsFileFilter);
+    fileChooser.addChoosableFileFilter (pdfFileFilter);
     if (fileChooser.showOpenDialog (this) == JFileChooser.APPROVE_OPTION)
     {
       File file= fileChooser.getSelectedFile ();
@@ -142,6 +155,8 @@ public class MainFrame extends javax.swing.JFrame
     int numberOfPagesToSkip = (Integer)pdfSkipPagesSpinner.getValue();
     int matchThreshold = (Integer)matchThressholdSpinner.getValue();
 
+    fileChooser.removeChoosableFileFilter (clippingsFileFilter);
+    fileChooser.addChoosableFileFilter (pdfFileFilter);
     if (fileChooser.showSaveDialog (this) != JFileChooser.APPROVE_OPTION)
       return;
 
@@ -621,6 +636,9 @@ public class MainFrame extends javax.swing.JFrame
     matchThressholdLabel = new javax.swing.JLabel();
     matchThressholdSpinner = new javax.swing.JSpinner();
     percentLabel = new javax.swing.JLabel();
+
+    fileChooser.setAcceptAllFileFilterUsed(false);
+    fileChooser.setSelectedFile(new java.io.File("/home/coder/  "));
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
     setTitle("mk-float-kpdfsync-gui");
