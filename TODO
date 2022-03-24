@@ -1,36 +1,46 @@
 Kpdfsync                                                                               THINGS-TO-DO
 ---------------------------------------------------------------------------------------------------
 
+# Alpha Release
 # TASKS                                                                 Estimated       Actual
-[X] String comparison algorithm, that can analyze the degree of match. 
+[X] String comparison algorithm, that can analyze the degree of match.
     So that minor differences between the pattern and the read text 
     from pdf files are handled.
-
 [X] Use PDFClown library to highlight the text which matches the most
     with the highlighted text from My Clippings file.
-
 [X] Parse the 'My Clippings.txt' file.
-
 [-] Gui POC
+[X] Manual and Automatic creation of association between highlights.
+    and notes.
+[ ] Use grid layout for displaying and creating page mappings.
+    (Not done, in favor of below)
+[X] Use custom renderer in list box to show highlight nore mappings.
+[X] A separate dialog window for selection of notes for a highlight.
+[X] Loging
 
-[ ] Finalize GUI
-
+# Beta Release
+# TASKS                                                                 Estimated       Actual
 [ ] Optimization and cleanup objects.
-
+[ ] Lib - Use Iterator instead of Enumeration. (Not sure)
+[ ] GUI - Status bar showing last error or success message.
+[ ] Lib - parseLine function can be protected. It is public now.
+[ ] Lib - matching Bom bytes can be put inside a method in the
+          ByteOrderMarkTypes enum. It is now separe in
+          ByteOrderMark file.
 # BUGS:
-[ ] The string matching algo is too simple, and gives wrong match 
-    percentage, if the strings being compared differ in the number 
-    of non-whitespace characters. The two indexes get out of sync 
-    at the first mismatch and never recover. 
+[ ] The string matching algo is too simple, and gives wrong match
+    percentage, if the strings being compared differ in the number
+    of non-whitespace characters. The two indexes get out of sync
+    at the first mismatch and never recover.
     Example:
     PDF text      = 123 56 789
     Clipping text = 123 456 789
     % match       = 3/8          (Wrong)
     % match       = 7/8          (What is expected)
 
-[ ] Related to the above bug, we are highlighting more characters - 
-    by that many characters as the diffence in the number of 
-    characters, between the text read from the PDF and the pattern 
+[ ] Related to the above bug, we are highlighting more characters -
+    by that many characters as the diffence in the number of
+    characters, between the text read from the PDF and the pattern
     read from the clippings file.
     The algorithm matches character by character, the pattern and the
     text from the pdf. The matching and thus the highlighting is as 
@@ -46,7 +56,37 @@ Kpdfsync                                                                        
                                   highlighting)
 
 [ ] For some PDF files, org.pdfclown.tools.TextExtractor.extract() is returning null.
-    This is seen with the Concrete Mathematics original PDF file.
+    This is seen with the Concrete Mathematics original PDF file. May be a TrueType font issue.
+    Here is the stack trace:
+    java.lang.NullPointerException
+            at java.base/java.util.Hashtable.put(Hashtable.java:476)
+            at org.pdfclown.documents.contents.fonts.PfbParser.parse(PfbParser.java:99)
+            at org.pdfclown.documents.contents.fonts.Type1Font.getNativeEncoding(Type1Font.java:96)
+            at org.pdfclown.documents.contents.fonts.Type1Font.loadEncoding(Type1Font.java:141)
+            at org.pdfclown.documents.contents.fonts.SimpleFont.onLoad(SimpleFont.java:118)
+            at org.pdfclown.documents.contents.fonts.Font.load(Font.java:738)
+            at org.pdfclown.documents.contents.fonts.Font.<init>(Font.java:351)
+            at org.pdfclown.documents.contents.fonts.SimpleFont.<init>(SimpleFont.java:62)
+            at org.pdfclown.documents.contents.fonts.Type1Font.<init>(Type1Font.java:75)
+            at org.pdfclown.documents.contents.fonts.Font.wrap(Font.java:249)
+            at org.pdfclown.documents.contents.FontResources.wrap(FontResources.java:72)
+            at org.pdfclown.documents.contents.FontResources.wrap(FontResources.java:1)
+            at org.pdfclown.documents.contents.ResourceItems.get(ResourceItems.java:119)
+            at org.pdfclown.documents.contents.objects.SetFont.getResource(SetFont.java:119)
+            at org.pdfclown.documents.contents.objects.SetFont.getFont(SetFont.java:83)
+            at org.pdfclown.documents.contents.objects.SetFont.scan(SetFont.java:97)
+            at org.pdfclown.documents.contents.ContentScanner.moveNext(ContentScanner.java:1330)
+            at org.pdfclown.documents.contents.ContentScanner$TextWrapper.extract(ContentScanner.java:811)
+            at org.pdfclown.documents.contents.ContentScanner$TextWrapper.extract(ContentScanner.java:817)
+            at org.pdfclown.documents.contents.ContentScanner$TextWrapper.<init>(ContentScanner.java:777)
+            at org.pdfclown.documents.contents.ContentScanner$TextWrapper.<init>(ContentScanner.java:770)
+            at org.pdfclown.documents.contents.ContentScanner$GraphicsObjectWrapper.get(ContentScanner.java:690)
+            at org.pdfclown.documents.contents.ContentScanner$GraphicsObjectWrapper.access$0(ContentScanner.java:682)
+            at org.pdfclown.documents.contents.ContentScanner.getCurrentWrapper(ContentScanner.java:1154)
+            at org.pdfclown.tools.TextExtractor.extract(TextExtractor.java:633)
+            at org.pdfclown.tools.TextExtractor.extract(TextExtractor.java:296)
+            at coderarjob.kpdfsync.lib.annotator.PdfAnnotatorV1.highlight(PdfAnnotatorV1.java:62)
+            at coderarjob.kpdfsync.poc.MainFrame$2.run(MainFrame.java:172)
 
 [ ] Highlight is not visible on the output PDF file. This was seen on the Concrete Mathematics
     cropped PDF file.
@@ -62,3 +102,74 @@ Kpdfsync                                                                        
     5. Begin highlighting.
 
     The times, this exception occures, it occures around the 73% mark.
+
+[ ] EOFException at org.pdfclown.tools.TextExtractor.extract() method. This is seen on
+    'the_evolution_of_operating_system_cropped.pdf' file. Could also be a font issue.
+    Here is the stack trace
+java.lang.RuntimeException: java.io.EOFException
+        at org.pdfclown.documents.contents.fonts.CffParser.load(CffParser.java:703)
+        at org.pdfclown.documents.contents.fonts.CffParser.<init>(CffParser.java:640)
+        at org.pdfclown.documents.contents.fonts.Type1Font.getNativeEncoding(Type1Font.java:104)
+        at org.pdfclown.documents.contents.fonts.Type1Font.loadEncoding(Type1Font.java:151)
+        at org.pdfclown.documents.contents.fonts.SimpleFont.onLoad(SimpleFont.java:118)
+        at org.pdfclown.documents.contents.fonts.Font.load(Font.java:738)
+        at org.pdfclown.documents.contents.fonts.Font.<init>(Font.java:351)
+        at org.pdfclown.documents.contents.fonts.SimpleFont.<init>(SimpleFont.java:62)
+        at org.pdfclown.documents.contents.fonts.Type1Font.<init>(Type1Font.java:75)
+        at org.pdfclown.documents.contents.fonts.Font.wrap(Font.java:249)
+        at org.pdfclown.documents.contents.FontResources.wrap(FontResources.java:72)
+        at org.pdfclown.documents.contents.FontResources.wrap(FontResources.java:1)
+        at org.pdfclown.documents.contents.ResourceItems.get(ResourceItems.java:119)
+        at org.pdfclown.documents.contents.objects.SetFont.getResource(SetFont.java:119)
+        at org.pdfclown.documents.contents.objects.SetFont.getFont(SetFont.java:83)
+        at org.pdfclown.documents.contents.objects.SetFont.scan(SetFont.java:97)
+        at org.pdfclown.documents.contents.ContentScanner.moveNext(ContentScanner.java:1330)
+        at org.pdfclown.documents.contents.ContentScanner$TextWrapper.extract(ContentScanner.java:811)
+        at org.pdfclown.documents.contents.ContentScanner$TextWrapper.<init>(ContentScanner.java:777)
+        at org.pdfclown.documents.contents.ContentScanner$TextWrapper.<init>(ContentScanner.java:770)
+        at org.pdfclown.documents.contents.ContentScanner$GraphicsObjectWrapper.get(ContentScanner.java:690)
+        at org.pdfclown.documents.contents.ContentScanner$GraphicsObjectWrapper.access$0(ContentScanner.java:682)
+        at org.pdfclown.documents.contents.ContentScanner.getCurrentWrapper(ContentScanner.java:1154)
+        at org.pdfclown.tools.TextExtractor.extract(TextExtractor.java:633)
+        at org.pdfclown.tools.TextExtractor.extract(TextExtractor.java:296)
+        at coderarjob.kpdfsync.lib.annotator.PdfAnnotatorV1.highlight(PdfAnnotatorV1.java:62)
+        at coderarjob.kpdfsync.poc.MainFrame$2.run(MainFrame.java:172)
+        at java.base/java.lang.Thread.run(Thread.java:833)
+Caused by: java.io.EOFException
+        at org.pdfclown.bytes.Buffer.readUnsignedShort(Buffer.java:511)
+        at org.pdfclown.documents.contents.fonts.CffParser$Index.parse(CffParser.java:306)
+        at org.pdfclown.documents.contents.fonts.CffParser$Index.parse(CffParser.java:324)
+        at org.pdfclown.documents.contents.fonts.CffParser.load(CffParser.java:669)
+        ... 27 more
+:: Cause #1
+java.io.EOFException
+        at org.pdfclown.bytes.Buffer.readUnsignedShort(Buffer.java:511)
+        at org.pdfclown.documents.contents.fonts.CffParser$Index.parse(CffParser.java:306)
+        at org.pdfclown.documents.contents.fonts.CffParser$Index.parse(CffParser.java:324)
+        at org.pdfclown.documents.contents.fonts.CffParser.load(CffParser.java:669)
+        at org.pdfclown.documents.contents.fonts.CffParser.<init>(CffParser.java:640)
+        at org.pdfclown.documents.contents.fonts.Type1Font.getNativeEncoding(Type1Font.java:104)
+        at org.pdfclown.documents.contents.fonts.Type1Font.loadEncoding(Type1Font.java:151)
+        at org.pdfclown.documents.contents.fonts.SimpleFont.onLoad(SimpleFont.java:118)
+        at org.pdfclown.documents.contents.fonts.Font.load(Font.java:738)
+        at org.pdfclown.documents.contents.fonts.Font.<init>(Font.java:351)
+        at org.pdfclown.documents.contents.fonts.SimpleFont.<init>(SimpleFont.java:62)
+        at org.pdfclown.documents.contents.fonts.Type1Font.<init>(Type1Font.java:75)
+        at org.pdfclown.documents.contents.fonts.Font.wrap(Font.java:249)
+        at org.pdfclown.documents.contents.FontResources.wrap(FontResources.java:72)
+        at org.pdfclown.documents.contents.FontResources.wrap(FontResources.java:1)
+        at org.pdfclown.documents.contents.ResourceItems.get(ResourceItems.java:119)
+        at org.pdfclown.documents.contents.objects.SetFont.getResource(SetFont.java:119)
+        at org.pdfclown.documents.contents.objects.SetFont.getFont(SetFont.java:83)
+        at org.pdfclown.documents.contents.objects.SetFont.scan(SetFont.java:97)
+        at org.pdfclown.documents.contents.ContentScanner.moveNext(ContentScanner.java:1330)
+        at org.pdfclown.documents.contents.ContentScanner$TextWrapper.extract(ContentScanner.java:811)
+        at org.pdfclown.documents.contents.ContentScanner$TextWrapper.<init>(ContentScanner.java:777)
+        at org.pdfclown.documents.contents.ContentScanner$TextWrapper.<init>(ContentScanner.java:770)
+        at org.pdfclown.documents.contents.ContentScanner$GraphicsObjectWrapper.get(ContentScanner.java:690)
+        at org.pdfclown.documents.contents.ContentScanner$GraphicsObjectWrapper.access$0(ContentScanner.java:682)
+        at org.pdfclown.documents.contents.ContentScanner.getCurrentWrapper(ContentScanner.java:1154)
+        at org.pdfclown.tools.TextExtractor.extract(TextExtractor.java:633)
+        at org.pdfclown.tools.TextExtractor.extract(TextExtractor.java:296)
+        at coderarjob.kpdfsync.lib.annotator.PdfAnnotatorV1.highlight(PdfAnnotatorV1.java:62)
+        at coderarjob.kpdfsync.poc.MainFrame$2.run(MainFrame.java:172)
