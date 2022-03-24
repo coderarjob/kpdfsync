@@ -1,6 +1,6 @@
 ## About kpdfsync
 
-![Screenshot](/docs/images/screenshot.png)
+![Screenshot](/docs/images/screenshot_alpha.png)
 
 If you use Kindle to read PDF books or documents, you might have seen that the highlights or notes
 made on the Kindle are not saved on the PDF file itself. This means, if you take the file and
@@ -15,16 +15,23 @@ Kindle device.
 Currently it is in development, so not all the features work or even present. Here is the rough
 roadmap.
 
+## Requirements
+- JRE 1.8 or higher
+- Linux, Mac, Windows
+
 ## Roadmap
 
 - [X] Parsing the Clippings.txt file
 - [X] Search for the highlighted text in a page of the PDF file.
 - [X] Annotate highlight and notes on the PDF file.
-- [X] Graphical User Interface testing.
-- [X] Comments to notes mapping. This is required, because the clippings text file does not provide
-  information which can used to determine which comments are related to which note on a single
-  page.
-- [ ] Debug loggings
+- [X] Graphical User Interface (GUI) testing.
+- [X] Highlights to notes mapping. This is required, because the clippings text file does not
+  provide information which can used to determine which notes are related to which highlight on a
+  single page. Some cases where a page contains a single note and highlight, automatic pairs are
+  created, however in cases where there are more than one note, these associations can be created
+  manually by the user.
+- [X] GUI finalizing for the Alpha release.
+- [X] Debug loggings
 - [ ] **Alpha Release**
 
 ----

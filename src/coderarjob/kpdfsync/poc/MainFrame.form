@@ -3,6 +3,12 @@
 <Form version="1.5" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.JFileChooser" name="fileChooser">
+      <Properties>
+        <Property name="acceptAllFileFilterUsed" type="boolean" value="false"/>
+        <Property name="selectedFile" type="java.io.File" editor="org.netbeans.beaninfo.editors.FileEditor">
+          <SerializedValue value="-84,-19,0,5,115,114,0,12,106,97,118,97,46,105,111,46,70,105,108,101,4,45,-92,69,14,13,-28,-1,3,0,1,76,0,4,112,97,116,104,116,0,18,76,106,97,118,97,47,108,97,110,103,47,83,116,114,105,110,103,59,120,112,116,0,2,32,32,119,2,0,47,120"/>
+        </Property>
+      </Properties>
     </Component>
   </NonVisualComponents>
   <Properties>
@@ -29,70 +35,73 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Component id="headerPanel" alignment="0" max="32767" attributes="0"/>
-          <Component id="proceedPanel" alignment="0" max="32767" attributes="0"/>
-          <Group type="102" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="statusScrollPane" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="selectBookNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="clippingsFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="pageNumbersLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="pageNumbersScrollPane" alignment="0" pref="152" max="32767" attributes="0"/>
-                              <Component id="statusLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="pdfSkipPagesLabel" alignment="0" max="32767" attributes="0"/>
-                              <Component id="pageNumbersScrollPane1" pref="0" max="32767" attributes="0"/>
-                              <Component id="selectPdfFileLabel" alignment="0" max="32767" attributes="0"/>
-                          </Group>
-                          <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="cancelMapButton" alignment="0" max="32767" attributes="0"/>
-                              <Component id="updateMapButton" alignment="0" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
+                  <Group type="102" attributes="0">
+                      <Component id="highlightsScrollPane" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Component id="statusScrollPane" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="selectPdfFileLabel" pref="152" max="32767" attributes="0"/>
+                          <Component id="pdfSkipPagesLabel" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="1" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="clippingsFileTextBox" max="32767" attributes="0"/>
-                                  <Component id="selectBookNameComboBox" max="32767" attributes="0"/>
-                              </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="pdfSkipPagesSpinner" min="-2" pref="63" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="browseClippingsFileButton" min="-2" max="-2" attributes="0"/>
+                              <Component id="matchThressholdLabel" min="-2" pref="183" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="matchThressholdSpinner" min="-2" pref="63" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="percentLabel" min="-2" pref="18" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="372" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" attributes="0">
-                                      <Component id="selectHighlightLabel" min="-2" pref="239" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Component id="selectNoteLabel" pref="518" max="32767" attributes="0"/>
-                              </Group>
-                              <EmptySpace min="-2" pref="190" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="selectPdfFileTextBox" max="32767" attributes="0"/>
-                                  <Group type="102" attributes="0">
-                                      <Component id="pdfSkipPagesSpinner" min="-2" pref="63" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="matchThressholdLabel" min="-2" pref="183" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="matchThressholdSpinner" min="-2" pref="63" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="percentLabel" min="-2" pref="18" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="selectPdfFileTextBox" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="browsePdfFileButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="highlightsScrollPane" alignment="0" max="32767" attributes="0"/>
-                          <Component id="notesScrollPane" alignment="0" max="32767" attributes="0"/>
                       </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Component id="pageNumbersScrollPane" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="selectBookNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="clippingsFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="statusLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="selectBookNameComboBox" max="32767" attributes="0"/>
+                                  <Component id="clippingsFileTextBox" max="32767" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="browseClippingsFileButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="proceedPanel" alignment="0" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="5" pref="5" max="-2" attributes="0"/>
+                  </Group>
+                  <Component id="selectHighlightLabel" alignment="0" max="32767" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="pageNumbersLabel" min="-2" pref="110" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -112,6 +121,14 @@
                   <Component id="selectBookNameComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="pageNumbersLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="pageNumbersScrollPane" min="-2" pref="81" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="selectHighlightLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="highlightsScrollPane" pref="459" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="selectPdfFileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="selectPdfFileTextBox" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -119,42 +136,18 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="pdfSkipPagesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="pdfSkipPagesSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="matchThressholdLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="matchThressholdSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="percentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="pdfSkipPagesLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="pageNumbersLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="selectHighlightLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="highlightsScrollPane" pref="237" max="32767" attributes="0"/>
-                  <Component id="pageNumbersScrollPane" max="32767" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="updateMapButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="selectNoteLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Group type="102" attributes="0">
-                      <Component id="cancelMapButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="pageNumbersScrollPane1" pref="178" max="32767" attributes="0"/>
-                  </Group>
-                  <Component id="notesScrollPane" max="32767" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="proceedPanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="statusLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="statusScrollPane" min="-2" pref="108" max="-2" attributes="0"/>
+              <Component id="statusScrollPane" min="-2" pref="81" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -198,7 +191,7 @@
         <Component class="javax.swing.JLabel" name="logoLabel">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="2" name="/home/coder/NetBeansProjects/GuiHelloWorld/Resources/LogoHori.png"/>
+              <Image iconType="3" name="/coderarjob/kpdfsync/poc/res/Logo.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value=""/>
           </Properties>
@@ -214,6 +207,7 @@
         <Component class="javax.swing.JButton" name="optionsButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="Options"/>
+            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="optionsButtonActionPerformed"/>
@@ -248,6 +242,9 @@
           <StringArray count="0"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="selectBookNameComboBoxActionPerformed"/>
+      </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
       </AuxValues>
@@ -293,15 +290,26 @@
       <SubComponents>
         <Component class="javax.swing.JList" name="pageNumbersList">
           <Properties>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                <EtchetBorder/>
+              </Border>
+            </Property>
             <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="pageNumbersListModel" type="code"/>
             </Property>
+            <Property name="selectionMode" type="int" value="0"/>
+            <Property name="cellRenderer" type="javax.swing.ListCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="new PageNumberListRenderer()" type="code"/>
+            </Property>
+            <Property name="layoutOrientation" type="int" value="1"/>
+            <Property name="visibleRowCount" type="int" value="3"/>
           </Properties>
           <Events>
             <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="pageNumbersListValueChanged"/>
           </Events>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;PageResource&gt;"/>
           </AuxValues>
         </Component>
       </SubComponents>
@@ -313,7 +321,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="selectHighlightLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Select a highlight from the selected page:"/>
+        <Property name="text" type="java.lang.String" value="Highlight as associated notes. (Double-click to change)"/>
       </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="highlightsScrollPane">
@@ -325,42 +333,25 @@
       <SubComponents>
         <Component class="javax.swing.JList" name="highlightsList">
           <Properties>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                <EtchetBorder/>
+              </Border>
+            </Property>
             <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="highlightsListModel" type="code"/>
             </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="highlightsListValueChanged"/>
-          </Events>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
-          </AuxValues>
-        </Component>
-      </SubComponents>
-    </Container>
-    <Component class="javax.swing.JLabel" name="selectNoteLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Select the note from the selected page, that corresponds with the above highlight:"/>
-      </Properties>
-    </Component>
-    <Container class="javax.swing.JScrollPane" name="notesScrollPane">
-      <AuxValues>
-        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-      <SubComponents>
-        <Component class="javax.swing.JList" name="notesList">
-          <Properties>
-            <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="notesListModel" type="code"/>
+            <Property name="selectionMode" type="int" value="0"/>
+            <Property name="cellRenderer" type="javax.swing.ListCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="new HighlightNotePairListRenderer()" type="code"/>
             </Property>
           </Properties>
           <Events>
-            <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="notesListValueChanged"/>
+            <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="highlightsListMouseClicked"/>
+            <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="highlightsListValueChanged"/>
           </Events>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;HighlightNotePair&gt;"/>
           </AuxValues>
         </Component>
       </SubComponents>
@@ -381,12 +372,9 @@
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
-                  <EmptySpace min="0" pref="12" max="32767" attributes="0"/>
-                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="proceedButton" max="32767" attributes="0"/>
-                      <Component id="jProgressBar1" max="32767" attributes="0"/>
-                  </Group>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="jProgressBar1" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
+                  <Component id="proceedButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -402,6 +390,14 @@
         </Component>
         <Component class="javax.swing.JProgressBar" name="jProgressBar1">
           <Properties>
+            <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="cc" green="cc" red="0" type="rgb"/>
+            </Property>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                <EtchetBorder/>
+              </Border>
+            </Property>
             <Property name="stringPainted" type="boolean" value="true"/>
           </Properties>
         </Component>
@@ -431,28 +427,6 @@
         <Property name="text" type="java.lang.String" value="Status:"/>
       </Properties>
     </Component>
-    <Container class="javax.swing.JScrollPane" name="pageNumbersScrollPane1">
-      <AuxValues>
-        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-      </AuxValues>
-
-      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-      <SubComponents>
-        <Component class="javax.swing.JList" name="highlightNotesMapList">
-          <Properties>
-            <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="highlightNotesMapListModel" type="code"/>
-            </Property>
-          </Properties>
-          <Events>
-            <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="highlightNotesMapListValueChanged"/>
-          </Events>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
-          </AuxValues>
-        </Component>
-      </SubComponents>
-    </Container>
     <Component class="javax.swing.JLabel" name="pdfSkipPagesLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
@@ -468,22 +442,6 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="updateMapButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Update map"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="updateMapButtonActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="cancelMapButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Cancel map"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cancelMapButtonActionPerformed"/>
-      </Events>
-    </Component>
     <Component class="javax.swing.JLabel" name="matchThressholdLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
@@ -496,6 +454,9 @@
       <Properties>
         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
           <SpinnerModel initial="0" numberType="java.lang.Integer" stepSize="1" type="number"/>
+        </Property>
+        <Property name="value" type="java.lang.Object" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="90" type="code"/>
         </Property>
       </Properties>
     </Component>
