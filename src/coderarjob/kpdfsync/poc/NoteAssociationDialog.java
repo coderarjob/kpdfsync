@@ -6,10 +6,6 @@ import java.awt.event.*;
 
 import java.util.List;
 
-/**
- *
- * @author coder
- */
 public class NoteAssociationDialog extends javax.swing.JDialog
 {
   public enum NoteAssociationDialogOptions
@@ -29,6 +25,7 @@ public class NoteAssociationDialog extends javax.swing.JDialog
     super(parent, true);
     mNotesListModel = new DefaultListModel<>();
     initComponents();
+    this.setLocationRelativeTo(parent);     // Center of the parent.
   }
 
   private void reset()
