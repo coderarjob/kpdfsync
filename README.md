@@ -8,7 +8,7 @@ from your Kindle and read on another device, you will not see those highlights a
 
 This software tries to provide a solution. The basis is the Clippings.txt file on your Kindle.
 Kindle saves the page numbers and content of the highlights and notes in the text file. So in
-theory, one can read the Clippings file and reapply the highlights and notes on the PDF separetely.
+theory, one can read the Clippings file and reapply the highlights and notes on the PDF separately.
 This software automates the process.
 
 Currently it is in development, so not all the features work or even present. Here is the rough
