@@ -11,8 +11,11 @@ Kindle saves the page numbers and content of the highlights and notes in the tex
 theory, one can read the Clippings file and reapply the highlights and notes on the PDF separately.
 This software automates the process.
 
-Currently it is in development, so not all the features work or even present. Here is the rough
-roadmap.
+Currently it is in development, so not all the features work or even present. There can also be
+serious bugs present, so I request you to keep backup of the files you give to kpdfsync (the
+clippings file and pdf files)
+
+Here is the rough roadmap of the development.
 
 ## Roadmap
 
@@ -27,7 +30,7 @@ roadmap.
   manually by the user.
 - [X] GUI finalizing for the Alpha release.
 - [X] Debug loggings
-- [ ] **Alpha Release**
+- [X] **Alpha Release**
 
 ----
 
