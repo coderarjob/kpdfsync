@@ -2,22 +2,17 @@
 
 ![Screenshot](/docs/images/screenshot_alpha.png)
 
-If you use Kindle to read PDF books or documents, you might have seen that the highlights or notes
-made on the Kindle are not saved on the PDF file itself. This means, if you take the file and
-read on another device, you will not see those highlights and notes make on the Kindle.
+If you use Kindle to read PDF books or documents, you might have seen that the highlights and notes
+made on the Kindle are not saved on the PDF file itself. This means, that if you take the PDF file
+from your Kindle and read on another device, you will not see those highlights and notes there.
 
-This software tries to provide a solution. The basis on which this solution stands is the
-Clippings.txt file on your Kindle.
-
-This is the file, where Kindle saves the page numbers of all the highlights and notes done on the
-Kindle device.
+This software tries to provide a solution. The basis is the Clippings.txt file on your Kindle.
+Kindle saves the page numbers and content of the highlights and notes in the text file. So in
+theory, one can read the Clippings file and reapply the highlights and notes on the PDF separetely.
+This software automates the process.
 
 Currently it is in development, so not all the features work or even present. Here is the rough
 roadmap.
-
-## Requirements
-- JRE 1.8 or higher
-- Linux, Mac, Windows
 
 ## Roadmap
 
@@ -40,6 +35,10 @@ roadmap.
 - [ ] Memory/Resource optimization.
 - [ ] Finalizing and optimizing the Graphical User Interface.
 - [ ] **Beta Release**
+
+## Requirements
+- JRE 1.8 or higher
+- Linux, Mac, Windows
 
 ## 3rd-party License
 
