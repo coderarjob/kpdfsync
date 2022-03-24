@@ -48,20 +48,19 @@
                   </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="selectPdfFileLabel" pref="152" max="32767" attributes="0"/>
+                          <Component id="selectPdfFileLabel" max="32767" attributes="0"/>
                           <Component id="pdfSkipPagesLabel" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="pdfSkipPagesSpinner" min="-2" pref="63" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="matchThressholdLabel" min="-2" pref="183" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="matchThressholdSpinner" min="-2" pref="63" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="percentLabel" min="-2" pref="18" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="372" max="-2" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="selectPdfFileTextBox" max="32767" attributes="0"/>
@@ -78,12 +77,19 @@
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="selectBookNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="clippingsFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="statusLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Group type="102" attributes="0">
+                                      <Component id="statusLabel" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" pref="158" max="-2" attributes="0"/>
+                                  </Group>
+                                  <Group type="102" attributes="0">
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="selectBookNameLabel" max="32767" attributes="0"/>
+                                          <Component id="clippingsFileLabel" max="32767" attributes="0"/>
+                                      </Group>
+                                      <EmptySpace min="37" pref="37" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="selectBookNameComboBox" max="32767" attributes="0"/>
                                   <Component id="clippingsFileTextBox" max="32767" attributes="0"/>
@@ -98,7 +104,7 @@
                   </Group>
                   <Component id="selectHighlightLabel" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="pageNumbersLabel" min="-2" pref="110" max="-2" attributes="0"/>
+                      <Component id="pageNumbersLabel" min="-2" pref="162" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
@@ -166,7 +172,7 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <Component id="logoLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace pref="552" max="32767" attributes="0"/>
                   <Component id="optionsButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="exitButton" min="-2" max="-2" attributes="0"/>
@@ -217,9 +223,6 @@
     </Container>
     <Component class="javax.swing.JLabel" name="clippingsFileLabel">
       <Properties>
-        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="0" green="0" red="0" type="rgb"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="clippingsFileTextBox"/>
         </Property>
@@ -251,9 +254,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="selectBookNameLabel">
       <Properties>
-        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="0" green="0" red="0" type="rgb"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="selectBookNameComboBox"/>
         </Property>
@@ -262,9 +262,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="selectPdfFileLabel">
       <Properties>
-        <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="0" green="0" red="0" type="rgb"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="selectPdfFileTextBox"/>
         </Property>
@@ -316,12 +313,12 @@
     </Container>
     <Component class="javax.swing.JLabel" name="pageNumbersLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Page numbers:"/>
+        <Property name="text" type="java.lang.String" value="Pages with highlight/notes:"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="selectHighlightLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Highlight as associated notes. (Double-click to change)"/>
+        <Property name="text" type="java.lang.String" value="Highlight and notes association. (Double-click to change)"/>
       </Properties>
     </Component>
     <Container class="javax.swing.JScrollPane" name="highlightsScrollPane">
@@ -432,7 +429,7 @@
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="pdfSkipPagesSpinner"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Number of pages to skip:"/>
+        <Property name="text" type="java.lang.String" value="Number of pages before page 1:"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JSpinner" name="pdfSkipPagesSpinner">

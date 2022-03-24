@@ -669,7 +669,7 @@ public class MainFrame extends javax.swing.JFrame
       headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(headerPanelLayout.createSequentialGroup()
         .addComponent(logoLabel)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 552, Short.MAX_VALUE)
         .addComponent(optionsButton)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addComponent(exitButton)
@@ -685,7 +685,6 @@ public class MainFrame extends javax.swing.JFrame
         .addGap(24, 24, 24))
     );
 
-    clippingsFileLabel.setForeground(new java.awt.Color(0, 0, 0));
     clippingsFileLabel.setLabelFor(clippingsFileTextBox);
     clippingsFileLabel.setText("Clippings file :");
 
@@ -702,11 +701,9 @@ public class MainFrame extends javax.swing.JFrame
       }
     });
 
-    selectBookNameLabel.setForeground(new java.awt.Color(0, 0, 0));
     selectBookNameLabel.setLabelFor(selectBookNameComboBox);
     selectBookNameLabel.setText("Select book name :");
 
-    selectPdfFileLabel.setForeground(new java.awt.Color(0, 0, 0));
     selectPdfFileLabel.setLabelFor(selectPdfFileTextBox);
     selectPdfFileLabel.setText("Select book PDF file :");
 
@@ -730,9 +727,9 @@ public class MainFrame extends javax.swing.JFrame
     });
     pageNumbersScrollPane.setViewportView(pageNumbersList);
 
-    pageNumbersLabel.setText("Page numbers:");
+    pageNumbersLabel.setText("Pages with highlight/notes:");
 
-    selectHighlightLabel.setText("Highlight as associated notes. (Double-click to change)");
+    selectHighlightLabel.setText("Highlight and notes association. (Double-click to change)");
 
     highlightsList.setBorder(javax.swing.BorderFactory.createEtchedBorder());
     highlightsList.setModel(highlightsListModel);
@@ -785,7 +782,7 @@ public class MainFrame extends javax.swing.JFrame
     statusLabel.setText("Status:");
 
     pdfSkipPagesLabel.setLabelFor(pdfSkipPagesSpinner);
-    pdfSkipPagesLabel.setText("Number of pages to skip:");
+    pdfSkipPagesLabel.setText("Number of pages before page 1:");
 
     pdfSkipPagesSpinner.setModel(new javax.swing.SpinnerNumberModel());
 
@@ -814,19 +811,18 @@ public class MainFrame extends javax.swing.JFrame
             .addContainerGap())
           .addGroup(layout.createSequentialGroup()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-              .addComponent(selectPdfFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
+              .addComponent(selectPdfFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
               .addComponent(pdfSkipPagesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
               .addGroup(layout.createSequentialGroup()
                 .addComponent(pdfSkipPagesSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(matchThressholdLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(matchThressholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(percentLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(372, 372, 372))
+                .addComponent(percentLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
               .addGroup(layout.createSequentialGroup()
                 .addComponent(selectPdfFileTextBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -838,11 +834,15 @@ public class MainFrame extends javax.swing.JFrame
           .addGroup(layout.createSequentialGroup()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
               .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                  .addComponent(selectBookNameLabel)
-                  .addComponent(clippingsFileLabel)
-                  .addComponent(statusLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                  .addGroup(layout.createSequentialGroup()
+                    .addComponent(statusLabel)
+                    .addGap(158, 158, 158))
+                  .addGroup(layout.createSequentialGroup()
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                      .addComponent(selectBookNameLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                      .addComponent(clippingsFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGap(37, 37, 37)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                   .addComponent(selectBookNameComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                   .addComponent(clippingsFileTextBox))
@@ -853,7 +853,7 @@ public class MainFrame extends javax.swing.JFrame
             .addGap(5, 5, 5))
           .addComponent(selectHighlightLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
           .addGroup(layout.createSequentialGroup()
-            .addComponent(pageNumbersLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(pageNumbersLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addGap(0, 0, Short.MAX_VALUE))))
     );
     layout.setVerticalGroup(
