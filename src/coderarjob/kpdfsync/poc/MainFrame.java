@@ -8,13 +8,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 
 import coderarjob.kpdfsync.lib.clipparser.*;
 import coderarjob.kpdfsync.lib.clipparser.ParserResult.AnnotationType;
 import coderarjob.kpdfsync.lib.*;
 import coderarjob.kpdfsync.lib.pm.*;
+import coderarjob.kpdfsync.poc.Log.LogType;
 import coderarjob.kpdfsync.lib.annotator.*;
 
 public class MainFrame extends javax.swing.JFrame
@@ -30,7 +30,7 @@ public class MainFrame extends javax.swing.JFrame
 
   private enum StatusTypes
   {
-    PARSER_ERROR, MATCH_FOUND, MATCH_NOT_FOUND, OTHER, ERROR, INFORMATION
+    ERROR, INFORMATION, WARNING
   }
 
   /* Private fields */
@@ -65,14 +65,21 @@ public class MainFrame extends javax.swing.JFrame
   /* Kindle Parser event handler*/
   private void parserErrorHander (String fileName, long offset, String error, ParserResult result)
   {
-    addStatusLine (StatusTypes.PARSER_ERROR, "'%s' at %d", error, offset);
+    addStatusLine (StatusTypes.WARNING, "'%s' at %d", error, offset);
   }
 
   /* Matcher event handler */
   private void matchCompletedEventHandler (Match match)
   {
     if (match.matchPercent() > mAnnotator.getMatchThreshold())
-      addStatusLine (StatusTypes.MATCH_FOUND, match);
+    {
+      String fmt = "%.30s... %.0f%% matched on line %d.";
+      StatusTypes type = (match.matchPercent() == 100) ? StatusTypes.INFORMATION
+                                                       : StatusTypes.WARNING;
+
+      addStatusLine (type, fmt, match.pattern(), match.matchPercent()
+                                               , match.beginFrom().lineNumber());
+    }
   }
 
   /* Button and other UI event handlers*/
@@ -89,7 +96,7 @@ public class MainFrame extends javax.swing.JFrame
     parseClippingsThread = new Thread (new Runnable () {
       public void run () {
         try {
-          addStatusLine (StatusTypes.OTHER, "Parsing %s ...", file.getName());
+          addStatusLine (StatusTypes.INFORMATION, "Parsing %s ...", file.getName());
           createNewParser (file.getAbsolutePath());
           mClippingsFile = new KindleClippingsFile(mParser);
 
@@ -101,16 +108,16 @@ public class MainFrame extends javax.swing.JFrame
           if (statusList.getModel().getSize() == 0)
             throw new Exception ("Empty or invalid clippings file.");
 
-          addStatusLine (StatusTypes.OTHER, "Parsing complete");
+          addStatusLine (StatusTypes.INFORMATION, "Parsing complete");
           setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_COMPLETED);
 
         } catch (InterruptedException ex) {
-          addStatusLine (StatusTypes.OTHER, "Parsing canceled");
+          addStatusLine (StatusTypes.WARNING, "Parsing canceled");
           setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_FAILED);
         }
         catch (Exception ex)
         {
-          addStatusLine (StatusTypes.OTHER, "Parsing failed: " + ex.getMessage());
+          addStatusLine (StatusTypes.ERROR, "Parsing failed: " + ex.getMessage());
           setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_FAILED);
           reportException (ex);
         }
@@ -169,9 +176,17 @@ public class MainFrame extends javax.swing.JFrame
             for (HighlightNotePair pair : res.getPairs())
             {
               boolean okay;
+
+              Log.getInstance().log (LogType.INFORMATION
+                                     , "%n\t[Highlighting] '%s' with note '%s' @ page %d"
+                                     , pair.getHighlightText()
+                                     , pair.getNoteText()
+                                     , pageNum);
+
               okay = mAnnotator.highlight (pageNum, pair.getHighlightText(), pair.getNoteText());
               if (!okay)
-                addStatusLine (StatusTypes.MATCH_NOT_FOUND, pair.getHighlightText());
+                addStatusLine (StatusTypes.ERROR, "%.30s... not found."
+                                                , pair.getHighlightText());
 
               float progress = (float) highlightIndex/(totalHighlightCount - 1) * 100;
               updateUIProgressBar ((int)progress);
@@ -180,17 +195,17 @@ public class MainFrame extends javax.swing.JFrame
           }
 
           // Save pdf to a new file.
-          addStatusLine (StatusTypes.OTHER, "Saving to file " + destinationPdfFileName);
+          addStatusLine (StatusTypes.INFORMATION, "Saving to file " + destinationPdfFileName);
           mAnnotator.save (destinationPdfFileName);
 
-          addStatusLine (StatusTypes.OTHER, "Highlighting complete.");
+          addStatusLine (StatusTypes.INFORMATION, "Highlighting complete.");
           setStatus (ApplicationStatus.HIGHLIGHT_COMPLETED);
         } catch (InterruptedException ex) {
-          addStatusLine (StatusTypes.OTHER, "Highlight canceled.");
+          addStatusLine (StatusTypes.WARNING, "Highlight canceled.");
           setStatus (ApplicationStatus.HIGHLIGHT_FAILED);
         } catch (Exception ex)
         {
-          addStatusLine (StatusTypes.OTHER, "Highlighting failed.");
+          addStatusLine (StatusTypes.ERROR, "Highlighting failed.");
           setStatus (ApplicationStatus.HIGHLIGHT_FAILED);
           reportException (ex);
         }
@@ -209,6 +224,8 @@ public class MainFrame extends javax.swing.JFrame
 
     PageResource res = pageNumbersList.getSelectedValue();
     int pageNumber = res.getPageNumber();
+
+    Log.getInstance().log (LogType.INFORMATION, "[PageNumberList] selected page: " + pageNumber);
     System.out.println ("Page number selected is " + pageNumber);
 
     // Clear highlights and notes
@@ -236,22 +253,24 @@ public class MainFrame extends javax.swing.JFrame
   private void exitButtonActionPerformed(ActionEvent evt)
   {
     String buttonText = exitButton.getText().toUpperCase ();
-    if (buttonText.equals ("EXIT"))
+    boolean isExit = buttonText.equals ("EXIT");
+
+    // Flush log when Exit/Cancel button is pressed.
+    Log.getInstance().log (LogType.INFORMATION, (isExit) ? "Exiting" : "Cancelling Operation");
+    Log.getInstance().flush();
+
+    if (isExit)
     {
       // TODO: Possibly add confirmation before closing.
       System.exit (0);
     }
     else
     {
-      if (highlightThread != null && highlightThread.isAlive ()) {
-        System.out.println ("highlight thread interrupted");
+      if (highlightThread != null && highlightThread.isAlive ())
         highlightThread.interrupt();
-      }
 
-      if (parseClippingsThread != null && parseClippingsThread.isAlive ()) {
-        System.out.println ("parser thread interrupted");
+      if (parseClippingsThread != null && parseClippingsThread.isAlive ())
         parseClippingsThread.interrupt();
-      }
     }
   }
 
@@ -274,11 +293,26 @@ public class MainFrame extends javax.swing.JFrame
         case CREATE:
           String noteText = mNoteForm.getSelectedNoteText();
           System.out.println ("Selected: " + noteText);
-          if (noteText != null)
+
+          Log.getInstance().log (LogType.INFORMATION
+                                , "[pair create] Highlight: '%s'%n\tNote: '%s'"
+                                , pair.getHighlightText()
+                                , noteText);
+
+          if (noteText != null) {
+            Log.getInstance().log (LogType.INFORMATION, "[pair create] Created.");
             res.pair (pair.getHighlightText(), noteText);
+          } else {
+            Log.getInstance().log (LogType.WARNING, "[pair create] Not created.");
+          }
 
           break;
         case DELETE:
+          Log.getInstance().log (LogType.INFORMATION
+                                , "[pair delete] Highlight: '%s'%n\tNote: '%s'"
+                                , pair.getHighlightText()
+                                , pair.getNoteText());
+
           res.unpair (pair.getHighlightText());
           break;
       }
@@ -378,13 +412,19 @@ public class MainFrame extends javax.swing.JFrame
 
   private void reportException (Exception ex)
   {
-    JOptionPane.showMessageDialog (this, ex.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
-    System.err.println (ex.getMessage());
+    String exceptionMessage = ex.getMessage() == null ? ex.toString() : ex.getMessage();
+
+    JOptionPane.showMessageDialog (this, exceptionMessage, "Error!", JOptionPane.ERROR_MESSAGE);
+    System.err.println (exceptionMessage);
     ex.printStackTrace();
+
+    Log.getInstance().log (LogType.ERROR, "Exception: %s", exceptionMessage);
 
     Throwable cause = ex.getCause();
     for (int i = 1; cause != null; i++)
     {
+      Log.getInstance().log (LogType.ERROR, "\tCause %d: %s", i, cause.getMessage());
+
       System.err.println (":: Cause #" + i);
       cause.printStackTrace();
       cause = cause.getCause();
@@ -417,45 +457,63 @@ public class MainFrame extends javax.swing.JFrame
     SwingUtilities.invokeLater (r);
   }
 
-  private void addStatusLine (final StatusTypes type, final Object... values)
+  private void addStatusLine (final StatusTypes type, final String fmt, final Object... values)
   {
-    String newEntryString;
-    String fmt;
-    Object[] args;
+    String statusText;
 
     switch (type)
     {
-      case MATCH_FOUND:
-        fmt = "%.30s... %.0f%% matched on line %d.";
-        Match match = (Match)values[0];
-        newEntryString = String.format (fmt
-            , match.pattern()
-            , match.matchPercent()
-            , match.beginFrom().lineNumber());
+      case WARNING:
+        statusText = String.format ("[Warning] " + fmt, values);
+        Log.getInstance().log (LogType.WARNING, fmt, values);
         break;
-      case MATCH_NOT_FOUND:
-        fmt = "%.30s... not found.";
-        String pattern = (String)values[0];
-        newEntryString = String.format (fmt, pattern);
+      case ERROR:
+        statusText = String.format ("[Error] " + fmt, values);
+        Log.getInstance().log (LogType.ERROR, fmt, values);
         break;
-      case PARSER_ERROR:
-        fmt = (String)values[0];
-        args = Arrays.copyOfRange (values, 1, values.length);
-        newEntryString = String.format ("Parser Error : " + fmt, args);
+      case INFORMATION:
+        statusText = String.format (fmt, values);
+        Log.getInstance().log (LogType.INFORMATION, fmt, values);
         break;
       default:
-        fmt = (String)values[0];
-        args = Arrays.copyOfRange (values, 1, values.length);
-        newEntryString = String.format (fmt, args);
+        statusText = "";
+        break;
     }
 
     Runnable r = new Runnable () {
       public void run () {
-        statusListModel.addElement (newEntryString);
+        statusListModel.addElement (statusText);
         //statusList.ensureIndexIsVisible (statusListModel.getSize() - 1);      // Slows down UI
       }
     };
     SwingUtilities.invokeLater (r);
+  }
+
+  private void logApplicationStatus (final ApplicationStatus status)
+  {
+    String fmt  = "At %s%n";
+           fmt += "\tClip file: %s%n";
+           fmt += "\tBook: %s%n";
+           fmt += "\tSkip pages: %d%n";
+           fmt += "\tThreshold :%d%n";
+           fmt += "\tPDF souce :%s";
+
+
+    String clipFileName = clippingsFileTextBox.getText();
+    String bookTitle = (selectBookNameComboBox.getSelectedIndex() >= 0)
+                                            ? (String)selectBookNameComboBox.getSelectedItem()
+                                            : "<nothing selected>";
+    Integer skipPage = (Integer)pdfSkipPagesSpinner.getValue();
+    Integer threshold = (Integer)matchThressholdSpinner.getValue();
+    String sourcePDF = selectPdfFileTextBox.getText();
+
+    Log.getInstance().log (LogType.INFORMATION, fmt
+                                              , status.toString()
+                                              , clipFileName
+                                              , bookTitle
+                                              , skipPage
+                                              , threshold
+                                              , sourcePDF);
   }
 
   private void setStatus (final ApplicationStatus status)
@@ -470,6 +528,9 @@ public class MainFrame extends javax.swing.JFrame
       SwingUtilities.invokeLater (r);
       return;
     }
+
+    // Log Application Status
+    logApplicationStatus (status);
 
     // Always keep the text boxes disabled.
     selectPdfFileTextBox.setEnabled (false);
@@ -514,6 +575,9 @@ public class MainFrame extends javax.swing.JFrame
         matchThressholdSpinner.setEnabled (true);
         break;
       case CLIPPINGS_FILE_PARSE_STARTED: // intentional falling
+        statusListModel.clear ();
+        selectBookNameComboBox.removeAllItems ();
+        browseClippingsFileButton.setEnabled (true);
       case HIGHLIGHT_STARTED:
         jProgressBar1.setValue (0);
         exitButton.setText ("Cancel");
