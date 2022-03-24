@@ -10,7 +10,7 @@ public class Log
 {
   public enum LogType
   {
-    INFORMATION, WARNING, ERROR;
+    UNSET, INFORMATION, WARNING, ERROR;
   }
 
   private static Log mInstance;
@@ -19,7 +19,8 @@ public class Log
   private BufferedWriter mWriter;
   private PrintWriter mPrinter;
   private DateTimeFormatter mLogDateTimeFormatter;
-  private LocalTime mPrev;      /* Used to determine passage of time from last log. */
+  private LocalTime mPrev;      // Used to determine passage of time from last log.
+  private LogType mPrevLogType; // Used with mPrev to determine if discontinuation is needed.
 
   static
   {
@@ -35,6 +36,7 @@ public class Log
     mPrinter = new PrintWriter (mWriter);
     mLogDateTimeFormatter = DateTimeFormatter.ofPattern ("HH:mm:ss");
     mPrev = LocalTime.now();
+    mPrevLogType = LogType.UNSET;
   }
 
   public static Log getInstance()
@@ -72,7 +74,10 @@ public class Log
 
     String datetimeText = LocalTime.now().format (mLogDateTimeFormatter);
     boolean continueWithPrevious = ChronoUnit.SECONDS.between (mPrev, LocalTime.now()) < 1;
+    continueWithPrevious = continueWithPrevious & type == mPrevLogType;
+
     mPrev = LocalTime.now();
+    mPrevLogType = type;
 
     switch (type)
     {
