@@ -32,7 +32,8 @@ public class PageResource
   public List<String> getNoteList ()
   {
     // That way any changes do not effect object here.
-    return List.copyOf(this.mNoteList);
+    // List.copyOf added in JDK 10, thus cannot be used as we are targetting JDK 8.
+    return copyOf(this.mNoteList);
   }
 
   /*** Returns an unmodifiable list of Highlights with already associated notes.
@@ -45,7 +46,13 @@ public class PageResource
       throw new Exception ("Invalid. There are more notes than highlights");
 
     // That way any changes do not effect object here.
-    return List.copyOf(this.mPairs);
+    // List.copyOf added in JDK 10, thus cannot be used as we are targetting JDK 8.
+    return copyOf(this.mPairs);
+  }
+
+  private <T> List<T> copyOf (List<T> list)
+  {
+    return new ArrayList<T>(list);
   }
 
   /*** Adds a new note to unpaired notes list.
@@ -114,7 +121,7 @@ public class PageResource
     }
 
     if (pairsListIndex < 0)
-      throw new Exception ("Unpair failed. Highlight is not found.");
+      throw new Exception ("Unpair failed. Highlight text is not found or already unpaired.");
 
     // Remove the note from the pairs list and add it to the unpaired notes list.
     String note = mPairs.get (pairsListIndex).getNoteText();
