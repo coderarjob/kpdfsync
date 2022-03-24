@@ -685,7 +685,6 @@ public class MainFrame extends javax.swing.JFrame
         .addGap(24, 24, 24))
     );
 
-    clippingsFileLabel.setForeground(new java.awt.Color(0, 0, 0));
     clippingsFileLabel.setLabelFor(clippingsFileTextBox);
     clippingsFileLabel.setText("Clippings file :");
 
@@ -702,11 +701,9 @@ public class MainFrame extends javax.swing.JFrame
       }
     });
 
-    selectBookNameLabel.setForeground(new java.awt.Color(0, 0, 0));
     selectBookNameLabel.setLabelFor(selectBookNameComboBox);
     selectBookNameLabel.setText("Select book name :");
 
-    selectPdfFileLabel.setForeground(new java.awt.Color(0, 0, 0));
     selectPdfFileLabel.setLabelFor(selectPdfFileTextBox);
     selectPdfFileLabel.setText("Select book PDF file :");
 
