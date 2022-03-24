@@ -569,7 +569,7 @@ public class MainFrame extends javax.swing.JFrame
         statusLabel.setText ("Parsing complete. Select the book title you want to highlight.");
         break;
       case CLIPPINGS_FILE_PARSE_FAILED:
-        statusLabel.setText ("Parsing failed. See the errors list or log file" + Log.LOG_FILE);
+        statusLabel.setText ( "Parsing failed. See the errors list or " + Log.LOG_FILE + " file");
         break;
       case BOOK_TITLE_SELECTED:
         statusLabel.setText ("Associate highlights with corresponding notes (if needed)");
@@ -578,8 +578,14 @@ public class MainFrame extends javax.swing.JFrame
         statusLabel.setText ("Highlighting completed");
         break;
       case HIGHLIGHT_FAILED:
-        statusLabel.setText ("Highlighting failed. See the errors list or log file" + Log.LOG_FILE);
+        statusLabel.setText (
+            "Highlighting failed. See the errors list or " + Log.LOG_FILE + " file"
+            );
+        break;
       case PDF_SELECTED:
+        statusLabel.setText (
+            "PDF file selected. Now enter the 'threshold' and 'number of pages before page 1'."
+            );
         break;
       default:
         break;
@@ -601,6 +607,7 @@ public class MainFrame extends javax.swing.JFrame
         browseClippingsFileButton.setEnabled (true);
         break;
       case BOOK_TITLE_SELECTED:
+        statusListModel.clear ();
         selectBookNameComboBox.setEnabled (true);
         browseClippingsFileButton.setEnabled (true);
         browsePdfFileButton.setEnabled (true);
