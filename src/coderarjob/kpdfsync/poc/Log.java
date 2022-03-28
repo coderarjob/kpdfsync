@@ -53,7 +53,7 @@ public class Log
     return mInstance;
   }
 
-  public void logException (Exception ex)
+  public void log (Exception ex)
   {
     String exceptionMessage = ex.getMessage() == null ? ex.toString() : ex.getMessage();
 
