@@ -372,7 +372,7 @@ public class MainFrame extends javax.swing.JFrame
                                          String.format ("Original file is backed up to %s",
                                                          duplicatePdfFile.toString()));
           // Start the process
-          fixer.apply (sourcePdfFile, duplicatePdfFile);
+          fixer.apply (duplicatePdfFile, sourcePdfFile);
           setStatus (ApplicationStatus.FIX_COMPLETED);
           addStatusLine (StatusTypes.INFORMATION, "Fixing has completed.");
 
@@ -412,11 +412,10 @@ public class MainFrame extends javax.swing.JFrame
     String ajlVersion = coderarjob.ajl.Config.getInstance().readSetting ("app.version");
 
     htmlVersionText = String.format (htmlVersionText, guiVersion, libVersion, ajlVersion);
-    JOptionPane.showInternalMessageDialog (null,
-                                           htmlVersionText,
-                                           "Versions",
-                                           JOptionPane.INFORMATION_MESSAGE);
-
+    JOptionPane.showMessageDialog (this,
+                                   htmlVersionText,
+                                   "Versions",
+                                   JOptionPane.INFORMATION_MESSAGE);
   }
   /* Other private class methods*/
 
@@ -901,7 +900,7 @@ public class MainFrame extends javax.swing.JFrame
     proceedPanelLayout.setHorizontalGroup(
       proceedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addComponent(jProgressBar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-      .addComponent(statusScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 922, Short.MAX_VALUE)
+      .addComponent(statusScrollPane)
       .addGroup(proceedPanelLayout.createSequentialGroup()
         .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addContainerGap())
@@ -968,7 +967,7 @@ public class MainFrame extends javax.swing.JFrame
               .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                   .addGroup(layout.createSequentialGroup()
-                    .addComponent(pdfSkipPagesLabel)
+                    .addComponent(pdfSkipPagesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(pdfSkipPagesSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -978,12 +977,12 @@ public class MainFrame extends javax.swing.JFrame
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(percentLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
                   .addComponent(pageNumbersLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGap(0, 356, Short.MAX_VALUE))
               .addGroup(layout.createSequentialGroup()
                 .addComponent(selectPdfFileLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(selectPdfFileTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, 618, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(selectPdfFileTextBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                   .addComponent(proceedButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                   .addGroup(layout.createSequentialGroup()

@@ -55,7 +55,7 @@
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
-                                      <Component id="pdfSkipPagesLabel" min="-2" max="-2" attributes="0"/>
+                                      <Component id="pdfSkipPagesLabel" min="-2" pref="187" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="pdfSkipPagesSpinner" min="-2" pref="63" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -67,13 +67,13 @@
                                   </Group>
                                   <Component id="pageNumbersLabel" min="-2" pref="162" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="356" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
                               <Component id="selectPdfFileLabel" min="-2" pref="187" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="selectPdfFileTextBox" min="-2" pref="618" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="selectPdfFileTextBox" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="proceedButton" alignment="1" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
@@ -372,7 +372,7 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Component id="jProgressBar1" alignment="1" max="32767" attributes="0"/>
-              <Component id="statusScrollPane" alignment="0" pref="922" max="32767" attributes="0"/>
+              <Component id="statusScrollPane" alignment="0" max="32767" attributes="0"/>
               <Group type="102" alignment="0" attributes="0">
                   <Component id="statusLabel" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
