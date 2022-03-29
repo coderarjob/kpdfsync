@@ -354,8 +354,6 @@ public class MainFrame extends javax.swing.JFrame
   {
     Path sourcePdfFile = Paths.get (selectPdfFileTextBox.getText());
     PdfFixer fixer = PdfFixer.getInstance();
-    String osName = fixer.getOSName();
-    String osArch = fixer.getOSArchitecture();
     JFrame thisFrame = (JFrame)this;
 
     fixerThread = new Thread (new Runnable() {
@@ -363,30 +361,20 @@ public class MainFrame extends javax.swing.JFrame
       {
         try {
           setStatus (ApplicationStatus.FIX_STARTED);
-          Log.getInstance().log (LogType.INFORMATION, "Fixing PDF for OS: %s (%s)" , osName, osArch);
+          addStatusLine (StatusTypes.INFORMATION, "Fixing pdf file: %s", sourcePdfFile.toString());
+          Log.getInstance().log (LogType.INFORMATION, "Fixing PDF for OS: %s (%s)"
+                                                    , fixer.getOSName()
+                                                    , fixer.getOSArchitecture());
 
-          // Determine OS type and architecture.
-          if (osName == null || osArch == null)
-            throw new Exception ("OS name and architecture is not determined.");
-
-          // Determine duplicate file name
-          Path duplicatePdfFile = fixer.generateBackupFilePath (sourcePdfFile);
-
-          // Back up the original file before fixing it.
-          Log.getInstance().log (LogType.INFORMATION, "Backing up '%s' -> '%s'"
-              , sourcePdfFile.toString()
-              , duplicatePdfFile.toString());
-
-          Files.copy (sourcePdfFile, duplicatePdfFile);
+          // Create back of the source file.
+          Path duplicatePdfFile = fixer.createBackup (sourcePdfFile);
           JOptionPane.showMessageDialog (thisFrame,
                                          String.format ("Original file is backed up to %s",
-                                          duplicatePdfFile.toString()));
+                                                         duplicatePdfFile.toString()));
           // Start the process
-          addStatusLine (StatusTypes.INFORMATION, "Fixing pdf file: %s", sourcePdfFile.toString());
-          int exitCode = fixer.fix (duplicatePdfFile, sourcePdfFile);
-
-          addStatusLine (StatusTypes.INFORMATION, "Fixing completed. Exit code: %d", exitCode);
+          fixer.apply (sourcePdfFile, duplicatePdfFile);
           setStatus (ApplicationStatus.FIX_COMPLETED);
+          addStatusLine (StatusTypes.INFORMATION, "Fixing has completed.");
 
         } catch (InterruptedException ex) {
           setStatus (ApplicationStatus.FIX_FAILED);

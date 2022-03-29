@@ -34,7 +34,9 @@ javac --release $JDK_VER_TARGET -Xlint -d "$BIN_DIR/" \
 
 # Build POC
 javac --release $JDK_VER_TARGET -Xlint -d "$BIN_DIR/" \
-      src/coderarjob/kpdfsync/poc/*.java || exit
+      src/coderarjob/kpdfsync/poc/*.java \
+      src/coderarjob/kpdfsync/poc/pdffixes/*.java \
+      || exit
 
 # Copy resources
 cp -r src/coderarjob/kpdfsync/poc/res $BIN_DIR/coderarjob/kpdfsync/poc || exit
