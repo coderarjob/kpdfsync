@@ -14,7 +14,8 @@ JDK_VER_TARGET=8
 
 # Build AJL
 javac --release $JDK_VER_TARGET -Xlint -d "$BIN_DIR/" \
-      src/coderarjob/ajl/file/*.java || exit
+      src/coderarjob/ajl/file/*.java \
+      src/coderarjob/ajl/*.java || exit
 
 # Build Pattern Matcher
 javac --release $JDK_VER_TARGET -Xlint -d "$BIN_DIR/" \
@@ -39,6 +40,8 @@ javac --release $JDK_VER_TARGET -Xlint -d "$BIN_DIR/" \
       || exit
 
 # Copy resources
+cp -r src/coderarjob/ajl/res $BIN_DIR/coderarjob/ajl || exit
+cp -r src/coderarjob/kpdfsync/lib/res $BIN_DIR/coderarjob/kpdfsync/lib || exit
 cp -r src/coderarjob/kpdfsync/poc/res $BIN_DIR/coderarjob/kpdfsync/poc || exit
 
 # Generate tags file
