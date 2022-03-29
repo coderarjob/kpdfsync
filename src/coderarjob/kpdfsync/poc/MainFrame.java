@@ -398,8 +398,27 @@ public class MainFrame extends javax.swing.JFrame
     Log.getInstance().log (LogType.INFORMATION, "Exiting");
     Log.getInstance().flush();
   }
-  /* Other private class methods*/
 
+  private void versionButtonActionPerformed(java.awt.event.ActionEvent evt)
+  {
+    String htmlVersionText =  "<html><body>";
+           htmlVersionText += "GUI version: <b>%s</b><br/>";
+           htmlVersionText += "kpdfsync lib version: <b>%s</b><br/>";
+           htmlVersionText += "ajl lib version: <b>%s</b><br/>";
+           htmlVersionText += "</body></html>";
+
+    String guiVersion = Config.getInstance().readSetting ("app.version");
+    String libVersion = coderarjob.kpdfsync.lib.Config.getInstance().readSetting ("app.version");
+    String ajlVersion = coderarjob.ajl.Config.getInstance().readSetting ("app.version");
+
+    htmlVersionText = String.format (htmlVersionText, guiVersion, libVersion, ajlVersion);
+    JOptionPane.showInternalMessageDialog (null,
+                                           htmlVersionText,
+                                           "Versions",
+                                           JOptionPane.INFORMATION_MESSAGE);
+
+  }
+  /* Other private class methods*/
 
   private void createPageResourceObjects (String bookTitle)
   {
@@ -708,6 +727,7 @@ public class MainFrame extends javax.swing.JFrame
     logoLabel = new javax.swing.JLabel();
     exitButton = new javax.swing.JButton();
     optionsButton = new javax.swing.JButton();
+    versionButton = new javax.swing.JButton();
     clippingsFileLabel = new javax.swing.JLabel();
     clippingsFileTextBox = new javax.swing.JTextField();
     browseClippingsFileButton = new javax.swing.JButton();
@@ -766,15 +786,24 @@ public class MainFrame extends javax.swing.JFrame
       }
     });
 
+    versionButton.setText("Version");
+    versionButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        versionButtonActionPerformed(evt);
+      }
+    });
+
     javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(headerPanel);
     headerPanel.setLayout(headerPanelLayout);
     headerPanelLayout.setHorizontalGroup(
       headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(headerPanelLayout.createSequentialGroup()
         .addComponent(logoLabel)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 546, Short.MAX_VALUE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         .addComponent(optionsButton)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(versionButton)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(exitButton)
         .addContainerGap())
     );
@@ -784,7 +813,8 @@ public class MainFrame extends javax.swing.JFrame
       .addGroup(headerPanelLayout.createSequentialGroup()
         .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(exitButton)
-          .addComponent(optionsButton))
+          .addComponent(optionsButton)
+          .addComponent(versionButton))
         .addGap(24, 24, 24))
     );
 
@@ -949,7 +979,7 @@ public class MainFrame extends javax.swing.JFrame
                     .addComponent(percentLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
                   .addComponent(pageNumbersLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, Short.MAX_VALUE))
-              .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+              .addGroup(layout.createSequentialGroup()
                 .addComponent(selectPdfFileLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(selectPdfFileTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, 618, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1019,8 +1049,6 @@ public class MainFrame extends javax.swing.JFrame
     pack();
   }// </editor-fold>//GEN-END:initComponents
 
-
-
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton browseClippingsFileButton;
   private javax.swing.JButton browsePdfFileButton;
@@ -1053,6 +1081,7 @@ public class MainFrame extends javax.swing.JFrame
   private javax.swing.JLabel statusLabel;
   private javax.swing.JList<String> statusList;
   private javax.swing.JScrollPane statusScrollPane;
+  private javax.swing.JButton versionButton;
   // End of variables declaration//GEN-END:variables
 
 }
