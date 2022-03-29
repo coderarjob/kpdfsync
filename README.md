@@ -41,7 +41,13 @@ Here is the rough roadmap of the development.
 
 ## Requirements
 - JRE 1.8 or higher
-- Linux, Mac, Windows
+- Linux, Windows
+
+Can probably work on macos, but I do not own one, so not able to test.
+
+### For fixing feature to work, you require the following:
+* Linux: poppler-utils
+* Windows: poppler-utils is included with the release.
 
 ## 3rd-party License
 
