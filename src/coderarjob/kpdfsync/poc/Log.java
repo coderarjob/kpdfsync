@@ -83,24 +83,24 @@ public class Log
     {
       case INFORMATION:
         if (!continueWithPrevious)
-          logText = "%n[" + datetimeText + "]%n";
+          logText = "%n-----[" + datetimeText + "]-----%n";
 
-        logText += "\t" + fmt + "%n";
+        logText += fmt + "%n";
         logText = String.format (logText, values);  // call to format is required to parse the %n.
 
         break;
       case ERROR:
         if (!continueWithPrevious)
-          logText = "%n[ERROR] [" + datetimeText + "]%n";
+          logText = "%n-----[ERROR] [" + datetimeText + "]-----%n";
 
-        logText += "\t" + fmt + "%n";
+        logText += fmt + "%n";
         logText = String.format (logText, values);
         break;
       case WARNING:
         if (!continueWithPrevious)
-          logText = "%n[WARN] [" + datetimeText + "]%n";
+          logText = "%n-----[WARN] [" + datetimeText + "]-----%n";
 
-        logText += "\t" + fmt + "%n";
+        logText += fmt + "%n";
         logText = String.format (logText, values);
         break;
     }

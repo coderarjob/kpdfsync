@@ -193,7 +193,7 @@ public class MainFrame extends javax.swing.JFrame
               boolean okay;
 
               Log.getInstance().log (LogType.INFORMATION
-                                     , "%n\t[Highlighting] '%s' with note '%s' @ page %d"
+                                     , "%n[Highlighting] '%s' with note '%s' @ page %d"
                                      , pair.getHighlightText()
                                      , pair.getNoteText()
                                      , pageNum);
