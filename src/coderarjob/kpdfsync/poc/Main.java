@@ -20,17 +20,7 @@ public class Main
   /* Class methods */
   public static void main(String[] args) throws Exception
   {
-
-    String logMessage =  "Kpdfsync started%n";
-           logMessage +=  "Kpdfsync - version: %s%n";
-           logMessage += "libkpdfsync - version %s%n";
-           logMessage += "ajl - version %s%n%n";
-
-    String guiVersion = Config.getInstance().readSetting ("app.version");
-    String libVersion = coderarjob.kpdfsync.lib.Config.getInstance().readSetting ("app.version");
-    String ajlVersion = coderarjob.ajl.Config.getInstance().readSetting ("app.version");
-
-    Log.getInstance().log (LogType.INFORMATION, logMessage, guiVersion, libVersion, ajlVersion);
+    logBasicInformation();
 
     JFrame.setDefaultLookAndFeelDecorated (true);
     JDialog.setDefaultLookAndFeelDecorated (true);
@@ -38,5 +28,23 @@ public class Main
 
     MainFrame mainFrame = new MainFrame();
     mainFrame.setVisible (true);
+  }
+
+  private static void logBasicInformation()
+  {
+    Log.getInstance().log (LogType.INFORMATION, "kpdfsync started");
+
+    String workingDir = System.getProperty ("user.dir");
+    Log.getInstance().log (LogType.INFORMATION, "Current working directory: " + workingDir);
+
+    String guiVersion = Config.getInstance().readSetting ("app.version");
+    String libVersion = coderarjob.kpdfsync.lib.Config.getInstance().readSetting ("app.version");
+    String ajlVersion = coderarjob.ajl.Config.getInstance().readSetting ("app.version");
+
+    String logMessage =  "Kpdfsync - version: %s%n";
+           logMessage += "libkpdfsync - version %s%n";
+           logMessage += "ajl - version %s%n";
+
+    Log.getInstance().log (LogType.INFORMATION, logMessage, guiVersion, libVersion, ajlVersion);
   }
 }
