@@ -44,6 +44,28 @@ cp -r src/coderarjob/ajl/res $BIN_DIR/coderarjob/ajl || exit
 cp -r src/coderarjob/kpdfsync/lib/res $BIN_DIR/coderarjob/kpdfsync/lib || exit
 cp -r src/coderarjob/kpdfsync/poc/res $BIN_DIR/coderarjob/kpdfsync/poc || exit
 
+# Replace placeholder information in resource files.
+buildid=$(date +%y%m%d)
+find $BIN_DIR -type f -name app.settings \
+    -exec sed -i "s/<build>/$buildid/g" {} \;
+
+command -v git && (
+    path=coderarjob/ajl
+    commitid=$(git log --format="%h" -n 1 src/$path)
+    find $BIN_DIR/$path -type f -name app.settings \
+        -exec sed -i "s/<commitid>/$commitid/g" {} \;
+
+    path=coderarjob/kpdfsync/lib
+    commitid=$(git log --format="%h" -n 1 src/$path)
+    find $BIN_DIR/$path -type f -name app.settings \
+        -exec sed -i "s/<commitid>/$commitid/g" {} \;
+
+    path=coderarjob/kpdfsync/poc
+    commitid=$(git log --format="%h" -n 1 src/$path)
+    find $BIN_DIR/$path -type f -name app.settings \
+        -exec sed -i "s/<commitid>/$commitid/g" {} \;
+) || exit
+
 # Generate tags file
 ctags --recurse ./src || exit
 

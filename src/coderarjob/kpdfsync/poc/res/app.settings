@@ -1,2 +1,2 @@
 # This is the settings file for kpdfsync.
-app.version = 0.8.0-alpha
+app.version = 0.8.0-<build>-<commitid>-alpha

@@ -1,2 +1,2 @@
 # This is the settings file for coderarjob.ajl package.
-app.version = 0.8.0-alpha (ajl)
+app.version = 0.8.0-<build>-<commitid>-alpha
