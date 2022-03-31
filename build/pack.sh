@@ -52,7 +52,7 @@ cp kpdfsync.sh ./$DIST_DIR              || exit
 cp kpdfsync.bat ./$DIST_DIR             || exit
 
 # Copy LICENSE Readme.md and HowTo.pdf to kpdfsync dist folder.
-cp ../docs/kpdfsync_HowTo.pdf ./$DIST_DIR || exit
+cp ../docs/QuickReference.pdf ./$DIST_DIR || exit
 cp ../README.md ./$DIST_DIR               || exit
 cp ../LICENSE ./$DIST_DIR                 || exit
 
