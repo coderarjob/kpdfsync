@@ -55,7 +55,10 @@ Kpdfsync                                                                        
     Highlighting  = 12 67        (Expected, Much more accepatble 
                                   highlighting)
 
-[ ] For some PDF files, org.pdfclown.tools.TextExtractor.extract() is returning null.
+[ ] (GitHub Issue #2)
+    Book: Concrete Mathematics original PDF file.
+
+    For some PDF files, org.pdfclown.tools.TextExtractor.extract() is returning null.
     This is seen with the Concrete Mathematics original PDF file. May be a TrueType font issue.
     Here is the stack trace:
     java.lang.NullPointerException
@@ -87,6 +90,10 @@ Kpdfsync                                                                        
             at org.pdfclown.tools.TextExtractor.extract(TextExtractor.java:296)
             at coderarjob.kpdfsync.lib.annotator.PdfAnnotatorV1.highlight(PdfAnnotatorV1.java:62)
             at coderarjob.kpdfsync.poc.MainFrame$2.run(MainFrame.java:172)
+    
+    Solution:
+    Running pdftocairo tool (from poppler-utils package), solves this error.
+    Command: pdftocairo -pdf <in pdf file> <out pdf file>
 
 [ ] Highlight is not visible on the output PDF file. This was seen on the Concrete Mathematics
     cropped PDF file.
@@ -103,7 +110,8 @@ Kpdfsync                                                                        
 
     The times, this exception occures, it occures around the 73% mark.
 
-[ ] EOFException at org.pdfclown.tools.TextExtractor.extract() method. This is seen on
+[ ] (GitHub Issue #1)
+    EOFException at org.pdfclown.tools.TextExtractor.extract() method. This is seen on
     'the_evolution_of_operating_system_cropped.pdf' file. Could also be a font issue.
     Here is the stack trace
 java.lang.RuntimeException: java.io.EOFException
@@ -173,3 +181,60 @@ java.io.EOFException
         at org.pdfclown.tools.TextExtractor.extract(TextExtractor.java:296)
         at coderarjob.kpdfsync.lib.annotator.PdfAnnotatorV1.highlight(PdfAnnotatorV1.java:62)
         at coderarjob.kpdfsync.poc.MainFrame$2.run(MainFrame.java:172)
+
+    Solution:
+    Running pdftocairo tool (from poppler-utils package), solves this error.
+    Command: pdftocairo -pdf <in pdf file> <out pdf file>
+
+[ ] (GitHub Issue #4)
+    Book: MMURTL 
+    org.pdfclown.util.NotImplementedException: LZWDecode
+
+        Stack trace:
+        org.pdfclown.util.NotImplementedException: LZWDecode
+        at org.pdfclown.bytes.filters.Filter.get(Filter.java:74)
+        at org.pdfclown.objects.PdfStream.getBody(PdfStream.java:193)
+        at org.pdfclown.objects.PdfStream.getBody(PdfStream.java:155)
+        at org.pdfclown.documents.contents.Contents$ContentStream.moveNextStream(Contents.java:279)
+        at org.pdfclown.documents.contents.Contents$ContentStream.(Contents.java:86)
+        at org.pdfclown.documents.contents.Contents.load(Contents.java:591)
+        at org.pdfclown.documents.contents.Contents.(Contents.java:366)
+        at org.pdfclown.documents.contents.Contents.wrap(Contents.java:345)
+        at org.pdfclown.documents.Page.getContents(Page.java:571)
+        at org.pdfclown.documents.contents.ContentScanner.(ContentScanner.java:1033)
+        at org.pdfclown.tools.TextExtractor.extract(TextExtractor.java:297)
+        at coderarjob.kpdfsync.lib.annotator.PdfAnnotatorV1.highlight(PdfAnnotatorV1.java:62)
+        at coderarjob.kpdfsync.poc.MainFrame$2.run(MainFrame.java:202)
+        at java.base/java.lang.Thread.run(Thread.java:833)
+
+    Solution:
+    Running pdftocairo tool (from poppler-utils package), solves this error.
+    Command: pdftocairo -pdf <in pdf file> <out pdf file>
+
+[ ] (GitHub Issue #3)
+    Book: https://plan9.io/sys/doc/lexnames.pdf
+
+    Cannot invoke "org.pdfclown.documents.contents.IContentContext.getContents()" 
+    because "contentContext" is null
+
+        Stack Trace:
+        Exception :Cannot invoke "org.pdfclown.documents.contents.IContentContext.getContents()" because "contentContext" is null
+        java.lang.NullPointerException: Cannot invoke "org.pdfclown.documents.contents.IContentContext.getContents()" because "contentContext" is null
+        at org.pdfclown.documents.contents.ContentScanner.(ContentScanner.java:1033)
+        at org.pdfclown.tools.TextExtractor.extract(TextExtractor.java:297)
+        at coderarjob.kpdfsync.lib.annotator.PdfAnnotatorV1.highlight(PdfAnnotatorV1.java:62)
+        at coderarjob.kpdfsync.poc.MainFrame$2.run(MainFrame.java:202)
+        at java.base/java.lang.Thread.run(Thread.java:833)
+
+[ ] Index Out Of Bounds in PdfAnnotatorV1
+    PDF souce :/home/coder/kpdfsync/test-files/Books/Classic Operating Systems_ From Batch Processing To Distributed Systems_cropped.pdf
+
+      Exception :index -1, length 0
+        java.lang.StringIndexOutOfBoundsException: index -1, length 0
+        at java.base/java.lang.String.checkIndex(String.java:4560)
+        at java.base/java.lang.AbstractStringBuilder.deleteCharAt(AbstractStringBuilder.java:970)
+        at java.base/java.lang.StringBuilder.deleteCharAt(StringBuilder.java:298)
+        at coderarjob.kpdfsync.lib.annotator.PdfAnnotatorV1.doHighlight(PdfAnnotatorV1.java:96)
+        at coderarjob.kpdfsync.lib.annotator.PdfAnnotatorV1.highlight(PdfAnnotatorV1.java:65)
+        at coderarjob.kpdfsync.poc.MainFrame$2.run(MainFrame.java:201)
+      at java.base/java.lang.Thread.run(Thread.java:833)

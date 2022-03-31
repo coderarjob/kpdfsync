@@ -2,18 +2,17 @@
 
 ![Screenshot](/docs/images/screenshot_alpha.png)
 
-If you use Kindle to read PDF books or documents, you might have seen that the highlights and notes
-made on the Kindle are not saved on the PDF file itself. This means, that if you take the PDF file
-from your Kindle and read on another device, you will not see those highlights and notes there.
+I sometimes read PDF documents on my Kindle and anyone who does the same, knows that highlights and
+notes taken on the Kindle are not saved on the PDF file itself. This presents a huge problem
+archiving my notes and to redo the highlights and copy the notes manually on to the PDF later on
+is not practical for me.
 
-This software tries to provide a solution. The basis is the Clippings.txt file on your Kindle.
-Kindle saves the page numbers and content of the highlights and notes in the text file. So in
-theory, one can read the Clippings file and reapply the highlights and notes on the PDF separately.
-This software automates the process.
+This software tries to provide a solution. **kpdfsync** reads the ‘My Clippings.txt’ text file for
+the highlights and notes and then applies them in the correct place on a PDF file.
 
-Currently it is in development, so not all the features work or even present. There can also be
-serious bugs present, so I request you to keep backup of the files you give to kpdfsync (the
-clippings file and pdf files)
+Currently it is **under development**, so all the features may not work or be present.
+There can also be serious bugs present, so I **request you to keep backup of the files you give to
+kpdfsync (the clippings file and pdf files)**.
 
 Here is the rough roadmap of the development.
 
@@ -30,7 +29,14 @@ Here is the rough roadmap of the development.
   manually by the user.
 - [X] GUI finalizing for the Alpha release.
 - [X] Debug loggings
-- [X] **Alpha Release**
+- [X] **Alpha Release 1**
+
+----
+
+- [X] Bug Fixes
+- [X] Feature: Fixing common PDF errors.
+- [X] Usage guide for the end user.
+- [X] **Alpha Release 2**
 
 ----
 
@@ -41,7 +47,16 @@ Here is the rough roadmap of the development.
 
 ## Requirements
 - JRE 1.8 or higher
-- Linux, Mac, Windows
+- Linux, Windows
+
+Can probably work on macOS, but I do not own one, so not able to test.
+
+#### For fixing feature to work, you require the following:
+* Linux: poppler-utils
+* Windows: poppler-utils is included with the release.
+
+**Note:** This is a new feature, which can resolve few of the PDF errors, but not all. New fixes
+will be added later on.
 
 ## 3rd-party License
 

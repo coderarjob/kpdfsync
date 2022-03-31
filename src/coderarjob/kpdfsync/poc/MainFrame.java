@@ -1,12 +1,10 @@
 package coderarjob.kpdfsync.poc;
 
 import javax.swing.*;
-import java.awt.Color;
 import java.awt.event.*;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +27,8 @@ public class MainFrame extends javax.swing.JFrame
     CLIPPINGS_FILE_PARSE_STARTED, CLIPPINGS_FILE_PARSE_COMPLETED, CLIPPINGS_FILE_PARSE_FAILED,
     BOOK_TITLE_SELECTED,
     PDF_SELECTED,
-    HIGHLIGHT_STARTED, HIGHLIGHT_COMPLETED, HIGHLIGHT_FAILED
+    HIGHLIGHT_STARTED, HIGHLIGHT_COMPLETED, HIGHLIGHT_FAILED,
+    FIX_STARTED, FIX_COMPLETED, FIX_FAILED
   }
 
   private enum StatusTypes
@@ -43,7 +42,7 @@ public class MainFrame extends javax.swing.JFrame
   private AbstractAnnotator mAnnotator;
   private AbstractMatcher mMatcher;
 
-  private Thread highlightThread, parseClippingsThread;
+  private Thread highlightThread, parseClippingsThread, fixerThread;
 
   // Other Swing variable declarations
   private DefaultListModel<String> statusListModel;
@@ -194,7 +193,7 @@ public class MainFrame extends javax.swing.JFrame
               boolean okay;
 
               Log.getInstance().log (LogType.INFORMATION
-                                     , "%n\t[Highlighting] '%s' with note '%s' @ page %d"
+                                     , "%n[Highlighting] '%s' with note '%s' @ page %d"
                                      , pair.getHighlightText()
                                      , pair.getNoteText()
                                      , pageNum);
@@ -252,7 +251,7 @@ public class MainFrame extends javax.swing.JFrame
         highlightsListModel.addElement (pair);
       }
     } catch (Exception ex) {
-      addStatusLine (StatusTypes.ERROR, "", ex.getMessage ());
+      addStatusLine (StatusTypes.ERROR, ex.getMessage ());
       reportException (ex);
     }
   }
@@ -270,14 +269,13 @@ public class MainFrame extends javax.swing.JFrame
     String buttonText = exitButton.getText().toUpperCase ();
     boolean isExit = buttonText.equals ("EXIT");
 
-    // Flush log when Exit/Cancel button is pressed.
-    Log.getInstance().log (LogType.INFORMATION, (isExit) ? "Exiting" : "Cancelling Operation");
-    Log.getInstance().flush();
+    Log.getInstance().log (LogType.INFORMATION, (isExit) ? "Exit button pressed."
+                                                         : "Cancelling Operation");
 
     if (isExit)
     {
-      // TODO: Possibly add confirmation before closing.
-      System.exit (0);
+      WindowEvent windowClosing = new WindowEvent (this, WindowEvent.WINDOW_CLOSING);
+      this.dispatchEvent (windowClosing);
     }
     else
     {
@@ -286,6 +284,9 @@ public class MainFrame extends javax.swing.JFrame
 
       if (parseClippingsThread != null && parseClippingsThread.isAlive ())
         parseClippingsThread.interrupt();
+
+      if (fixerThread != null && fixerThread.isAlive ())
+        fixerThread.interrupt();
     }
   }
 
@@ -333,7 +334,7 @@ public class MainFrame extends javax.swing.JFrame
 
       populatePageNumbersList();
     } catch (Exception ex) {
-      addStatusLine (StatusTypes.ERROR, "", ex.getMessage ());
+      addStatusLine (StatusTypes.ERROR, ex.getMessage ());
       reportException (ex);
     }
   }
@@ -349,7 +350,75 @@ public class MainFrame extends javax.swing.JFrame
       }
   }
 
+  private void fixPDFButtonActionPerformed(java.awt.event.ActionEvent evt)
+  {
+    Path sourcePdfFile = Paths.get (selectPdfFileTextBox.getText());
+    PdfFixer fixer = PdfFixer.getInstance();
+    JFrame thisFrame = (JFrame)this;
+
+    fixerThread = new Thread (new Runnable() {
+      public void run()
+      {
+        try {
+          setStatus (ApplicationStatus.FIX_STARTED);
+          addStatusLine (StatusTypes.INFORMATION, "Fixing pdf file: %s", sourcePdfFile.toString());
+          Log.getInstance().log (LogType.INFORMATION, "Fixing PDF for OS: %s (%s)"
+                                                    , fixer.getOSName()
+                                                    , fixer.getOSArchitecture());
+
+          // Create back of the source file.
+          Path duplicatePdfFile = fixer.createBackup (sourcePdfFile);
+          JOptionPane.showMessageDialog (thisFrame,
+                                         String.format ("Original file is backed up to %s",
+                                                         duplicatePdfFile.toString()));
+          // Start the process
+          fixer.apply (duplicatePdfFile, sourcePdfFile);
+          setStatus (ApplicationStatus.FIX_COMPLETED);
+          addStatusLine (StatusTypes.INFORMATION, "Fixing has completed.");
+
+        } catch (InterruptedException ex) {
+          setStatus (ApplicationStatus.FIX_FAILED);
+          addStatusLine (StatusTypes.WARNING, "Fixing was cancelled");
+        } catch (Exception ex) {
+          addStatusLine (StatusTypes.ERROR, ex.getMessage ());
+          reportException (ex);
+          setStatus (ApplicationStatus.FIX_FAILED);
+        }
+      }
+    });
+
+    fixerThread.start();
+  }
+
+  private void formWindowClosing(java.awt.event.WindowEvent evt)
+  {
+    // TODO: Possibly add confirmation before closing.
+
+    // Flush log file.
+    Log.getInstance().log (LogType.INFORMATION, "Exiting");
+    Log.getInstance().flush();
+  }
+
+  private void versionButtonActionPerformed(java.awt.event.ActionEvent evt)
+  {
+    String htmlVersionText =  "<html><body>";
+           htmlVersionText += "GUI version: <b>%s</b><br/>";
+           htmlVersionText += "kpdfsync lib version: <b>%s</b><br/>";
+           htmlVersionText += "ajl lib version: <b>%s</b><br/>";
+           htmlVersionText += "</body></html>";
+
+    String guiVersion = Config.getInstance().readSetting ("app.version");
+    String libVersion = coderarjob.kpdfsync.lib.Config.getInstance().readSetting ("app.version");
+    String ajlVersion = coderarjob.ajl.Config.getInstance().readSetting ("app.version");
+
+    htmlVersionText = String.format (htmlVersionText, guiVersion, libVersion, ajlVersion);
+    JOptionPane.showMessageDialog (this,
+                                   htmlVersionText,
+                                   "Versions",
+                                   JOptionPane.INFORMATION_MESSAGE);
+  }
   /* Other private class methods*/
+
   private void createPageResourceObjects (String bookTitle)
   {
     try {
@@ -371,7 +440,7 @@ public class MainFrame extends javax.swing.JFrame
       // Automatic pair for pages with only one highlight and note
       mPairManager.pairAutomatic();
     } catch (Exception ex) {
-      addStatusLine (StatusTypes.ERROR, "", ex.getMessage ());
+      addStatusLine (StatusTypes.ERROR, ex.getMessage ());
       reportException (ex);
     }
   }
@@ -394,7 +463,7 @@ public class MainFrame extends javax.swing.JFrame
         pageNumbersList.setSelectedIndex (selectedIndex);
 
     } catch (Exception ex) {
-      addStatusLine (StatusTypes.ERROR, "", ex.getMessage ());
+      addStatusLine (StatusTypes.ERROR, ex.getMessage ());
       reportException (ex);
     }
   }
@@ -432,7 +501,8 @@ public class MainFrame extends javax.swing.JFrame
     System.err.println (exceptionMessage);
     ex.printStackTrace();
 
-    Log.getInstance().logException (ex);
+    Log.getInstance().log (ex);
+    Log.getInstance().flush();
 
     Throwable cause = ex.getCause();
     for (int i = 1; cause != null; i++)
@@ -558,7 +628,9 @@ public class MainFrame extends javax.swing.JFrame
     proceedButton.setEnabled (false);
     pdfSkipPagesSpinner.setEnabled (false);
     matchThressholdSpinner.setEnabled (false);
+    fixPDFButton.setEnabled (false);
     exitButton.setText ("Exit");
+    exitButton.setEnabled (true);
 
     switch (status)
     {
@@ -612,8 +684,10 @@ public class MainFrame extends javax.swing.JFrame
         browseClippingsFileButton.setEnabled (true);
         browsePdfFileButton.setEnabled (true);
         break;
-      case HIGHLIGHT_COMPLETED:         // intentional falling:
-      case HIGHLIGHT_FAILED:            // intentional falling:
+      case HIGHLIGHT_COMPLETED:         // intentional falling
+      case HIGHLIGHT_FAILED:            // intentional falling
+      case FIX_COMPLETED:               // intentional falling
+      case FIX_FAILED:                  // intentional falling
       case PDF_SELECTED:
         selectBookNameComboBox.setEnabled (true);
         browseClippingsFileButton.setEnabled (true);
@@ -621,6 +695,7 @@ public class MainFrame extends javax.swing.JFrame
         proceedButton.setEnabled (true);
         pdfSkipPagesSpinner.setEnabled (true);
         matchThressholdSpinner.setEnabled (true);
+        fixPDFButton.setEnabled (true);
         break;
       case CLIPPINGS_FILE_PARSE_STARTED: // intentional falling
         statusListModel.clear ();
@@ -629,6 +704,11 @@ public class MainFrame extends javax.swing.JFrame
       case HIGHLIGHT_STARTED:
         jProgressBar1.setValue (0);
         exitButton.setText ("Cancel");
+        break;
+      case FIX_STARTED:
+        exitButton.setEnabled (false);  // Cannot be cancelled properly. File need to be restored.
+        jProgressBar1.setValue (0);
+        exitButton.setText ("Wait..");
         break;
     }
   }
@@ -646,6 +726,7 @@ public class MainFrame extends javax.swing.JFrame
     logoLabel = new javax.swing.JLabel();
     exitButton = new javax.swing.JButton();
     optionsButton = new javax.swing.JButton();
+    versionButton = new javax.swing.JButton();
     clippingsFileLabel = new javax.swing.JLabel();
     clippingsFileTextBox = new javax.swing.JTextField();
     browseClippingsFileButton = new javax.swing.JButton();
@@ -671,12 +752,18 @@ public class MainFrame extends javax.swing.JFrame
     matchThressholdSpinner = new javax.swing.JSpinner();
     percentLabel = new javax.swing.JLabel();
     proceedButton = new javax.swing.JButton();
+    fixPDFButton = new javax.swing.JButton();
 
     fileChooser.setAcceptAllFileFilterUsed(false);
     fileChooser.setSelectedFile(new java.io.File("/home/coder/  "));
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
     setTitle("kpdfsync");
+    addWindowListener(new java.awt.event.WindowAdapter() {
+      public void windowClosing(java.awt.event.WindowEvent evt) {
+        formWindowClosing(evt);
+      }
+    });
 
     headerPanel.setBackground(new java.awt.Color(25, 66, 97));
 
@@ -698,15 +785,24 @@ public class MainFrame extends javax.swing.JFrame
       }
     });
 
+    versionButton.setText("Version");
+    versionButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        versionButtonActionPerformed(evt);
+      }
+    });
+
     javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(headerPanel);
     headerPanel.setLayout(headerPanelLayout);
     headerPanelLayout.setHorizontalGroup(
       headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(headerPanelLayout.createSequentialGroup()
         .addComponent(logoLabel)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 546, Short.MAX_VALUE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         .addComponent(optionsButton)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(versionButton)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(exitButton)
         .addContainerGap())
     );
@@ -716,7 +812,8 @@ public class MainFrame extends javax.swing.JFrame
       .addGroup(headerPanelLayout.createSequentialGroup()
         .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(exitButton)
-          .addComponent(optionsButton))
+          .addComponent(optionsButton)
+          .addComponent(versionButton))
         .addGap(24, 24, 24))
     );
 
@@ -785,7 +882,10 @@ public class MainFrame extends javax.swing.JFrame
     proceedPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
 
     statusLabel.setText("Status:");
-    statusLabel.setOpaque(true);
+    statusLabel.setFocusable(false);
+    statusLabel.setMaximumSize(new java.awt.Dimension(900, 14));
+    statusLabel.setMinimumSize(new java.awt.Dimension(900, 14));
+    statusLabel.setPreferredSize(new java.awt.Dimension(900, 14));
 
     jProgressBar1.setForeground(new java.awt.Color(0, 204, 204));
     jProgressBar1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -799,14 +899,16 @@ public class MainFrame extends javax.swing.JFrame
     proceedPanel.setLayout(proceedPanelLayout);
     proceedPanelLayout.setHorizontalGroup(
       proceedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 922, Short.MAX_VALUE)
       .addComponent(jProgressBar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
       .addComponent(statusScrollPane)
+      .addGroup(proceedPanelLayout.createSequentialGroup()
+        .addComponent(statusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addContainerGap())
     );
     proceedPanelLayout.setVerticalGroup(
       proceedPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(proceedPanelLayout.createSequentialGroup()
-        .addComponent(statusLabel)
+        .addComponent(statusLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -820,7 +922,7 @@ public class MainFrame extends javax.swing.JFrame
     pdfSkipPagesSpinner.setModel(new javax.swing.SpinnerNumberModel());
 
     matchThressholdLabel.setLabelFor(matchThressholdSpinner);
-    matchThressholdLabel.setText("Match acceptance thresshold:");
+    matchThressholdLabel.setText("Match acceptance threshold:");
 
     matchThressholdSpinner.setModel(new javax.swing.SpinnerNumberModel());
     matchThressholdSpinner.setValue(90);
@@ -832,6 +934,16 @@ public class MainFrame extends javax.swing.JFrame
     proceedButton.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         proceedButtonActionPerformed(evt);
+      }
+    });
+
+    fixPDFButton.setText("Fix");
+    fixPDFButton.setMaximumSize(new java.awt.Dimension(80, 24));
+    fixPDFButton.setMinimumSize(new java.awt.Dimension(80, 24));
+    fixPDFButton.setPreferredSize(new java.awt.Dimension(80, 24));
+    fixPDFButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        fixPDFButtonActionPerformed(evt);
       }
     });
 
@@ -853,27 +965,30 @@ public class MainFrame extends javax.swing.JFrame
           .addGroup(layout.createSequentialGroup()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
               .addGroup(layout.createSequentialGroup()
-                .addComponent(pageNumbersLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                  .addGroup(layout.createSequentialGroup()
+                    .addComponent(pdfSkipPagesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(pdfSkipPagesSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(matchThressholdLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(matchThressholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(percentLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
+                  .addComponent(pageNumbersLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, Short.MAX_VALUE))
               .addGroup(layout.createSequentialGroup()
-                .addComponent(pdfSkipPagesLabel)
+                .addComponent(selectPdfFileLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pdfSkipPagesSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(matchThressholdLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 177, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(selectPdfFileTextBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(matchThressholdSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(percentLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(proceedButton)))
-            .addContainerGap())
-          .addGroup(layout.createSequentialGroup()
-            .addComponent(selectPdfFileLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(selectPdfFileTextBox)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(browsePdfFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                  .addComponent(proceedButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                  .addGroup(layout.createSequentialGroup()
+                    .addComponent(browsePdfFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(fixPDFButton, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))))
             .addContainerGap())
           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -915,7 +1030,8 @@ public class MainFrame extends javax.swing.JFrame
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(selectPdfFileLabel)
           .addComponent(selectPdfFileTextBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-          .addComponent(browsePdfFileButton))
+          .addComponent(browsePdfFileButton)
+          .addComponent(fixPDFButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(pdfSkipPagesLabel)
@@ -939,6 +1055,7 @@ public class MainFrame extends javax.swing.JFrame
   private javax.swing.JTextField clippingsFileTextBox;
   private javax.swing.JButton exitButton;
   private javax.swing.JFileChooser fileChooser;
+  private javax.swing.JButton fixPDFButton;
   private javax.swing.JPanel headerPanel;
   private javax.swing.JList<HighlightNotePair> highlightsList;
   private javax.swing.JScrollPane highlightsScrollPane;
@@ -963,6 +1080,7 @@ public class MainFrame extends javax.swing.JFrame
   private javax.swing.JLabel statusLabel;
   private javax.swing.JList<String> statusList;
   private javax.swing.JScrollPane statusScrollPane;
+  private javax.swing.JButton versionButton;
   // End of variables declaration//GEN-END:variables
 
 }

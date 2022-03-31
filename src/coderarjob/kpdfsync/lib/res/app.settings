@@ -1,0 +1,2 @@
+# This is the settings file for coderarjob.kpdfsync.lib package.
+app.version = 0.8.0-<build>-<commitid>-alpha
