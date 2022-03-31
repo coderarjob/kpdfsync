@@ -15,8 +15,9 @@ echo :: Building packages
 # -----------------------------------------------------------------------------
 # Create destination folder
 # -----------------------------------------------------------------------------
-rm -rf dist
-mkdir -p dist/bin
+DIST_DIR=kpdfsync
+rm -rf $DIST_DIR
+mkdir -p $DIST_DIR/bin
 
 pushd classes
 
@@ -38,21 +39,21 @@ jar cfm kpdfsync.jar ../Manifest.txt coderarjob/kpdfsync/poc || exit
 popd
 
 # -----------------------------------------------------------------------------
-# Move .jar files and scripts to proper places under the dist folder.
+# Move .jar files and scripts to proper places under the kpdfsync dist folder.
 # -----------------------------------------------------------------------------
 
-# Move the jar files to dist/bin folder.
-mv classes/*.jar ./dist/bin
-cp ../lib/pdfclown.jar ./dist/bin
-cp -r ../tools ./dist/bin
+# Move the jar files to kpdfsync/bin folder.
+mv classes/*.jar ./$DIST_DIR/bin
+cp ../lib/pdfclown.jar ./$DIST_DIR/bin
+cp -r ../tools ./$DIST_DIR/bin
 
-# Copy the kpdfsync.sh and kpdfsync.bat to dist folder.
-cp kpdfsync.sh ./dist
-cp kpdfsync.bat ./dist
+# Copy the kpdfsync.sh and kpdfsync.bat to kpdfsync dist folder.
+cp kpdfsync.sh ./$DIST_DIR
+cp kpdfsync.bat ./$DIST_DIR
 
-# Copy LICENSE Readme.md and HowTo.pdf to dist folder.
-cp ../docs/kpdfsync_HowTo.pdf ./dist 
-cp ../README.md ./dist
-cp ../LICENSE ./dist
+# Copy LICENSE Readme.md and HowTo.pdf to kpdfsync dist folder.
+cp ../docs/kpdfsync_HowTo.pdf ./$DIST_DIR 
+cp ../README.md ./$DIST_DIR
+cp ../LICENSE ./$DIST_DIR
 
 echo :: Building packages completed
