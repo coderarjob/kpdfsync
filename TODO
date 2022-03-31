@@ -226,9 +226,10 @@ java.io.EOFException
         at coderarjob.kpdfsync.poc.MainFrame$2.run(MainFrame.java:202)
         at java.base/java.lang.Thread.run(Thread.java:833)
 
-[ ] Index Out Of Bounds in PdfAnnotatorV1
-    PDF souce :/home/coder/kpdfsync/test-files/Books/Classic Operating Systems_ From Batch Processing To Distributed Systems_cropped.pdf
-
+[ ] (GitHub Issue #5) 
+    Book :/home/coder/kpdfsync/test-files/Books/Classic Operating Systems_ From Batch Processing To Distributed Systems_cropped.pdf
+    
+    Index Out Of Bounds in PdfAnnotatorV1
       Exception :index -1, length 0
         java.lang.StringIndexOutOfBoundsException: index -1, length 0
         at java.base/java.lang.String.checkIndex(String.java:4560)
