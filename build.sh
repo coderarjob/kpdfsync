@@ -90,3 +90,10 @@ command -v git > /dev/null && (
 command -v ctags > /dev/null && (
   ctags --recurse ./src || exit
 )
+
+# -----------------------------------------------------------------------------
+# Call pack.sh, to generate the jar files.
+# -----------------------------------------------------------------------------
+cd build
+./pack.sh
+cd -

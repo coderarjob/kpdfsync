@@ -16,8 +16,8 @@ echo :: Building packages
 # Create destination folder
 # -----------------------------------------------------------------------------
 DIST_DIR=kpdfsync
-rm -rf $DIST_DIR
-mkdir -p $DIST_DIR/bin
+rm -rf $DIST_DIR       || exit
+mkdir -p $DIST_DIR/bin || exit
 
 pushd classes
 
@@ -43,17 +43,17 @@ popd
 # -----------------------------------------------------------------------------
 
 # Move the jar files to kpdfsync/bin folder.
-mv classes/*.jar ./$DIST_DIR/bin
-cp ../lib/pdfclown.jar ./$DIST_DIR/bin
-cp -r ../tools ./$DIST_DIR/bin
+mv classes/*.jar ./$DIST_DIR/bin        || exit
+cp ../lib/pdfclown.jar ./$DIST_DIR/bin  || exit
+cp -r ../tools ./$DIST_DIR/bin          || exit
 
 # Copy the kpdfsync.sh and kpdfsync.bat to kpdfsync dist folder.
-cp kpdfsync.sh ./$DIST_DIR
-cp kpdfsync.bat ./$DIST_DIR
+cp kpdfsync.sh ./$DIST_DIR              || exit
+cp kpdfsync.bat ./$DIST_DIR             || exit
 
 # Copy LICENSE Readme.md and HowTo.pdf to kpdfsync dist folder.
-cp ../docs/kpdfsync_HowTo.pdf ./$DIST_DIR 
-cp ../README.md ./$DIST_DIR
-cp ../LICENSE ./$DIST_DIR
+cp ../docs/kpdfsync_HowTo.pdf ./$DIST_DIR || exit
+cp ../README.md ./$DIST_DIR               || exit
+cp ../LICENSE ./$DIST_DIR                 || exit
 
 echo :: Building packages completed
