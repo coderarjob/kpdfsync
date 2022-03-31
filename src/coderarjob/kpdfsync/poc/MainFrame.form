@@ -67,7 +67,7 @@
                                   </Group>
                                   <Component id="pageNumbersLabel" min="-2" pref="162" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="0" pref="356" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
                               <Component id="selectPdfFileLabel" min="-2" pref="187" max="-2" attributes="0"/>
@@ -467,7 +467,7 @@
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="matchThressholdSpinner"/>
         </Property>
-        <Property name="text" type="java.lang.String" value="Match acceptance thresshold:"/>
+        <Property name="text" type="java.lang.String" value="Match acceptance threshold:"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JSpinner" name="matchThressholdSpinner">

@@ -922,7 +922,7 @@ public class MainFrame extends javax.swing.JFrame
     pdfSkipPagesSpinner.setModel(new javax.swing.SpinnerNumberModel());
 
     matchThressholdLabel.setLabelFor(matchThressholdSpinner);
-    matchThressholdLabel.setText("Match acceptance thresshold:");
+    matchThressholdLabel.setText("Match acceptance threshold:");
 
     matchThressholdSpinner.setModel(new javax.swing.SpinnerNumberModel());
     matchThressholdSpinner.setValue(90);
@@ -977,7 +977,7 @@ public class MainFrame extends javax.swing.JFrame
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(percentLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE))
                   .addComponent(pageNumbersLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 356, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
               .addGroup(layout.createSequentialGroup()
                 .addComponent(selectPdfFileLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 187, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
