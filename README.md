@@ -2,17 +2,17 @@
 
 ![Screenshot](/docs/images/screenshot_alpha.png)
 
-I mostly read PDF documents on my Kindle and anyone who does the same, knows that highlights and 
-notes taken on the Kindle are not saved on the PDF file itself. This presents a huge problem 
-archiving my notes and to redo the highlights and copy the notes manually on to the PDF later on 
-is not practical for me.  
+I sometimes read PDF documents on my Kindle and anyone who does the same, knows that highlights and
+notes taken on the Kindle are not saved on the PDF file itself. This presents a huge problem
+archiving my notes and to redo the highlights and copy the notes manually on to the PDF later on
+is not practical for me.
 
-This software tries to provide a solution. kpdfsync reads the ‘My Clippings.txt’ text file for 
-the highlights and notes and then applies them in the correct place on a PDF file. 
+This software tries to provide a solution. **kpdfsync** reads the ‘My Clippings.txt’ text file for
+the highlights and notes and then applies them in the correct place on a PDF file.
 
-Currently it is under development, so all the features may not work or be present. 
-There can also be serious bugs present, so I request you to keep backup of the files you give to 
-kpdfsync (the clippings file and pdf files)
+Currently it is **under development**, so all the features may not work or be present.
+There can also be serious bugs present, so I **request you to keep backup of the files you give to
+kpdfsync (the clippings file and pdf files)**.
 
 Here is the rough roadmap of the development.
 
@@ -35,7 +35,7 @@ Here is the rough roadmap of the development.
 
 - [X] Bug Fixes
 - [X] Feature: Fixing common PDF errors.
-- [X] Documentation of the features.
+- [X] Usage guide for the end user.
 - [X] **Alpha Release 2**
 
 ----
@@ -54,6 +54,9 @@ Can probably work on macOS, but I do not own one, so not able to test.
 #### For fixing feature to work, you require the following:
 * Linux: poppler-utils
 * Windows: poppler-utils is included with the release.
+
+**Note:** This is a new feature, which can resolve few of the PDF errors, but not all. New fixes
+will be added later on.
 
 ## 3rd-party License
 
