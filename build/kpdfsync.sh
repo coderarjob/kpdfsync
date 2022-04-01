@@ -6,6 +6,6 @@
 # -----------------------------------------------------------------------------
 SELF=$0
 LINK=$(readlink $0) && SELF=$LINK
-BASEDIR=$(dirname $SELF)
+BASEDIR=$(dirname "$SELF")
 cd "$BASEDIR/bin"
 java -jar kpdfsync.jar&
