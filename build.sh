@@ -63,25 +63,30 @@ cp -r src/coderarjob/kpdfsync/poc/res $BIN_DIR/coderarjob/kpdfsync/poc || exit
 # -----------------------------------------------------------------------------
 # Replace placeholder information in resource files.
 # -----------------------------------------------------------------------------
+VER=0.8.1
+TAG=alpha
 buildid=$(date +%y%m%d)
-find $BIN_DIR -type f -name app.settings \
-    -exec sed -i "s/<build>/$buildid/g" {} \;
+
+find $BIN_DIR -type f -name app.settings         \
+    -exec sed -i "s/<build>/$buildid/g" {} \;    \
+    -exec sed -i "s/<kpdfsync-ver>/$VER/g" {} \; \
+    -exec sed -i "s/<tag>/$TAG/g" {} \; || exit
 
 command -v git > /dev/null && (
     path=coderarjob/ajl
     commitid=$(git log --format="%h" -n 1 src/$path)
     find $BIN_DIR/$path -type f -name app.settings \
-        -exec sed -i "s/<commitid>/$commitid/g" {} \;
+        -exec sed -i "s/<commitid>/$commitid/g" {} \; || exit
 
     path=coderarjob/kpdfsync/lib
     commitid=$(git log --format="%h" -n 1 src/$path)
     find $BIN_DIR/$path -type f -name app.settings \
-        -exec sed -i "s/<commitid>/$commitid/g" {} \;
+        -exec sed -i "s/<commitid>/$commitid/g" {} \; || exit
 
     path=coderarjob/kpdfsync/poc
     commitid=$(git log --format="%h" -n 1 src/$path)
     find $BIN_DIR/$path -type f -name app.settings \
-        -exec sed -i "s/<commitid>/$commitid/g" {} \;
+        -exec sed -i "s/<commitid>/$commitid/g" {} \; || exit
 ) || exit
 
 # -----------------------------------------------------------------------------
