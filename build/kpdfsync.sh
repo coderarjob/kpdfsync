@@ -4,6 +4,8 @@
 # -----------------------------------------------------------------------------
 # Changes directory to the application path and runs kpdfsync
 # -----------------------------------------------------------------------------
-BASEDIR=$(dirname $0)
+SELF=$0
+LINK=$(readlink $0) && SELF=$LINK
+BASEDIR=$(dirname "$SELF")
 cd "$BASEDIR/bin"
 java -jar kpdfsync.jar&
