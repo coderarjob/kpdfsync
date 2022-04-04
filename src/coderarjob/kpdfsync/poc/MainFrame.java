@@ -356,6 +356,7 @@ public class MainFrame extends javax.swing.JFrame
     PdfFixer fixer = PdfFixer.getInstance();
     JFrame thisFrame = (JFrame)this;
 
+
     fixerThread = new Thread (new Runnable() {
       public void run()
       {
@@ -365,6 +366,10 @@ public class MainFrame extends javax.swing.JFrame
           Log.getInstance().log (LogType.INFORMATION, "Fixing PDF for OS: %s (%s)"
                                                     , fixer.getOSName()
                                                     , fixer.getOSArchitecture());
+
+          // Fixing is not available in Mac
+          if (fixer.isMac())
+            throw new Exception ("Fixing PDF feature is not yet implemented for the Mac OS.");
 
           // Create back of the source file.
           Path duplicatePdfFile = fixer.createBackup (sourcePdfFile);
