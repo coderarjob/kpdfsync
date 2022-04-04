@@ -55,7 +55,7 @@ Kpdfsync                                                                        
     Highlighting  = 12 67        (Expected, Much more accepatble 
                                   highlighting)
 
-[ ] (GitHub Issue #2)
+[X] (GitHub Issue #2)
     Book: Concrete Mathematics original PDF file.
 
     For some PDF files, org.pdfclown.tools.TextExtractor.extract() is returning null.
@@ -110,7 +110,7 @@ Kpdfsync                                                                        
 
     The times, this exception occures, it occures around the 73% mark.
 
-[ ] (GitHub Issue #1)
+[X] (GitHub Issue #1)
     EOFException at org.pdfclown.tools.TextExtractor.extract() method. This is seen on
     'the_evolution_of_operating_system_cropped.pdf' file. Could also be a font issue.
     Here is the stack trace
@@ -186,7 +186,7 @@ java.io.EOFException
     Running pdftocairo tool (from poppler-utils package), solves this error.
     Command: pdftocairo -pdf <in pdf file> <out pdf file>
 
-[ ] (GitHub Issue #4)
+[X] (GitHub Issue #4)
     Book: MMURTL 
     org.pdfclown.util.NotImplementedException: LZWDecode
 
@@ -240,7 +240,7 @@ java.io.EOFException
         at coderarjob.kpdfsync.poc.MainFrame$2.run(MainFrame.java:201)
       at java.base/java.lang.Thread.run(Thread.java:833)
 
-[ ] (GitHub Issue #6)
+[X] (GitHub Issue #6)
     Book :resulting pdf after fixing original progit.pdf
 
     Exception :'name' table does NOT exist.
@@ -274,3 +274,7 @@ java.io.EOFException
         at coderarjob.kpdfsync.lib.annotator.PdfAnnotatorV1.highlight(PdfAnnotatorV1.java:62)
         at coderarjob.kpdfsync.poc.MainFrame$2.run(MainFrame.java:201)
         at java.lang.Thread.run(Thread.java:748)
+
+    Solution:
+    Modifed pdfclown to treat 'name' and 'post' tables as optional. It is 
+    released with kpdfsync 0.8.2-alpha.
