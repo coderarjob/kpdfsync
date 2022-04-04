@@ -63,7 +63,7 @@ cp -r src/coderarjob/kpdfsync/poc/res $BIN_DIR/coderarjob/kpdfsync/poc || exit
 # -----------------------------------------------------------------------------
 # Replace placeholder information in resource files.
 # -----------------------------------------------------------------------------
-VER=0.8.1
+VER=0.8.2
 TAG=alpha
 buildid=$(date +%y%m%d)
 
