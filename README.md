@@ -54,12 +54,14 @@ Here is the rough roadmap of the development.
 ## Requirements
 - JRE 1.8 or higher
 - Linux, Windows
-- Mac OS **Fix PDF feature is not yet implemented for Mac.!**
+- Mac OS
+
+**Note:** PDF fixing feature is not available on the Mac.
 
 #### For fixing feature to work, you require the following:
 * Linux: poppler-utils
 * Windows: poppler-utils is included with the release.
-* Mac OS: Currently this feature does not work in Mac OS.
+* Mac OS: __Not supported__
 
 **Note:** This is a new feature, which can resolve few of the PDF errors, but not all. New fixes
 will be added later on.
