@@ -726,6 +726,8 @@ public class MainFrame extends javax.swing.JFrame
     fileChooser = new javax.swing.JFileChooser();
     headerPanel = new javax.swing.JPanel();
     logoLabel = new javax.swing.JLabel();
+    headerSubtitleLabel = new javax.swing.JLabel();
+    headerTItleLabel = new javax.swing.JLabel();
     clippingsFileLabel = new javax.swing.JLabel();
     clippingsFileTextBox = new javax.swing.JTextField();
     browseClippingsFileButton = new javax.swing.JButton();
@@ -766,25 +768,42 @@ public class MainFrame extends javax.swing.JFrame
       }
     });
 
-    headerPanel.setBackground(new java.awt.Color(255, 255, 255));
+    headerPanel.setBackground(new java.awt.Color(0, 0, 0));
 
     logoLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-    logoLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/coderarjob/kpdfsync/poc/res/Logo_Banner.png"))); // NOI18N
+    logoLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/coderarjob/kpdfsync/poc/res/Logo_colorful4.png"))); // NOI18N
     logoLabel.setToolTipText("");
+
+    headerSubtitleLabel.setForeground(new java.awt.Color(255, 255, 255));
+    headerSubtitleLabel.setText("<html>Annotates PDF files with highlights and notes made on a Kindle.</html>\n");
+
+    headerTItleLabel.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+    headerTItleLabel.setForeground(new java.awt.Color(255, 255, 255));
+    headerTItleLabel.setText("PDF Annotator for Kindle");
 
     javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(headerPanel);
     headerPanel.setLayout(headerPanelLayout);
     headerPanelLayout.setHorizontalGroup(
       headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGroup(headerPanelLayout.createSequentialGroup()
-        .addComponent(logoLabel)
-        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, headerPanelLayout.createSequentialGroup()
+        .addContainerGap()
+        .addGroup(headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addComponent(headerSubtitleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(headerTItleLabel))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        .addComponent(logoLabel))
     );
     headerPanelLayout.setVerticalGroup(
       headerPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-      .addGroup(javax.swing.GroupLayout.Alignment.LEADING, headerPanelLayout.createSequentialGroup()
+      .addGroup(headerPanelLayout.createSequentialGroup()
         .addComponent(logoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addGap(0, 0, Short.MAX_VALUE))
+      .addGroup(headerPanelLayout.createSequentialGroup()
+        .addContainerGap()
+        .addComponent(headerTItleLabel)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        .addComponent(headerSubtitleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addGap(24, 24, 24))
     );
 
     clippingsFileLabel.setLabelFor(clippingsFileTextBox);
@@ -935,7 +954,7 @@ public class MainFrame extends javax.swing.JFrame
             .addComponent(fixPDFButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(cancelButton)
-            .addGap(0, 0, Short.MAX_VALUE))
+            .addGap(0, 36, Short.MAX_VALUE))
           .addComponent(statusScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(versionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1008,10 +1027,11 @@ public class MainFrame extends javax.swing.JFrame
         .addGap(2, 2, 2)
         .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-          .addComponent(clippingsFileTextBox)
-          .addComponent(clippingsFileLabel)
-          .addComponent(browseClippingsFileButton))
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addComponent(browseClippingsFileButton)
+          .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+            .addComponent(clippingsFileTextBox)
+            .addComponent(clippingsFileLabel)))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(selectBookNameLabel)
@@ -1052,6 +1072,8 @@ public class MainFrame extends javax.swing.JFrame
   private javax.swing.JFileChooser fileChooser;
   private javax.swing.JButton fixPDFButton;
   private javax.swing.JPanel headerPanel;
+  private javax.swing.JLabel headerSubtitleLabel;
+  private javax.swing.JLabel headerTItleLabel;
   private javax.swing.JList<HighlightNotePair> highlightsList;
   private javax.swing.JScrollPane highlightsScrollPane;
   private javax.swing.JProgressBar jProgressBar1;
