@@ -40,6 +40,12 @@ Here is the rough roadmap of the development.
 
 ----
 
+- [X] Bug Fixes: Some common PDF bugs are now fixed.
+- [X] UI change to make it more suitable for screens with lower resolution.
+- [X] **Alpha Release 3**
+
+----
+
 - [ ] Fine tune the rough edges in the supporting library.
 - [ ] Memory/Resource optimization.
 - [ ] Finalizing and optimizing the Graphical User Interface.
@@ -48,12 +54,12 @@ Here is the rough roadmap of the development.
 ## Requirements
 - JRE 1.8 or higher
 - Linux, Windows
-
-Can probably work on macOS, but I do not own one, so not able to test.
+- Mac OS **Fix PDF feature is not yet implemented for Mac.!**
 
 #### For fixing feature to work, you require the following:
 * Linux: poppler-utils
 * Windows: poppler-utils is included with the release.
+* Mac OS: Currently this feature does not work in Mac OS.
 
 **Note:** This is a new feature, which can resolve few of the PDF errors, but not all. New fixes
 will be added later on.
