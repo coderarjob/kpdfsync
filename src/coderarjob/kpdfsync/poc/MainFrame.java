@@ -755,7 +755,6 @@ public class MainFrame extends javax.swing.JFrame
     pdfSkipPagesSpinner = new javax.swing.JSpinner();
     matchThressholdLabel = new javax.swing.JLabel();
     matchThressholdSpinner = new javax.swing.JSpinner();
-    jSeparator1 = new javax.swing.JSeparator();
 
     fileChooser.setAcceptAllFileFilterUsed(false);
     fileChooser.setSelectedFile(new java.io.File("/home/coder/  "));
@@ -799,11 +798,11 @@ public class MainFrame extends javax.swing.JFrame
         .addComponent(logoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addGap(0, 0, Short.MAX_VALUE))
       .addGroup(headerPanelLayout.createSequentialGroup()
-        .addContainerGap()
+        .addGap(18, 18, 18)
         .addComponent(headerTItleLabel)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(headerSubtitleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        .addGap(24, 24, 24))
+        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
 
     clippingsFileLabel.setLabelFor(clippingsFileTextBox);
@@ -954,7 +953,7 @@ public class MainFrame extends javax.swing.JFrame
             .addComponent(fixPDFButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(cancelButton)
-            .addGap(0, 36, Short.MAX_VALUE))
+            .addGap(0, 0, Short.MAX_VALUE))
           .addComponent(statusScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(versionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -971,16 +970,11 @@ public class MainFrame extends javax.swing.JFrame
     matchThressholdSpinner.setModel(new javax.swing.SpinnerNumberModel());
     matchThressholdSpinner.setValue(90);
 
-    jSeparator1.setForeground(new java.awt.Color(51, 51, 51));
-    jSeparator1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-    jSeparator1.setOpaque(true);
-
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addComponent(headerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-      .addComponent(jSeparator1)
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1023,10 +1017,8 @@ public class MainFrame extends javax.swing.JFrame
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(layout.createSequentialGroup()
-        .addComponent(headerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-        .addGap(2, 2, 2)
-        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(headerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
           .addComponent(browseClippingsFileButton)
           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1077,7 +1069,6 @@ public class MainFrame extends javax.swing.JFrame
   private javax.swing.JList<HighlightNotePair> highlightsList;
   private javax.swing.JScrollPane highlightsScrollPane;
   private javax.swing.JProgressBar jProgressBar1;
-  private javax.swing.JSeparator jSeparator1;
   private javax.swing.JLabel logoLabel;
   private javax.swing.JLabel matchThressholdLabel;
   private javax.swing.JSpinner matchThressholdSpinner;
