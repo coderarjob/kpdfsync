@@ -41,6 +41,9 @@ public class PdfFixer
     return osName;
   }
 
+  public boolean isMac() throws Exception
+  { return getOSName().toUpperCase().startsWith ("MAC OS"); }
+
   public boolean isWindows() throws Exception
   { return getOSName().toUpperCase().startsWith ("WINDOWS"); }
 

@@ -48,7 +48,7 @@ cp ../lib/pdfclown.jar ./$DIST_DIR/bin  || exit
 cp -r ../tools ./$DIST_DIR/bin          || exit
 
 # Copy the kpdfsync.sh and kpdfsync.bat to kpdfsync dist folder.
-cp kpdfsync.sh ./$DIST_DIR              || exit
+cp kpdfsync.sh ./$DIST_DIR/kpdfsync     || exit
 cp kpdfsync.bat ./$DIST_DIR             || exit
 
 # Copy LICENSE Readme.md and HowTo.pdf to kpdfsync dist folder.

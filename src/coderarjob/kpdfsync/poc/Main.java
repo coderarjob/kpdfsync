@@ -37,6 +37,10 @@ public class Main
     String workingDir = System.getProperty ("user.dir");
     Log.getInstance().log (LogType.INFORMATION, "Current working directory: " + workingDir);
 
+    String osName = System.getProperty ("os.name");
+    String osArch = System.getProperty ("os.arch");
+    Log.getInstance().log (LogType.INFORMATION, "OS: %s (%s)", osName, osArch);
+
     String guiVersion = Config.getInstance().readSetting ("app.version");
     String libVersion = coderarjob.kpdfsync.lib.Config.getInstance().readSetting ("app.version");
     String ajlVersion = coderarjob.ajl.Config.getInstance().readSetting ("app.version");

@@ -1,2 +1,2 @@
 # This is the settings file for coderarjob.ajl package.
-app.version = <kpdfsync-ver>-<build>-<commitid>-<tag>
+app.version = <kpdfsync-ver>-<tag>+<build>-<commitid>
