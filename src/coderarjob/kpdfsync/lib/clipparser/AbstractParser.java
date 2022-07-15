@@ -7,27 +7,16 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 
 import coderarjob.ajl.file.ByteOrderMarkTypes;
-import coderarjob.kpdfsync.lib.clipparser.ParserResult.SupportedFields;
 import coderarjob.ajl.file.ByteOrderMark;
 
 public abstract class AbstractParser
 {
-  protected enum ParsingErrors
-  {
-    NO_ERROR, END_OF_BLOCK_REACHED, PARSING_ERROR;
-
-    private String mTag;
-    public void setTag (String name) { this.mTag = name; }
-    public String getTag()           { return this.mTag; }
-
-  }
-
   /* Abstract public methods */
   public abstract String        getParserVersion();
   public abstract String[]      getSupportedKindleVersions();
 
   /* Abstract protected methods */
-  protected abstract ParsingErrors parseLine(int linei, ParserResult res) throws Exception;
+  protected abstract boolean parseLine(int linei, ParserResult res) throws Exception;
   protected abstract AbstractKindleParserConstants  getKindleParserConstants();
 
   /* Protected fields */
@@ -154,7 +143,6 @@ public abstract class AbstractParser
    */
   public ParserResult parse() throws Exception
   {
-    ParsingErrors parseError = ParsingErrors.NO_ERROR;
     ParserResult result = new ParserResult();
 
     /* End of file was reached before */
@@ -168,12 +156,13 @@ public abstract class AbstractParser
     {
       onParsingStart();
 
-      for (int i = 0; parseError == ParsingErrors.NO_ERROR; i++)
+      boolean isTerminationLineReached = false;
+      for (int i = 0; isTerminationLineReached  == false; i++)
       {
         if (Thread.interrupted() == true)
           throw new InterruptedException();
 
-        parseError = parseLine(i, result);
+        isTerminationLineReached = parseLine(i, result);
       }
 
     } catch (InterruptedException ex) {
@@ -184,16 +173,6 @@ public abstract class AbstractParser
       throw ex;
     }
 
-    /* Parsing failed at some point*/
-    if (parseError == ParsingErrors.PARSING_ERROR)
-    {
-      String errDes = String.format ("Parsing error: '%s' is not '%s'.",
-                                      (isEOF() == true) ? "<EOF>" : this.lastLineRead(),
-                                      parseError.getTag());
-      onParsingError(errDes, result);
-      throw new ParserException (errDes);
-    }
-
     onParsingSuccess (result);
     return result;
   }
@@ -201,10 +180,10 @@ public abstract class AbstractParser
   /** Generates a Parser Exception object for subclasses to use.
    * This ensures a consistent Exception description.
    */
-  protected ParserException genParserException (String stage)
+  protected ParserException genParserException (String field)
   {
-      String errDes = String.format ("Parsing error: '%s' is not '%s'.",
-                                      this.lastLineRead(), stage);
+      String errDes = String.format ("Invalid '%s' in line '%s'.",
+                                      field, this.lastLineRead());
       return new ParserException (errDes);
   }
 

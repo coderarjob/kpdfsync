@@ -18,10 +18,35 @@ import coderarjob.kpdfsync.lib.clipparser.ParserResult.SupportedFields;
 
 public class KindleParserV1 extends AbstractParser
 {
+    public enum ParsingStages
+    {
+      TITLE("Title"),
+      FILE_OFFSET("Annotation block offset in file"),
+      ANNOTATION_TYPE("Annotation Type"),
+      PAGE_OR_LOCATION_NUMBER("Page or location number"),
+      PAGE_NUMBER_TYPE("Page number type"),
+      TEXT("Text"),
+      END_OF_BLOCK("End of Block");
+
+      private final String _name;
+      public String getName() { return _name; }
+      private ParsingStages (String name) { _name = name; }
+    }
+
     public KindleParserV1 (String fileName) throws FileNotFoundException, IOException
     {
         /* Clippings file is opened and onClippingsFileOpen hook method is called. */
         super (fileName);
+    }
+
+    public static String getParserName()
+    {
+      return "Kindle Clippings - Newer kindles";
+    }
+
+    public String toString()
+    {
+      return KindleParserV1.getParserName();
     }
 
     /* Implementing abstract methods from AbstractParser*/
@@ -44,84 +69,71 @@ public class KindleParserV1 extends AbstractParser
 
     public String[] getSupportedKindleVersions ()
     {
-        return new String[] {"1.2.4", "1.2.5", "1.2.6"};
+        return new String[] {"5.12.*", "newer"};
     }
 
     /**
      * Parses each line of the current block.
      * Returns a ParserResult object with the parsed result.
-     * Null is returned is EOF was reached.
+     * Returns True, if there reached end of the block. False otherwise.
      */
-    protected ParsingErrors parseLine(int lineIndex, ParserResult result)
+    protected boolean parseLine(int lineIndex, ParserResult result)
         throws IOException, ParserException
     {
-      ParsingErrors err = ParsingErrors.NO_ERROR;
-      String lineStr = null;
-
       switch (lineIndex)
       {
         case 0 :
           this.readLineWithProperEncoding();
-          err = parseTitleLine (result);
-          err.setTag ("Title line");
+          parseTitleLine (result);
           break;
         case 1 :
           this.readLineWithProperEncoding();
-          err = parseAnnotationLine (result);
-          err.setTag ("Annotation line");
+          parseAnnotationLine (result);
           break;
         case 2 :
           this.readLineWithProperEncoding();
-          err = parseTextLine (result);
-          err.setTag ("Text line");
+          parseTextLine (result);
           break;
         case 3 :
           this.readLineWithProperEncoding();
-          err = parseTerminationLine (result);
-          err.setTag ("Termination line");
-          break;
+          parseTerminationLine (result);
+          return true;
         default:
-          err =ParsingErrors.END_OF_BLOCK_REACHED;
-          break;
+          String desc = String.format ("At an invalid line. Line #%d", lineIndex);
+          throw new ParserException (desc);
       }
-
-      return err;
+      return false;
     }
 
     /* Class methods */
 
     /**
-     * Validates Book Title line and adds to ParserResult and returns true is valid.
-     * If validation fails, false is returned.
+     * Validates Book Title line and adds to ParserResult.
      */
-    protected ParsingErrors parseTitleLine (ParserResult result)
-        throws IOException, ParserException
+    protected void parseTitleLine (ParserResult result) throws IOException, ParserException
     {
         /* Read current line. Cannot be EOF.*/
         String linestr = this.lastLineRead();
         if (linestr == null)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (ParsingStages.TITLE.getName());
 
         boolean isValid = (linestr.length () > 0);
         if (isValid == false)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (ParsingStages.TITLE.getName());
 
         result.setFieldValue (SupportedFields.TITLE, linestr.trim());
         result.setFieldValue (SupportedFields.FILE_OFFSET, String.valueOf(this.lastFilePointer()));
-        return ParsingErrors.NO_ERROR;
     }
 
     /**
-     * Validates Book Annotation type line and adds to ParserResult and returns true is valid.
-     * If validation fails, false is returned.
+     * Validates Book Annotation type line and adds to ParserResult.
      */
-    protected ParsingErrors parseAnnotationLine (ParserResult result)
-            throws IOException, ParserException
+    protected void parseAnnotationLine (ParserResult result) throws IOException, ParserException
     {
         /* Read current line. Cannot be EOF.*/
         String linestr = this.lastLineRead();
         if (linestr == null)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (ParsingStages.ANNOTATION_TYPE.getName());
 
         boolean isValid = false;
         String value = "";
@@ -134,7 +146,7 @@ public class KindleParserV1 extends AbstractParser
                       || value.toLowerCase().equals ("bookmark"));
 
         if (isValid == false)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (ParsingStages.ANNOTATION_TYPE.getName());
 
         result.setFieldValue (SupportedFields.ANNOTATION_TYPE, value);
         String annotationType = value;
@@ -146,7 +158,7 @@ public class KindleParserV1 extends AbstractParser
                       || value.toLowerCase().equals("location"));
 
         if (isValid == false)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (ParsingStages.PAGE_NUMBER_TYPE.getName());
 
         result.setFieldValue (SupportedFields.PAGE_NUMBER_TYPE, value);
 
@@ -154,34 +166,32 @@ public class KindleParserV1 extends AbstractParser
         value = trySplitString (linestr, " ", mConstants.getAnnotationLinePageOrLocationNumberPosition());
         isValid = (value != null);
         if (isValid == false)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (ParsingStages.PAGE_OR_LOCATION_NUMBER.getName());
 
         if (annotationType.toLowerCase().equals("bookmark") == false)
         {
             value = trySplitString (value, "-", 0);
             isValid = (value != null);
             if (isValid == false)
-                return ParsingErrors.PARSING_ERROR;
+              throw genParserException (ParsingStages.PAGE_OR_LOCATION_NUMBER.getName());
         }
 
         isValid = tryParseUnsigendInt (value);
         if (isValid == false)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (ParsingStages.PAGE_OR_LOCATION_NUMBER.getName());
 
         result.setFieldValue (SupportedFields.PAGE_OR_LOCATION_NUMBER, value);
-        return ParsingErrors.NO_ERROR;
     }
 
     /**
-     * Validates Book highlight/note text line and adds to ParserResult and returns true is valid.
-     * If validation fails, false is returned.
+     * Validates Book highlight/note text line and adds to ParserResult.
      */
-    protected ParsingErrors parseTextLine (ParserResult result) throws IOException, ParserException
+    protected void parseTextLine (ParserResult result) throws IOException, ParserException
     {
         /* Read current line. Cannot be EOF.*/
         String linestr = this.lastLineRead();
         if (linestr == null)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (ParsingStages.TEXT.getName());
 
         boolean isValid = false;
         String annotationType = result.getFieldValue(SupportedFields.ANNOTATION_TYPE).toLowerCase();
@@ -189,7 +199,7 @@ public class KindleParserV1 extends AbstractParser
         /* There should be a blank line */
         isValid = (linestr.length() == 0);
         if (isValid == false)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (ParsingStages.TEXT.getName());
 
         /* Read the actual text, in the following lines */
         StringBuilder sb = new StringBuilder();
@@ -202,7 +212,7 @@ public class KindleParserV1 extends AbstractParser
             {
                 isValid = (linestr.length() > 0);
                 if (isValid == false)
-                    return ParsingErrors.PARSING_ERROR;
+                  throw genParserException (ParsingStages.TEXT.getName());
             }
         }
 
@@ -213,24 +223,22 @@ public class KindleParserV1 extends AbstractParser
         sb.deleteCharAt(sb.length() - 1);
 
         result.setFieldValue (SupportedFields.TEXT, sb.toString());
-        return ParsingErrors.NO_ERROR;
     }
 
     /**
-     * Validates entry end/termination line and adds to ParserResult and returns true is valid.
-     * If validation fails, false is returned.
+     * Validates entry end/termination line.
      */
-    protected ParsingErrors parseTerminationLine (ParserResult result)
-        throws IOException, ParserException
+    protected void parseTerminationLine (ParserResult result) throws IOException, ParserException
     {
         /* Read current line. Cannot be EOF.*/
         String linestr = this.lastLineRead();
         if (linestr == null)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (ParsingStages.END_OF_BLOCK.getName());
 
         /* Check for termination line. */
         boolean isValid = isTerminationLine (linestr);
-        return (isValid == true) ? ParsingErrors.NO_ERROR : ParsingErrors.PARSING_ERROR;
+        if (isValid == false)
+          throw genParserException (ParsingStages.END_OF_BLOCK.getName());
     }
 
     protected String trySplitString (String s, String p, int index)
