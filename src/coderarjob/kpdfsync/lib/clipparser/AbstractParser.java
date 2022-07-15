@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 
 import coderarjob.ajl.file.ByteOrderMarkTypes;
+import coderarjob.kpdfsync.lib.clipparser.ParserResult.SupportedFields;
 import coderarjob.ajl.file.ByteOrderMark;
 
 public abstract class AbstractParser
@@ -22,17 +23,23 @@ public abstract class AbstractParser
   }
 
   /* Abstract public methods */
-  public abstract boolean       moveToNextEntry()                            throws Exception;
-  public abstract void          moveToEntryAtOffset (long offset)            throws Exception;
-  public abstract ParsingErrors parseLine(int linei, ParserResult result)    throws Exception;
   public abstract String        getParserVersion();
   public abstract String[]      getSupportedKindleVersions();
+
+  /* Abstract protected methods */
+  protected abstract ParsingErrors parseLine(int linei, ParserResult res) throws Exception;
+  protected abstract AbstractKindleParserConstants  getKindleParserConstants();
 
   /* Protected fields */
   protected String           mFileName;
   protected RandomAccessFile mFile;
   protected Charset          mCharset;
   protected ParserEvents     mParserEvents;
+  protected boolean mIsInvalidState;         /* On paring error, this is set to true.
+                                                False indicates, no error, or file pointer has
+                                                moved to the next block after the previous parsing
+                                                error.*/
+  protected AbstractKindleParserConstants mConstants = null;
 
   /* Private fields */
   private long   mLastFilePointer;
@@ -47,7 +54,11 @@ public abstract class AbstractParser
   public    void         setParserEvents (ParserEvents value) { this.mParserEvents = value; }
 
   /* Hook methods */
-  protected void onParsingStart() throws Exception { }
+  protected void onParsingStart() throws Exception
+  {
+    if (this.mIsInvalidState)
+      throw new ParserException ("Invalid parser state : On an invalid line.");
+  }
 
   protected void onParsingSuccess (ParserResult result) throws Exception
   {
@@ -58,6 +69,10 @@ public abstract class AbstractParser
   }
   protected void onParsingError(String error, ParserResult result) throws Exception
   {
+    /* Until we move past the current block to the next block, parser remains in invalid
+     * state. */
+    mIsInvalidState = true;
+
     ParserEvents e = this.mParserEvents;
     if (e == null) return;
 
@@ -82,6 +97,43 @@ public abstract class AbstractParser
     this.mLastLineRead = null;
     this.mLastFilePointer = -1;
     this.mParserEvents = null;
+    this.mIsInvalidState = false;
+    this.mConstants = getKindleParserConstants();
+  }
+
+  /**
+   * Moves to the Title of the next block from anywhere in the current block.
+   * Moves to the start of the next block. This methods, does not actually parse the lines, it
+   * just looks for the next termination line.
+   *
+   * Returns True, of next block was found, otherwise False.
+   */
+  public boolean moveToNextEntry() throws Exception
+  {
+    String linestr = null;
+
+    while (true)
+    {
+      linestr = readLineWithProperEncoding ();
+      if (linestr == null)
+        return false;
+
+      if (isTerminationLine (linestr))
+        break;
+    }
+
+    /* Move past any invalid block.*/
+    mIsInvalidState = false;
+    return true;
+  }
+
+  /**
+   * Moves the file pointer and assumes the next line read to be Title.
+   */
+  public void moveToEntryAtOffset (long offset) throws Exception
+  {
+    mFile.seek(offset);
+    mIsInvalidState = false;
   }
 
   protected Charset getCharsetFromByteOrderMarkType (ByteOrderMarkTypes type)
@@ -112,13 +164,15 @@ public abstract class AbstractParser
       return null;
     }
 
-    try {
+    try
+    {
       onParsingStart();
 
       for (int i = 0; parseError == ParsingErrors.NO_ERROR; i++)
       {
         if (Thread.interrupted() == true)
           throw new InterruptedException();
+
         parseError = parseLine(i, result);
       }
 
@@ -142,6 +196,25 @@ public abstract class AbstractParser
 
     onParsingSuccess (result);
     return result;
+  }
+
+  /** Generates a Parser Exception object for subclasses to use.
+   * This ensures a consistent Exception description.
+   */
+  protected ParserException genParserException (String stage)
+  {
+      String errDes = String.format ("Parsing error: '%s' is not '%s'.",
+                                      this.lastLineRead(), stage);
+      return new ParserException (errDes);
+  }
+
+  /**
+   * Checks if the specified line is the termination line.
+   */
+  protected boolean isTerminationLine (String linestr)
+  {
+    assert (linestr != null);
+    return linestr.equals(mConstants.getTeminationLinePattern());
   }
 
   /**

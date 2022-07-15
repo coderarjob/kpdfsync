@@ -18,22 +18,25 @@ import coderarjob.kpdfsync.lib.clipparser.ParserResult.SupportedFields;
 
 public class KindleParserV1 extends AbstractParser
 {
-    /*
-     * On paring error, this is set to true. False indicates, no error, or that file pointer has
-     * moved to the next block after the previous parsing error.
-     */
-    protected boolean mIsInvalidState;
-
     public KindleParserV1 (String fileName) throws FileNotFoundException, IOException
     {
         /* Clippings file is opened and onClippingsFileOpen hook method is called. */
         super (fileName);
-
-        /* Default state */
-        mIsInvalidState = false;
     }
 
     /* Implementing abstract methods from AbstractParser*/
+    protected AbstractKindleParserConstants getKindleParserConstants ()
+    {
+      AbstractKindleParserConstants constants = new AbstractKindleParserConstants () {
+        public int getAnnotationLineTypePosition() { return 2; }
+        public int getAnnotationLinePageNumberTypePosition() { return 4; }
+        public int getAnnotationLinePageOrLocationNumberPosition() { return 5; }
+        public String getTeminationLinePattern () { return "=========="; }
+      };
+
+      return constants;
+    }
+
     public String getParserVersion ()
     {
         return "1.0";
@@ -45,64 +48,35 @@ public class KindleParserV1 extends AbstractParser
     }
 
     /**
-     * Moves to the Title of the next block from anywhere in the current block.
-     * Moves to the start of the next block. This methods, does not actually parse the lines, it
-     * just looks for the next termination line.
-     *
-     * Returns True, of next block was found, otherwise False.
-     */
-    public boolean moveToNextEntry () throws IOException
-    {
-        String linestr = null;
-
-        while (true)
-        {
-            linestr = readLineWithProperEncoding ();
-            if (linestr == null)
-                return false;
-
-            if (isTerminationLine (linestr))
-                break;
-        }
-
-        /* Move past any invalid block.*/
-        mIsInvalidState = false;
-        return true;
-    }
-
-    /**
-     * Moves the file pointer and assumes the next line read to be Title.
-     */
-    public void moveToEntryAtOffset (long offset) throws IOException
-    {
-        mFile.seek(offset);
-        mIsInvalidState = false;
-    }
-
-    /**
      * Parses each line of the current block.
      * Returns a ParserResult object with the parsed result.
      * Null is returned is EOF was reached.
      */
-    public ParsingErrors parseLine (int lineIndex, ParserResult result)
+    protected ParsingErrors parseLine(int lineIndex, ParserResult result)
         throws IOException, ParserException
     {
       ParsingErrors err = ParsingErrors.NO_ERROR;
+      String lineStr = null;
+
       switch (lineIndex)
       {
         case 0 :
+          this.readLineWithProperEncoding();
           err = parseTitleLine (result);
           err.setTag ("Title line");
           break;
         case 1 :
+          this.readLineWithProperEncoding();
           err = parseAnnotationLine (result);
           err.setTag ("Annotation line");
           break;
         case 2 :
+          this.readLineWithProperEncoding();
           err = parseTextLine (result);
           err.setTag ("Text line");
           break;
         case 3 :
+          this.readLineWithProperEncoding();
           err = parseTerminationLine (result);
           err.setTag ("Termination line");
           break;
@@ -114,35 +88,17 @@ public class KindleParserV1 extends AbstractParser
       return err;
     }
 
-    protected void onParsingError(String error, ParserResult result) throws Exception
-    {
-        /* Until we move past the current block to the next block, parser remains in invalid
-         * state. */
-        mIsInvalidState = true;
-
-        /* Call base class method */
-        super.onParsingError (error, result);
-    }
-
-    protected void onParsingStart() throws Exception
-    {
-        if (this.mIsInvalidState)
-            throw new ParserException ("Invalid parser state : On an invalid line.");
-
-        /* Call base class method */
-        super.onParsingStart();
-    }
-
     /* Class methods */
 
     /**
      * Validates Book Title line and adds to ParserResult and returns true is valid.
      * If validation fails, false is returned.
      */
-    protected ParsingErrors parseTitleLine (ParserResult result) throws IOException, ParserException
+    protected ParsingErrors parseTitleLine (ParserResult result)
+        throws IOException, ParserException
     {
         /* Read current line. Cannot be EOF.*/
-        String linestr = readLineWithProperEncoding();
+        String linestr = this.lastLineRead();
         if (linestr == null)
             return ParsingErrors.PARSING_ERROR;
 
@@ -163,7 +119,7 @@ public class KindleParserV1 extends AbstractParser
             throws IOException, ParserException
     {
         /* Read current line. Cannot be EOF.*/
-        String linestr = readLineWithProperEncoding();
+        String linestr = this.lastLineRead();
         if (linestr == null)
             return ParsingErrors.PARSING_ERROR;
 
@@ -171,7 +127,7 @@ public class KindleParserV1 extends AbstractParser
         String value = "";
 
         /* Annotation Type */
-        value = trySplitString (linestr, " ", 2);
+        value = trySplitString (linestr, " ", mConstants.getAnnotationLineTypePosition());
         isValid = (value != null)
                   && (value.toLowerCase().equals ("highlight")
                       || value.toLowerCase().equals ("note")
@@ -184,7 +140,7 @@ public class KindleParserV1 extends AbstractParser
         String annotationType = value;
 
         /* Page Number Type */
-        value = trySplitString (linestr, " ", 4);
+        value = trySplitString (linestr, " ", mConstants.getAnnotationLinePageNumberTypePosition());
         isValid = (value != null)
                   && (value.toLowerCase().equals("page")
                       || value.toLowerCase().equals("location"));
@@ -195,7 +151,7 @@ public class KindleParserV1 extends AbstractParser
         result.setFieldValue (SupportedFields.PAGE_NUMBER_TYPE, value);
 
         /* Page or Location Number */
-        value = trySplitString (linestr, " ", 5);
+        value = trySplitString (linestr, " ", mConstants.getAnnotationLinePageOrLocationNumberPosition());
         isValid = (value != null);
         if (isValid == false)
             return ParsingErrors.PARSING_ERROR;
@@ -223,7 +179,7 @@ public class KindleParserV1 extends AbstractParser
     protected ParsingErrors parseTextLine (ParserResult result) throws IOException, ParserException
     {
         /* Read current line. Cannot be EOF.*/
-        String linestr = readLineWithProperEncoding();
+        String linestr = this.lastLineRead();
         if (linestr == null)
             return ParsingErrors.PARSING_ERROR;
 
@@ -268,19 +224,13 @@ public class KindleParserV1 extends AbstractParser
         throws IOException, ParserException
     {
         /* Read current line. Cannot be EOF.*/
-        String linestr = readLineWithProperEncoding();
+        String linestr = this.lastLineRead();
         if (linestr == null)
             return ParsingErrors.PARSING_ERROR;
 
         /* Check for termination line. */
         boolean isValid = isTerminationLine (linestr);
         return (isValid == true) ? ParsingErrors.NO_ERROR : ParsingErrors.PARSING_ERROR;
-    }
-
-    protected boolean isTerminationLine (String linestr)
-    {
-        assert (linestr != null);
-        return linestr.equals("==========");
     }
 
     protected String trySplitString (String s, String p, int index)
