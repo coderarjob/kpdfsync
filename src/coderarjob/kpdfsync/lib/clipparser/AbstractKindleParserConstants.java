@@ -10,24 +10,28 @@
 
 package coderarjob.kpdfsync.lib.clipparser;
 
-public abstract class AbstractKindleParserConstants
+import coderarjob.kpdfsync.lib.clipparser.ParserResult.AnnotationType;
+import coderarjob.kpdfsync.lib.clipparser.ParserResult.PageNumberType;
+import java.util.List;
+
+abstract class AbstractKindleParserConstants
 {
-
-  /** When annotation line split by spaces, this is the index at which annotation type (Note or
-   * Highlight) can be found.
+  /** Annotation type position and patters to identify annotation types.
    */
-  public abstract int getAnnotationLineTypePosition ();
+  public abstract
+    List<ParserResultFieldsFilter<AnnotationType>> getAnnotationTypeFilter(ParserResult res);
 
-  /** When annotation line split by spaces, this is the index at which Page number type (Page or
-   * location) can be found.
+  /** Page number type position and patters to identify annotation types.
    */
-  public abstract int getAnnotationLinePageNumberTypePosition ();
+  public abstract
+    ParserResultFieldsFilter<PageNumberType> getPageNumberTypeFilter(ParserResult res);
 
-  /** When annotation line split by spaces, this is the index at which Page number or location
-   * number can be found.
+  /** Page number word position.
+   * There is no pattern to match here.
    */
-  public abstract int getAnnotationLinePageOrLocationNumberPosition ();
+  public abstract
+    ParserResultFieldsFilter<Object> getPageOrLocationNumberFilter(ParserResult res);
 
   /** Pattern by which the end of a block (i.e Termination line) is recognized. */
-  public abstract String getTeminationLinePattern ();
+  public abstract ParserResultFieldsFilter<Boolean> getTerminationLineFilter();
 }
