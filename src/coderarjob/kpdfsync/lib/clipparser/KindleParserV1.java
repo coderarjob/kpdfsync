@@ -43,49 +43,6 @@ public class KindleParserV1 extends AbstractParser
     }
 
     /* Implementing abstract methods from AbstractParser*/
-    protected boolean isTerminationLine (String linestr)
-    {
-      return linestr.toLowerCase().equals(TERMINATION_LINE_PATTERN);
-    }
-
-    /*protected AbstractKindleParserConstants getKindleParserConstants ()
-    {
-      AbstractKindleParserConstants constants = new AbstractKindleParserConstants () {
-        public ParserResultFieldsFilter<AnnotationType> getAnnotationTypeFilter(ParserResult res)
-        {
-          Hashtable<String, AnnotationType> ht = new Hashtable<>();
-          ht.put("highlight", AnnotationType.HIGHLIGHT);
-          ht.put("note", AnnotationType.NOTE);
-          ht.put("bookmark", AnnotationType.BOOKMARK);
-
-          return new ParserResultFieldsFilter<> (2, ht);
-        }
-
-        public ParserResultFieldsFilter<PageNumberType> getPageNumberTypeFilter(ParserResult res)
-        {
-          Hashtable<String, PageNumberType> ht = new Hashtable<>();
-          ht.put("page", PageNumberType.PAGE_NUMBER);
-          ht.put("location", PageNumberType.LOCATION_NUMBER);
-
-          return new ParserResultFieldsFilter<> (4, ht);
-        }
-
-        public ParserResultFieldsFilter<Object> getPageOrLocationNumberFilter(ParserResult res)
-        {
-          return new ParserResultFieldsFilter<> (5, null);
-        }
-
-        public ParserResultFieldsFilter<Boolean> getTerminationLineFilter()
-        {
-          Hashtable<String, Boolean> ht = new Hashtable<>();
-          ht.put ("==========", true);
-          return new ParserResultFieldsFilter<> (0, ht);
-        }
-      };
-
-      return constants;
-    }*/
-
     public String getParserVersion ()
     {
         return "1.0";
@@ -94,6 +51,14 @@ public class KindleParserV1 extends AbstractParser
     public String[] getSupportedKindleVersions ()
     {
         return new String[] {"5.12.*", "newer"};
+    }
+
+    /**
+     * Checks if the specified line is the termination line.
+     */
+    protected boolean isTerminationLine (String linestr)
+    {
+      return linestr.toLowerCase().equals(TERMINATION_LINE_PATTERN);
     }
 
     /**

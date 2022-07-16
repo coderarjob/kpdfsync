@@ -18,7 +18,6 @@ public abstract class AbstractParser
   /* Abstract protected methods */
   protected abstract boolean isTerminationLine (String linestr);
   protected abstract boolean parseLine(int linei, ParserResult res) throws Exception;
-  //protected abstract AbstractKindleParserConstants  getKindleParserConstants();
 
   /* Protected fields */
   protected String           mFileName;
@@ -29,7 +28,6 @@ public abstract class AbstractParser
                                                 False indicates, no error, or file pointer has
                                                 moved to the next block after the previous parsing
                                                 error.*/
-  //protected AbstractKindleParserConstants mConstants = null;
 
   /* Private fields */
   private long   mLastFilePointer;
@@ -88,7 +86,6 @@ public abstract class AbstractParser
     this.mLastFilePointer = -1;
     this.mParserEvents = null;
     this.mIsInvalidState = false;
-    //this.mConstants = getKindleParserConstants();
   }
 
   /**
@@ -187,16 +184,6 @@ public abstract class AbstractParser
                                       field, this.lastLineRead());
       return new ParserException (errDes);
   }
-
-  /**
-   * Checks if the specified line is the termination line.
-   */
-  /*protected boolean isTerminationLine (String linestr)
-  {
-    assert (linestr != null);
-    ParserResultFieldsFilter<Boolean> filter = mConstants.getTerminationLineFilter();
-    return filter.getOrDefault(linestr, false);
-  }*/
 
   /**
    * Checks if End of File has been reached.

@@ -46,13 +46,20 @@ Here is the rough roadmap of the development.
 
 ----
 
+- [X] Bug Fixes: Some minor fixes in UI
+- [X] Feature: Added new parser for reading older Kindle Clippings format.
+- [X] UI change to select different parsers.
+- [ ] **Alpha Release 4**
+
+----
+
 - [ ] Fine tune the rough edges in the supporting library.
 - [ ] Memory/Resource optimization.
 - [ ] Finalizing and optimizing the Graphical User Interface.
 - [ ] **Beta Release**
 
 ## Requirements
-- JRE 1.8 or higher
+- JRE 1.8 or higher __Note: JRE headless will not work.__
 - Linux, Windows
 - Mac OS
 

@@ -744,6 +744,7 @@ public class MainFrame extends javax.swing.JFrame
         break;
       case CLIPPING_FILE_SELECTED:
         selectBookNameComboBox.removeAllItems ();
+        browseClippingsFileButton.setEnabled (true);
         selectKindleVersionComboBox.setEnabled (true);
         parserKindleSupportInfoButton.setEnabled (false);
         break;

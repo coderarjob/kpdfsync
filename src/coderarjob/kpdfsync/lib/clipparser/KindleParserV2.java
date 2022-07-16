@@ -51,45 +51,6 @@ public class KindleParserV2 extends KindleParserV1
         return new String[] {"3.4.3", "older"};
     }
 
-    /*protected AbstractKindleParserConstants getKindleParserConstants ()
-    {
-      AbstractKindleParserConstants constants = new AbstractKindleParserConstants () {
-        public ParserResultFieldsFilter<AnnotationType> getAnnotationTypeFilter(ParserResult res)
-        {
-          Hashtable<String, AnnotationType> ht = new Hashtable<>();
-          ht.put("highlight", AnnotationType.HIGHLIGHT);
-          ht.put("note", AnnotationType.NOTE);
-          ht.put("bookmark", AnnotationType.BOOKMARK);
-
-          return new ParserResultFieldsFilter<> (1, ht);
-        }
-
-        public ParserResultFieldsFilter<PageNumberType> getPageNumberTypeFilter(ParserResult res)
-        {
-          Hashtable<String, PageNumberType> ht = new Hashtable<>();
-          ht.put("page", PageNumberType.PAGE_NUMBER);
-          ht.put("location", PageNumberType.LOCATION_NUMBER);
-          ht.put("loc.", PageNumberType.LOCATION_NUMBER);
-
-          return new ParserResultFieldsFilter<> (3, ht);
-        }
-
-        public ParserResultFieldsFilter<Object> getPageOrLocationNumberFilter(ParserResult res)
-        {
-          return new ParserResultFieldsFilter<> (4, null);
-        }
-
-        public ParserResultFieldsFilter<Boolean> getTerminationLineFilter()
-        {
-          Hashtable<String, Boolean> ht = new Hashtable<>();
-          ht.put ("==========", true);
-          return new ParserResultFieldsFilter<> (0, ht);
-        }
-      };
-
-      return constants;
-    }*/
-
     protected void parseAnnotationType (ParserResult result) throws IOException, ParserException
     {
         /* Read current line. Cannot be EOF.*/
