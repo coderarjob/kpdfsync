@@ -18,35 +18,53 @@ public class ParserResult
 {
   public enum PageNumberType
   {
-    UNKNOWN, PAGE_NUMBER, LOCATION_NUMBER;
+    UNKNOWN("Unknown"),
+    PAGE_NUMBER("Page Number"),
+    LOCATION_NUMBER("Location Number");
 
+    private final String _name;
+    public String getName() { return _name; }
+    private PageNumberType (String name) { _name = name; }
     public static PageNumberType fromString (String type)
     {
-      if (type.toLowerCase().equals("page"))          return PAGE_NUMBER;
-      else if (type.toLowerCase().equals("location")) return LOCATION_NUMBER;
-      else                                            return UNKNOWN;
+      for (PageNumberType t : PageNumberType.values())
+        if (t.getName().toLowerCase().equalsIgnoreCase(type))
+          return t;
+      return UNKNOWN;
     }
   }
 
   public enum AnnotationType
   {
-    UNKNOWN, HIGHLIGHT, NOTE, BOOKMARK;
+    UNKNOWN("Unknown"),
+    HIGHLIGHT("Highlight"),
+    NOTE("Note"),
+    BOOKMARK("Bookmark");
 
+    private final String _name;
+    public String getName() { return _name; }
+    private AnnotationType (String name) { _name = name; }
     public static AnnotationType fromString (String type)
     {
-      switch (type.toLowerCase())
-      {
-        case "highlight": return HIGHLIGHT;
-        case "note"     : return NOTE;
-        case "bookmark" : return BOOKMARK;
-        default         : return UNKNOWN;
-      }
+      for (AnnotationType t : AnnotationType.values())
+        if (t.getName().toLowerCase().equalsIgnoreCase(type))
+          return t;
+      return UNKNOWN;
     }
   }
 
   enum SupportedFields
   {
-    TITLE, FILE_OFFSET, ANNOTATION_TYPE, PAGE_OR_LOCATION_NUMBER, PAGE_NUMBER_TYPE, TEXT
+    TITLE("Title"),
+    FILE_OFFSET("File Offset"),
+    ANNOTATION_TYPE("Annotation Type"),
+    PAGE_OR_LOCATION_NUMBER("Page or Location Number"),
+    PAGE_NUMBER_TYPE("Page Number Type"),
+    TEXT("Text");
+
+    private final String _name;
+    public String getName() { return _name; }
+    private SupportedFields (String name) { _name = name; }
   }
 
   private Hashtable<SupportedFields, String> mFieldDict;

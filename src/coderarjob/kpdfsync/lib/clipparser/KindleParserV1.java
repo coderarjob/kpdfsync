@@ -13,24 +13,33 @@ package coderarjob.kpdfsync.lib.clipparser;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Hashtable;
 
 import coderarjob.kpdfsync.lib.clipparser.ParserResult.SupportedFields;
+import coderarjob.kpdfsync.lib.clipparser.ParserResult.AnnotationType;
+import coderarjob.kpdfsync.lib.clipparser.ParserResult.PageNumberType;
 
 public class KindleParserV1 extends AbstractParser
 {
-    /*
-     * On paring error, this is set to true. False indicates, no error, or that file pointer has
-     * moved to the next block after the previous parsing error.
-     */
-    protected boolean mIsInvalidState;
+    private final int ANNOTATION_TYPE_WORD_POS = 2;
+    private final int PAGE_NUMBER_TYPE_WORD_POS = 4;
+    private final int PAGE_NUMBER_OR_LOCATION_WORD_POS = 5;
+    private final String TERMINATION_LINE_PATTERN = "==========";
 
     public KindleParserV1 (String fileName) throws FileNotFoundException, IOException
     {
         /* Clippings file is opened and onClippingsFileOpen hook method is called. */
         super (fileName);
+    }
 
-        /* Default state */
-        mIsInvalidState = false;
+    public static String getParserName()
+    {
+      return "Kindle Clippings - Newer kindles";
+    }
+
+    public String toString()
+    {
+      return KindleParserV1.getParserName();
     }
 
     /* Implementing abstract methods from AbstractParser*/
@@ -41,199 +50,162 @@ public class KindleParserV1 extends AbstractParser
 
     public String[] getSupportedKindleVersions ()
     {
-        return new String[] {"1.2.4", "1.2.5", "1.2.6"};
+        return new String[] {"5.12.*", "newer"};
     }
 
     /**
-     * Moves to the Title of the next block from anywhere in the current block.
-     * Moves to the start of the next block. This methods, does not actually parse the lines, it
-     * just looks for the next termination line.
-     *
-     * Returns True, of next block was found, otherwise False.
+     * Checks if the specified line is the termination line.
      */
-    public boolean moveToNextEntry () throws IOException
+    protected boolean isTerminationLine (String linestr)
     {
-        String linestr = null;
-
-        while (true)
-        {
-            linestr = readLineWithProperEncoding ();
-            if (linestr == null)
-                return false;
-
-            if (isTerminationLine (linestr))
-                break;
-        }
-
-        /* Move past any invalid block.*/
-        mIsInvalidState = false;
-        return true;
-    }
-
-    /**
-     * Moves the file pointer and assumes the next line read to be Title.
-     */
-    public void moveToEntryAtOffset (long offset) throws IOException
-    {
-        mFile.seek(offset);
-        mIsInvalidState = false;
+      return linestr.toLowerCase().equals(TERMINATION_LINE_PATTERN);
     }
 
     /**
      * Parses each line of the current block.
      * Returns a ParserResult object with the parsed result.
-     * Null is returned is EOF was reached.
+     * Returns True, if there reached end of the block. False otherwise.
      */
-    public ParsingErrors parseLine (int lineIndex, ParserResult result)
+    protected boolean parseLine(int lineIndex, ParserResult result)
         throws IOException, ParserException
     {
-      ParsingErrors err = ParsingErrors.NO_ERROR;
       switch (lineIndex)
       {
         case 0 :
-          err = parseTitleLine (result);
-          err.setTag ("Title line");
+          this.readLineWithProperEncoding();
+          parseTitleLine (result);
           break;
         case 1 :
-          err = parseAnnotationLine (result);
-          err.setTag ("Annotation line");
+          this.readLineWithProperEncoding();
+          parseAnnotationType(result);
+          parsePageNumberType(result);
+          parsePageOrLocationNumber(result);
           break;
         case 2 :
-          err = parseTextLine (result);
-          err.setTag ("Text line");
+          this.readLineWithProperEncoding();
+          parseTextLine (result);
           break;
         case 3 :
-          err = parseTerminationLine (result);
-          err.setTag ("Termination line");
-          break;
+          this.readLineWithProperEncoding();
+          parseTerminationLine (result);
+          return true;
         default:
-          err =ParsingErrors.END_OF_BLOCK_REACHED;
-          break;
+          String desc = String.format ("At an invalid line. Line #%d", lineIndex);
+          throw new ParserException (desc);
       }
-
-      return err;
-    }
-
-    protected void onParsingError(String error, ParserResult result) throws Exception
-    {
-        /* Until we move past the current block to the next block, parser remains in invalid
-         * state. */
-        mIsInvalidState = true;
-
-        /* Call base class method */
-        super.onParsingError (error, result);
-    }
-
-    protected void onParsingStart() throws Exception
-    {
-        if (this.mIsInvalidState)
-            throw new ParserException ("Invalid parser state : On an invalid line.");
-
-        /* Call base class method */
-        super.onParsingStart();
+      return false;
     }
 
     /* Class methods */
 
     /**
-     * Validates Book Title line and adds to ParserResult and returns true is valid.
-     * If validation fails, false is returned.
+     * Validates Book Title line and adds to ParserResult.
      */
-    protected ParsingErrors parseTitleLine (ParserResult result) throws IOException, ParserException
+    protected void parseTitleLine (ParserResult result) throws IOException, ParserException
     {
         /* Read current line. Cannot be EOF.*/
-        String linestr = readLineWithProperEncoding();
+        String linestr = this.lastLineRead();
         if (linestr == null)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (SupportedFields.TITLE.getName());
 
         boolean isValid = (linestr.length () > 0);
         if (isValid == false)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (SupportedFields.TITLE.getName());
 
         result.setFieldValue (SupportedFields.TITLE, linestr.trim());
         result.setFieldValue (SupportedFields.FILE_OFFSET, String.valueOf(this.lastFilePointer()));
-        return ParsingErrors.NO_ERROR;
     }
 
     /**
-     * Validates Book Annotation type line and adds to ParserResult and returns true is valid.
-     * If validation fails, false is returned.
+     * Validates Book Annotation type line and adds to ParserResult.
      */
-    protected ParsingErrors parseAnnotationLine (ParserResult result)
-            throws IOException, ParserException
+    protected void parseAnnotationType (ParserResult result) throws IOException, ParserException
     {
         /* Read current line. Cannot be EOF.*/
-        String linestr = readLineWithProperEncoding();
+        String linestr = this.lastLineRead();
         if (linestr == null)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (SupportedFields.ANNOTATION_TYPE.getName());
 
+        /* Annotation Type */
+        Hashtable<String, AnnotationType> ht = new Hashtable<>();
+        ht.put("highlight", AnnotationType.HIGHLIGHT);
+        ht.put("note", AnnotationType.NOTE);
+        ht.put("bookmark", AnnotationType.BOOKMARK);
+
+        String value = trySplitString (linestr, " ", ANNOTATION_TYPE_WORD_POS).toLowerCase();
+
+        AnnotationType annotationType = ht.getOrDefault(value,AnnotationType.UNKNOWN);
+        if (annotationType == AnnotationType.UNKNOWN)
+          throw genParserException (SupportedFields.ANNOTATION_TYPE.getName());
+
+        result.setFieldValue (SupportedFields.ANNOTATION_TYPE, annotationType.getName());
+    }
+
+    protected void parsePageNumberType (ParserResult result) throws IOException, ParserException
+    {
+        String linestr = this.lastLineRead();
+
+        /* Page Number Type */
+        Hashtable<String, PageNumberType> ht = new Hashtable<>();
+        ht.put("page", PageNumberType.PAGE_NUMBER);
+        ht.put("location", PageNumberType.LOCATION_NUMBER);
+
+        String value = trySplitString (linestr, " ", PAGE_NUMBER_TYPE_WORD_POS).toLowerCase();
+
+        PageNumberType pageNumberType = ht.getOrDefault(value,PageNumberType.UNKNOWN);
+        if (pageNumberType == PageNumberType.UNKNOWN)
+          throw genParserException (SupportedFields.PAGE_NUMBER_TYPE.getName());
+
+        result.setFieldValue (SupportedFields.PAGE_NUMBER_TYPE, pageNumberType.getName());
+    }
+
+    protected void parsePageOrLocationNumber (ParserResult result)
+        throws IOException, ParserException
+    {
         boolean isValid = false;
         String value = "";
 
-        /* Annotation Type */
-        value = trySplitString (linestr, " ", 2);
-        isValid = (value != null)
-                  && (value.toLowerCase().equals ("highlight")
-                      || value.toLowerCase().equals ("note")
-                      || value.toLowerCase().equals ("bookmark"));
-
-        if (isValid == false)
-            return ParsingErrors.PARSING_ERROR;
-
-        result.setFieldValue (SupportedFields.ANNOTATION_TYPE, value);
-        String annotationType = value;
-
-        /* Page Number Type */
-        value = trySplitString (linestr, " ", 4);
-        isValid = (value != null)
-                  && (value.toLowerCase().equals("page")
-                      || value.toLowerCase().equals("location"));
-
-        if (isValid == false)
-            return ParsingErrors.PARSING_ERROR;
-
-        result.setFieldValue (SupportedFields.PAGE_NUMBER_TYPE, value);
+        String linestr = this.lastLineRead();
+        AnnotationType annotationType = result.annotationType();
 
         /* Page or Location Number */
-        value = trySplitString (linestr, " ", 5);
+        value = trySplitString (linestr, " ", PAGE_NUMBER_OR_LOCATION_WORD_POS);
         isValid = (value != null);
         if (isValid == false)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (SupportedFields.PAGE_OR_LOCATION_NUMBER.getName());
 
-        if (annotationType.toLowerCase().equals("bookmark") == false)
+        if (annotationType == AnnotationType.NOTE || annotationType == AnnotationType.HIGHLIGHT)
         {
             value = trySplitString (value, "-", 0);
             isValid = (value != null);
             if (isValid == false)
-                return ParsingErrors.PARSING_ERROR;
+              throw genParserException (SupportedFields.PAGE_OR_LOCATION_NUMBER.getName());
         }
 
         isValid = tryParseUnsigendInt (value);
         if (isValid == false)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (SupportedFields.PAGE_OR_LOCATION_NUMBER.getName());
 
         result.setFieldValue (SupportedFields.PAGE_OR_LOCATION_NUMBER, value);
-        return ParsingErrors.NO_ERROR;
     }
 
     /**
-     * Validates Book highlight/note text line and adds to ParserResult and returns true is valid.
-     * If validation fails, false is returned.
+     * Validates Book highlight/note text line and adds to ParserResult.
      */
-    protected ParsingErrors parseTextLine (ParserResult result) throws IOException, ParserException
+    protected void parseTextLine (ParserResult result) throws IOException, ParserException
     {
         /* Read current line. Cannot be EOF.*/
-        String linestr = readLineWithProperEncoding();
+        String linestr = this.lastLineRead();
         if (linestr == null)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (SupportedFields.TEXT.getName());
 
         boolean isValid = false;
-        String annotationType = result.getFieldValue(SupportedFields.ANNOTATION_TYPE).toLowerCase();
+        AnnotationType annotationType = result.annotationType();
 
         /* There should be a blank line */
         isValid = (linestr.length() == 0);
         if (isValid == false)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException (SupportedFields.TEXT.getName());
 
         /* Read the actual text, in the following lines */
         StringBuilder sb = new StringBuilder();
@@ -242,11 +214,11 @@ public class KindleParserV1 extends AbstractParser
             sb.append(linestr + "\n");
 
             /* NOTE: This line can also be blank, in case of a bookmark annotation type.*/
-            if (annotationType.equals("bookmark") == false)
+            if (annotationType == AnnotationType.NOTE || annotationType == AnnotationType.HIGHLIGHT)
             {
                 isValid = (linestr.length() > 0);
                 if (isValid == false)
-                    return ParsingErrors.PARSING_ERROR;
+                  throw genParserException (SupportedFields.TEXT.getName());
             }
         }
 
@@ -257,30 +229,22 @@ public class KindleParserV1 extends AbstractParser
         sb.deleteCharAt(sb.length() - 1);
 
         result.setFieldValue (SupportedFields.TEXT, sb.toString());
-        return ParsingErrors.NO_ERROR;
     }
 
     /**
-     * Validates entry end/termination line and adds to ParserResult and returns true is valid.
-     * If validation fails, false is returned.
+     * Validates entry end/termination line.
      */
-    protected ParsingErrors parseTerminationLine (ParserResult result)
-        throws IOException, ParserException
+    protected void parseTerminationLine (ParserResult result) throws IOException, ParserException
     {
         /* Read current line. Cannot be EOF.*/
-        String linestr = readLineWithProperEncoding();
+        String linestr = this.lastLineRead();
         if (linestr == null)
-            return ParsingErrors.PARSING_ERROR;
+          throw genParserException ("Termination Line");
 
         /* Check for termination line. */
-        boolean isValid = isTerminationLine (linestr);
-        return (isValid == true) ? ParsingErrors.NO_ERROR : ParsingErrors.PARSING_ERROR;
-    }
-
-    protected boolean isTerminationLine (String linestr)
-    {
-        assert (linestr != null);
-        return linestr.equals("==========");
+        boolean isValid = linestr.equals(TERMINATION_LINE_PATTERN);
+        if (isValid == false)
+          throw genParserException ("Termination Line");
     }
 
     protected String trySplitString (String s, String p, int index)
