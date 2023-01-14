@@ -35,8 +35,10 @@ public class HighlightNotePairManager
      */
     public void pairAutomatic () throws Exception
     {
-      for (PageResource res : mPageResources.values())
-        res.pairAutomatic();
+      for (PageResource res : mPageResources.values()) {
+        if (res.isValid())
+          res.pairAutomatic();
+      }
     }
 
     /*** Total number of highlights in every page.
