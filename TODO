@@ -28,6 +28,75 @@ Kpdfsync                                                                        
           ByteOrderMarkTypes enum. It is now separe in
           ByteOrderMark file.
 # BUGS:
+[X] (GitHub Issue #9)
+    Book: Steve Jobs (MOBI)
+    Highlights and notes are not getting automatically mapped
+
+    On some pages, getting the yellow exclamation point,
+    indicating that there are nore notes than highlight.
+    However that is not the case in the Clippings file.
+
+Cause:
+    HighlightNotePairManager.pairAutomatic() loops though each PageResource
+    and calls pairAutomatic on it. This loop stops at the 1st error, so if
+    a pairAutomatic call fails, all subsequent page resources are not paired
+    automatically.
+    This came to light due to the below `#9` bug. Because that exception
+    is thrown before, no page resource after that is paired automatically.
+
+Solution:
+    1. Do not break the loop on exception. Skip the page resource which
+    cannot be mapped and go to the next. The message box with the error
+    will not appear at that point, but the `Bug` icon will be there.
+
+    2. Have a method in PageResource to dry run automatic pairing, if
+    this function returns false, skep it.
+
+[ ] (GitHub Issue #8)
+    Book: Steve Jobs (MOBI)
+    Invalid. There are more notes than highlights
+
+    Invalid. There are more notes than highlights is wrongly
+    reported even when there is no issue in the Clippings.txt
+    file.
+
+Cause:
+    On multi page highlights, there are two location numbers in
+    the clippings file. If there is also a note associated with
+    the highlight, it however has only one page in the clippings
+    file.
+    Say the highlights are on page 1107-1108 and the note is on
+    1108. Kpdfsync will parse and read the 1st location number
+    of the highlight and the only location number of the note.
+    Which means, highlight location will be 1107 and note
+    locaiton will be 1108. Thus the error - A single note in a
+    page.
+
+    Note that, if there was one highligh in 1108-1108 page, then
+    the user will see no error message, but 1108 will have note
+    whose assiciated highlight is in page 1107. See solution.
+
+    [Kindle does not do multipage highlights on PDF files, so this
+    issue not possible in PDF files]
+
+Solution:
+    1. When double clicking on a highlight, allow notes from other
+    pages to be associated with - in which case move the note to the
+    page of the highlight.
+
+    2. When clicking a page which more notes than highlights, we get
+    an error. After the error, show the NotesHighlights Map dialog and
+    which will show the notes in the page, then allow selected notes
+    to be moved to a different page.
+
+    Both this options will move the note to a different page and this
+    solving the error. Option 1 starts which the highlight, option 2
+    starts from the note, thats all the difference. In both cases the
+    user need to know the page of the offending note or the correct
+    page where the associated highlight resides.
+    I prefer the 1st option, because it is easy to know the page of the
+    offending note.
+
 [ ] The string matching algo is too simple, and gives wrong match
     percentage, if the strings being compared differ in the number
     of non-whitespace characters. The two indexes get out of sync
@@ -277,4 +346,8 @@ java.io.EOFException
 
     Solution:
     Modifed pdfclown to treat 'name' and 'post' tables as optional. It is 
-    released with kpdfsync 0.8.2-alpha.
+    released with kpdfsync 0.9.0-alpha.
+
+[ ] Book: Rust Programming Language (Duplicate issue)
+    Highlight is not visible on the output PDF file. The 'Annotations' list shows that the
+    highlights and comments exits (comments contents match) but are not visible.
