@@ -41,7 +41,7 @@ Cause:
     and calls pairAutomatic on it. This loop stops at the 1st error, so if
     a pairAutomatic call fails, all subsequent page resources are not paired
     automatically.
-    This came to light due to the below `#9` bug. Because that exception
+    This came to light due to the below `#8` bug. Because that exception
     is thrown before, no page resource after that is paired automatically.
 
 Solution:
