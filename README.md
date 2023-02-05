@@ -66,6 +66,11 @@ Here is the rough roadmap of the development.
 **Note:** This is a new feature, which can resolve few of the PDF errors, but not all. New fixes
 will be added later on.
 
+## Troubleshooting
+
+### (Windows) Error: api-ms-win-crt-runtime-l1-1-0.dll is missing.
+Install [Update for Universal C Runtime](https://support.microsoft.com/en-us/kb/2999226)
+
 ## 3rd-party License
 
 * PDF Clown library is used to read and highlight on PDF files. PDF Clown library is covered under
