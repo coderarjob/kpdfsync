@@ -22,5 +22,4 @@ set(RES_FILES
     res/app.settings
 )
 
-message(${AJL_JAR_FILE})
 add_resource_to_jar(${PROJECT_NAME} ${AJL_JAR_FILE} ${AJL_NS} "${RES_FILES}")
