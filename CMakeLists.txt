@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 
 find_package(Java 1.8 REQUIRED) # Loads FindJava.cmake
-#include(UseJava)                # This includes several cmake functions useful to build Java project
 
 project(kpdfsync LANGUAGES NONE)
 
-set(CMAKE_SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
 set(KPDFSYNC_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set(KPDFSYNC_LIBS_DIR ${CMAKE_CURRENT_LIST_DIR}/lib)
 set(JAVA_CLASS_DIR ${CMAKE_BINARY_DIR}/class)
