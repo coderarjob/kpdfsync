@@ -14,7 +14,8 @@ set(KPDFSYNC_COMMIT_ID deadf00)
 set(KPDFSYNC_BUILD_ID f001)
 
 set(KPDFSYNC_JDK_VER_TARGET 8)
-set(CMAKE_JAVA_COMPILE_FLAGS --release ${KPDFSYNC_JDK_VER_TARGET})
+set(CMAKE_JAVA_COMPILE_FLAGS -target ${KPDFSYNC_JDK_VER_TARGET}
+                             -source ${KPDFSYNC_JDK_VER_TARGET})
 
 include(cmake/add_resource.cmake)
 include(cmake/JavaCmake.cmake)
