@@ -1,5 +1,14 @@
 
 # ==================================================================================================
+# Global settings (remains constant between different call to add_jar
+# ==================================================================================================
+if (UNIX)
+    set(JAVA_CP_SEPARATOR_CHAR :)
+elseif(WIN32)
+    set(JAVA_CP_SEPARATOR_CHAR \;)
+endif()
+
+# ==================================================================================================
 # function(add_jar target source_files resource_files manifest_file)
 #
 # Compiles *.java files, copies/creates resource files, then packs the class files and resource
@@ -51,7 +60,7 @@ function(add_jar target jar_file_path source_files resource_files cp manifest_fi
     # Class Path
     # ---------------------------------------------------------------------------------------------
     set(JAVA_CP ${JAVA_CLASS_DIR})
-    set(JAVA_CP_SEPARATOR_CHAR :)
+
     foreach (classpath IN LISTS cp)
         set(JAVA_CP ${JAVA_CP}${JAVA_CP_SEPARATOR_CHAR}${classpath})
     endforeach()
@@ -91,8 +100,9 @@ function(add_jar target jar_file_path source_files resource_files cp manifest_fi
             add_custom_command(
                 OUTPUT  ${resource_dest_file_abs}
                 DEPENDS ${file}
-                COMMAND mkdir -p ${resource_dest_file_path_abs}
-                COMMAND cp ${resource_source_file_abs} ${resource_dest_file_abs})
+                COMMAND ${CMAKE_COMMAND} -E make_directory ${resource_dest_file_path_abs}
+                COMMAND ${CMAKE_COMMAND} -E copy ${resource_source_file_abs}
+                                                 ${resource_dest_file_abs})
         endif()
 
         # Convert to relative path (relative to JAVA_CLASS_DIR).
@@ -139,8 +149,9 @@ function(add_jar target jar_file_path source_files resource_files cp manifest_fi
     add_custom_command(
         OUTPUT ${JAVA_JAR_FILE_ABS}
         DEPENDS ${JAVA_CLASS_FILES_ABS} ${JAVA_RESOURCE_FILES_ABS}
-        COMMAND mkdir -p ${JAVA_JAR_DIR}
-        COMMAND cd ${JAVA_CLASS_DIR} && ${Java_JAR_EXECUTABLE} ${JAVA_JAR_FLAGS} ${JAVA_CLASS_NS})
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${JAVA_JAR_DIR}
+        COMMAND ${CMAKE_COMMAND} -E chdir ${JAVA_CLASS_DIR}
+                ${Java_JAR_EXECUTABLE} ${JAVA_JAR_FLAGS} ${JAVA_CLASS_NS})
 
     # ---------------------------------------------------------------------------------------------
 # Drawback: Every class files are rebuild, even if single java file was changed.
@@ -152,5 +163,6 @@ function(add_jar target jar_file_path source_files resource_files cp manifest_fi
     add_custom_command(
         OUTPUT ${JAVA_CLASS_FILES_ABS}
         DEPENDS ${JAVA_SOURCE_FILES_ABS}
-        COMMAND ${Java_JAVAC_EXECUTABLE} ${CMAKE_JAVA_COMPILE_FLAGS} -cp ${JAVA_CP} -d ${JAVA_CLASS_DIR} ${JAVA_SOURCE_FILES_ABS})
+        COMMAND ${Java_JAVAC_EXECUTABLE} ${CMAKE_JAVA_COMPILE_FLAGS} -cp "${JAVA_CP}"
+                                         -d ${JAVA_CLASS_DIR} ${JAVA_SOURCE_FILES_ABS})
 endfunction()
