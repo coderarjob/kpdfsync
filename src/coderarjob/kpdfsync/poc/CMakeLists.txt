@@ -1,37 +1,24 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(coderarjob.kpdfsync LANGUAGES Java)
 
-if (NOT Java_FOUND)
-    message (FATAL_ERROR "Java not found. Cannot continue.")
-endif()
-
-set(GUI_NS coderarjob/kpdfsync/poc)
+set(JAVA_CLASS_NS coderarjob/kpdfsync/poc)
 set(GUI_JAR_FILE ${KPDFSYNC_BIN_DIR}/${PROJECT_NAME}.jar)
 set(KPDFSYNC_GUI_JAR_FILE ${GUI_JAR_FILE} PARENT_SCOPE)
 
-add_jar(${PROJECT_NAME}
-    OUTPUT_DIR
-        ${KPDFSYNC_BIN_DIR}
-    INCLUDE_JARS
-        ${KPDFSYNC_AJL_JAR_FILE}
-        ${KPDFSYNC_LIB_JAR_FILE}
-        ${CMAKE_SOURCE_DIR}/lib/pdfclown.jar
-    MANIFEST
-        Manifest.txt
-    SOURCES
-        pdffixes/pdftocairoFix.java
-        pdffixes/AbstractFix.java
-        Config.java
-        HighlightNotePair.java
-        HighlightNotePairListRenderer.java
-        HighlightNotePairManager.java
-        Log.java
-        Main.java
-        MainFrame.java
-        NoteAssociationDialog.java
-        PageNumberListRenderer.java
-        PageResource.java
-        PdfFixer.java
+set(SOURCE_FILES
+    pdffixes/pdftocairoFix.java
+    pdffixes/AbstractFix.java
+    Config.java
+    HighlightNotePair.java
+    HighlightNotePairListRenderer.java
+    HighlightNotePairManager.java
+    Log.java
+    Main.java
+    MainFrame.java
+    NoteAssociationDialog.java
+    PageNumberListRenderer.java
+    PageResource.java
+    PdfFixer.java
 )
 
 set(RES_FILES
@@ -62,4 +49,14 @@ set(RES_FILES
     res/stop.png
 )
 
-add_resource_to_jar(${PROJECT_NAME} ${GUI_JAR_FILE} ${GUI_NS} "${RES_FILES}")
+set(CP
+    ${KPDFSYNC_LIBS_DIR}/pdfclown.jar
+)
+
+add_jar(${PROJECT_NAME}
+    ${GUI_JAR_FILE}
+    "${SOURCE_FILES}"
+    "${RES_FILES}"
+    "${CP}"
+    Manifest.txt
+)
