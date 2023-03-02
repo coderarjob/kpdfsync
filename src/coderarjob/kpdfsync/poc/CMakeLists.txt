@@ -60,3 +60,5 @@ add_jar(${PROJECT_NAME}
     "${CP}"
     Manifest.txt
 )
+
+add_dependencies(${PROJECT_NAME} "coderarjob.ajl" "coderarjob.kpdfsync.lib")

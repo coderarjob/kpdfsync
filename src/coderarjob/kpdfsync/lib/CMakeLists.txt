@@ -40,3 +40,5 @@ add_jar(${PROJECT_NAME}
     "${CP}"
     ""
 )
+
+add_dependencies(${PROJECT_NAME} "coderarjob.ajl")
