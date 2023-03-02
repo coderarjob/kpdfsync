@@ -9,59 +9,88 @@ elseif(WIN32)
 endif()
 
 # ==================================================================================================
-# function(add_jar target source_files resource_files manifest_file)
+# add_jar(TARGET target
+#         JAR_FILE <abs path to jar file>
+#         SOURCES <source file> ...
+#         [NAMESPACE <namespace>]
+#         [MANIFEST <manifest file>]
+#         [RESOURCES <resource file> ...]
+#         [CLASSPATH <classpath> ..])
 #
 # Compiles *.java files, copies/creates resource files, then packs the class files and resource
 # files into a jar file.
 #
 # Parameters:
 #
-# jar_file_path:  Absolute file name of jar file. Directories will be createed if not exist.
+# TARGET
+# A custom target is of this name is created which depends on the JAR_FILE.
 #
-# source_files:   Java source files are based at CMAKE_CURRENT_LIST_DIR are compiled into
-#                 JAVA_CLASS_DIR/JAVA_CLASS_NS folder.
-#                 Throws error if contains anything other than .java files.
+# JAR_FILE
+# Absolute file name of jar file. Directories will be createed if not exist.
 #
-# resource_files: Resource files are based at CMAKE_CURRENT_LIST_DIR, and are copied/configured to
-#                 the destination folder based at JAVA_CLASS_DIR/JAVA_CLASS_NS. Following rules are
-#                 used to handle resource files:
+# SOURCES
+# Java source files are based at CMAKE_CURRENT_LIST_DIR are compiled into
+# JAVA_CLASS_DIR/ADDJAR_NAMESPACE folder. Throws error if contains anything other than .java files.
 #
-#                 - Calls local `java_add_resource_file` function for each resource file. This
-#                   function should selectively create rules for the creation of resource files at
-#                   the destination folder. Usually this function does a `configure_file`.
-#                   Should return TRUE if rule was created for the file, FALSE otherwhise.
+# RESOURCES
+# Resource files are based at CMAKE_CURRENT_LIST_DIR, and are copied/configured to the destination
+# folder based at JAVA_CLASS_DIR/ADDJAR_NAMESPACE. Following rules are used to handle resource files:
 #
-#                 - If previous call returns FALSE or simply does not exist, then copies each
-#                   resource file from source to destination folder.
+# - Calls local `java_add_resource_file` function for each resource file. This function should
+#   selectively create rules for the creation of resource files at the destination folder. Usually
+#   this function does a `configure_file`.
+#   Should return TRUE if rule was created for the file, FALSE otherwhise.
 #
-# cp:             Class path or jar files which need to be passed to javac. JAVA_CLASS_DIR is
-#                 always added and need to be passed separately.
+# - If previous call returns FALSE or simply does not exist, then copies each resource file from
+#   source to destination folder.
 #
-# manifest_file:  Manifest file is based at CMAKE_CURRENT_LIST_DIR are added to the jar file.
+# CLASSPATH
+# Class path or jar files which need to be passed to javac. JAVA_CLASS_DIR is always added and need
+# to be passed separately.
+#
+# NAMESPACE
+# Class files and resource files are generated at ${JAVA_CLASS_DIR}/<namespace>. This is the java
+# package string, where '.' is replaced by '/'.
+#
+# MANIFEST
+# Manifest file is based at CMAKE_CURRENT_LIST_DIR are added to the jar file.
 #
 # Variables required to be set:
 #
-# JAVA_CLASS_NS (Optional) : Package/Namespace of the source and resource files.
 # JAVA_CLASS_DIR           : Path where class and resource files need to be kept.
 # CMAKE_JAVA_COMPILE_FLAGS : Flags which need to be passed to javac.
 # ==================================================================================================
-function(add_jar target jar_file_path source_files resource_files cp manifest_file)
+function(add_jar)
 
     # Check if FindJava module is loaded and javac executable was found
     if (NOT Java_FOUND)
         message (FATAL_ERROR "Java not found. Cannot continue.")
     endif()
 
+    # ---------------------------------------------------------------------------------------------
+    # Parse arguments
+    # ---------------------------------------------------------------------------------------------
+    set (oneValueArgs TARGET JAR_FILE NAMESPACE MANIFEST)
+    set (multiValueArgs SOURCES RESOURCES CLASSPATH)
+    set(options)
+
+    cmake_parse_arguments(PARSE_ARGV 0 ADDJAR "${options}" "${oneValueArgs}" "${multiValueArgs}")
+
+    # Check validity
+    if (NOT ADDJAR_JAR_FILE OR NOT ADDJAR_TARGET OR NOT ADDJAR_SOURCES)
+        message(FATAL_ERROR "Jar file name, target and sources cannot be empty.")
+    endif()
+
     # Extract jar file directory path. Used to later create the path.
-    get_filename_component(JAVA_JAR_DIR ${jar_file_path} DIRECTORY)
-    set(JAVA_JAR_FILE_ABS ${jar_file_path})
+    set(JAVA_JAR_FILE_ABS ${ADDJAR_JAR_FILE})
+    get_filename_component(JAVA_JAR_DIR ${JAVA_JAR_FILE_ABS} DIRECTORY)
 
     # ---------------------------------------------------------------------------------------------
     # Class Path
     # ---------------------------------------------------------------------------------------------
     set(JAVA_CP ${JAVA_CLASS_DIR})
 
-    foreach (classpath IN LISTS cp)
+    foreach (classpath IN LISTS ADDJAR_CLASSPATH)
         set(JAVA_CP ${JAVA_CP}${JAVA_CP_SEPARATOR_CHAR}${classpath})
     endforeach()
 
@@ -70,27 +99,31 @@ function(add_jar target jar_file_path source_files resource_files cp manifest_fi
     # ---------------------------------------------------------------------------------------------
     # Converts to absolute path (based at CMAKE_CURRENT_LIST_DIR), if manifest file path provided is
     # relative. Does nothing, if absolute path is provided.
-    if (manifest_file)
-        get_filename_component(JAVA_MANIFEST_FILE_ABS ${manifest_file} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
+    if (ADDJAR_MANIFEST)
+        get_filename_component(JAVA_MANIFEST_FILE_ABS ${ADDJAR_MANIFEST}
+            ABSOLUTE BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
     endif()
 
     # ---------------------------------------------------------------------------------------------
     # Resource files
     # ---------------------------------------------------------------------------------------------
-    foreach(file IN LISTS resource_files)
+    foreach(file IN LISTS ADDJAR_RESOURCES)
         # Converts to absolute path (based at CMAKE_CURRENT_LIST_DIR), does nothing if absolute path
         # is provided.
-        get_filename_component(resource_source_file_abs ${file} ABSOLUTE BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
+        get_filename_component(resource_source_file_abs ${file}
+            ABSOLUTE BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
 
-        # Joins absolute JAVA_CLASS_DIR and JAVA_CLASS_NS paths together. Works even if
-        # JAVA_CLASS_NS was not provided.
-        get_filename_component(resource_dest_file_abs ${JAVA_CLASS_DIR}/${JAVA_CLASS_NS}/${file} ABSOLUTE)
+        # Joins absolute JAVA_CLASS_DIR and ADDJAR_NAMESPACE paths together. Works even if
+        # ADDJAR_NAMESPACE was not provided.
+        get_filename_component(resource_dest_file_abs
+            ${JAVA_CLASS_DIR}/${ADDJAR_NAMESPACE}/${file} ABSOLUTE)
 
         if (COMMAND java_add_resource_file)
             java_add_resource_file(${resource_source_file_abs} ${resource_dest_file_abs} IS_HANDLED)
         else()
             set(IS_HANDLED FALSE)
-            message(AUTHOR_WARNING "Falling back to default behaviour (copy) as java_add_resource_file() is not found.")
+            message(AUTHOR_WARNING "Falling back to default behaviour (copy) as \
+                                    java_add_resource_file() is not found.")
         endif()
 
         # If not handled by `java_add_resource_file` function, the default action is to copy
@@ -116,7 +149,7 @@ function(add_jar target jar_file_path source_files resource_files cp manifest_fi
     # ---------------------------------------------------------------------------------------------
     # Java source files
     # ---------------------------------------------------------------------------------------------
-    foreach(file IN LISTS source_files)
+    foreach(file IN LISTS ADDJAR_SOURCES)
         list(APPEND JAVA_SOURCE_FILES_ABS ${CMAKE_CURRENT_LIST_DIR}/${file})
 
         get_filename_component(file_ext ${file} EXT)
@@ -127,7 +160,7 @@ function(add_jar target jar_file_path source_files resource_files cp manifest_fi
         get_filename_component(file_title ${file} NAME_WLE)
         get_filename_component(file_path ${file} DIRECTORY)
         set(file_without_ext ${file_path}/${file_title})
-        get_filename_component(class_file_path_abs ${JAVA_CLASS_DIR}/${JAVA_CLASS_NS}/${file_without_ext}.class ABSOLUTE)
+        get_filename_component(class_file_path_abs ${JAVA_CLASS_DIR}/${ADDJAR_NAMESPACE}/${file_without_ext}.class ABSOLUTE)
         string(REPLACE "${JAVA_CLASS_DIR}/" "" class_file_path_rel ${class_file_path_abs})
 
         list(APPEND JAVA_CLASS_FILES_ABS ${class_file_path_abs})
@@ -136,7 +169,7 @@ function(add_jar target jar_file_path source_files resource_files cp manifest_fi
 
     # ---------------------------------------------------------------------------------------------
     add_custom_target(
-        ${target} ALL
+        ${ADDJAR_TARGET} ALL
         DEPENDS ${JAVA_JAR_FILE_ABS})
 
     # ---------------------------------------------------------------------------------------------
@@ -151,7 +184,7 @@ function(add_jar target jar_file_path source_files resource_files cp manifest_fi
         DEPENDS ${JAVA_CLASS_FILES_ABS} ${JAVA_RESOURCE_FILES_ABS}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${JAVA_JAR_DIR}
         COMMAND ${CMAKE_COMMAND} -E chdir ${JAVA_CLASS_DIR}
-                ${Java_JAR_EXECUTABLE} ${JAVA_JAR_FLAGS} ${JAVA_CLASS_NS})
+                ${Java_JAR_EXECUTABLE} ${JAVA_JAR_FLAGS} ${ADDJAR_NAMESPACE})
 
     # ---------------------------------------------------------------------------------------------
 # Drawback: Every class files are rebuild, even if single java file was changed.
@@ -163,6 +196,7 @@ function(add_jar target jar_file_path source_files resource_files cp manifest_fi
     add_custom_command(
         OUTPUT ${JAVA_CLASS_FILES_ABS}
         DEPENDS ${JAVA_SOURCE_FILES_ABS}
-        COMMAND ${Java_JAVAC_EXECUTABLE} ${CMAKE_JAVA_COMPILE_FLAGS} -cp "${JAVA_CP}"
+        COMMAND ${Java_JAVAC_EXECUTABLE} ${CMAKE_JAVA_COMPILE_FLAGS}
+                                         -cp "${JAVA_CP}"
                                          -d ${JAVA_CLASS_DIR} ${JAVA_SOURCE_FILES_ABS})
 endfunction()
