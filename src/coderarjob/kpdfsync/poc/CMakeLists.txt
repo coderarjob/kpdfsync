@@ -10,6 +10,9 @@ add_jar(
         coderarjob/kpdfsync/poc
     CLASSPATH
         ${KPDFSYNC_LIBS_DIR}/pdfclown.jar
+    DEPENDS
+        coderarjob.ajl
+        coderarjob.kpdfsync.lib
     MANIFEST
         Manifest.txt
     SOURCES
@@ -53,5 +56,3 @@ add_jar(
         res/sticky-note.png
         res/stop.png
 )
-
-add_dependencies(${PROJECT_NAME} "coderarjob.ajl" "coderarjob.kpdfsync.lib")

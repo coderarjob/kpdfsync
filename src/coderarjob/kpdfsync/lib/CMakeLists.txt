@@ -10,6 +10,8 @@ add_jar(
         coderarjob/kpdfsync/lib
     CLASSPATH
         ${KPDFSYNC_LIBS_DIR}/pdfclown.jar
+    DEPENDS
+        coderarjob.ajl
     RESOURCES
         res/app.settings
     SOURCES
@@ -31,5 +33,3 @@ add_jar(
         KindleClippingsEntryEnumeration.java
         KindleClippingsFile.java
 )
-
-add_dependencies(${PROJECT_NAME} "coderarjob.ajl")

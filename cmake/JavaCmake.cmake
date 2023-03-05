@@ -14,13 +14,12 @@ endif()
 #         SOURCES <source file> ...
 #         [NAMESPACE <namespace>]
 #         [MANIFEST <manifest file>]
+#         [DEPENDS <target> ...]
 #         [RESOURCES <resource file> ...]
 #         [CLASSPATH <classpath> ..])
 #
 # Compiles *.java files, copies/creates resource files, then packs the class files and resource
 # files into a jar file.
-#
-# Parameters:
 #
 # TARGET
 # A custom target is of this name is created which depends on the JAR_FILE.
@@ -39,7 +38,7 @@ endif()
 # - Calls local `java_add_resource_file` function for each resource file. This function should
 #   selectively create rules for the creation of resource files at the destination folder. Usually
 #   this function does a `configure_file`.
-#   Should return TRUE if rule was created for the file, FALSE otherwhise.
+#   Should return TRUE if rule was created for the file, FALSE otherwise.
 #
 # - If previous call returns FALSE or simply does not exist, then copies each resource file from
 #   source to destination folder.
@@ -52,11 +51,16 @@ endif()
 # Class files and resource files are generated at ${JAVA_CLASS_DIR}/<namespace>. This is the java
 # package string, where '.' is replaced by '/'.
 #
+# DEPENDS
+# Parent target(s) which the current target depends on. This ensures the following:
+# - Determines build order; parent dependencies are build before child ones.
+# - Current target is rebuild if jar file of one of its parent target changes; it does this by
+#   adding Jar files of each of the parent target into the current target.
+#
 # MANIFEST
 # Manifest file is based at CMAKE_CURRENT_LIST_DIR are added to the jar file.
 #
 # Variables required to be set:
-#
 # JAVA_CLASS_DIR           : Path where class and resource files need to be kept.
 # CMAKE_JAVA_COMPILE_FLAGS : Flags which need to be passed to javac.
 # ==================================================================================================
@@ -71,7 +75,7 @@ function(add_jar)
     # Parse arguments
     # ---------------------------------------------------------------------------------------------
     set (oneValueArgs TARGET JAR_FILE NAMESPACE MANIFEST)
-    set (multiValueArgs SOURCES RESOURCES CLASSPATH)
+    set (multiValueArgs SOURCES RESOURCES CLASSPATH DEPENDS)
     set(options)
 
     cmake_parse_arguments(PARSE_ARGV 0 ADDJAR "${options}" "${oneValueArgs}" "${multiValueArgs}")
@@ -132,18 +136,13 @@ function(add_jar)
             get_filename_component(resource_dest_file_path_abs ${resource_dest_file_abs} DIRECTORY)
             add_custom_command(
                 OUTPUT  ${resource_dest_file_abs}
-                DEPENDS ${file}
+                DEPENDS ${resource_source_file_abs}
                 COMMAND ${CMAKE_COMMAND} -E make_directory ${resource_dest_file_path_abs}
                 COMMAND ${CMAKE_COMMAND} -E copy ${resource_source_file_abs}
                                                  ${resource_dest_file_abs})
         endif()
 
-        # Convert to relative path (relative to JAVA_CLASS_DIR).
-        string(REPLACE "${JAVA_CLASS_DIR}/" "" resource_dest_file_rel ${resource_dest_file_abs})
-
         list(APPEND JAVA_RESOURCE_FILES_ABS ${resource_dest_file_abs})
-        list(APPEND JAVA_RESOURCE_FILES_REL ${resource_dest_file_rel})
-
     endforeach()
 
     # ---------------------------------------------------------------------------------------------
@@ -160,17 +159,25 @@ function(add_jar)
         get_filename_component(file_title ${file} NAME_WLE)
         get_filename_component(file_path ${file} DIRECTORY)
         set(file_without_ext ${file_path}/${file_title})
-        get_filename_component(class_file_path_abs ${JAVA_CLASS_DIR}/${ADDJAR_NAMESPACE}/${file_without_ext}.class ABSOLUTE)
-        string(REPLACE "${JAVA_CLASS_DIR}/" "" class_file_path_rel ${class_file_path_abs})
+        get_filename_component(class_file_path_abs
+            ${JAVA_CLASS_DIR}/${ADDJAR_NAMESPACE}/${file_without_ext}.class ABSOLUTE)
 
         list(APPEND JAVA_CLASS_FILES_ABS ${class_file_path_abs})
-        list(APPEND JAVA_CLASS_FILES_REL ${class_file_path_rel})
     endforeach()
 
     # ---------------------------------------------------------------------------------------------
-    add_custom_target(
-        ${ADDJAR_TARGET} ALL
+    add_custom_target(${ADDJAR_TARGET} ALL
         DEPENDS ${JAVA_JAR_FILE_ABS})
+
+    # Set `JAR_FILE` property - Absolute path to the jar file of the target.
+    set_target_properties(${ADDJAR_TARGET} PROPERTIES JAR_FILE ${JAVA_JAR_FILE_ABS})
+
+    # Adds dependencies only if there are non empty value in DEPENDS.
+    if (ADDJAR_DEPENDS)
+      # Ensures proper order of building.
+      # Note: Requried even after adding jar file as dependencies.
+        add_dependencies(${ADDJAR_TARGET} ${ADDJAR_DEPENDS})
+    endif()
 
     # ---------------------------------------------------------------------------------------------
     if (JAVA_MANIFEST_FILE_ABS)
@@ -187,15 +194,33 @@ function(add_jar)
                 ${Java_JAR_EXECUTABLE} ${JAVA_JAR_FLAGS} ${ADDJAR_NAMESPACE})
 
     # ---------------------------------------------------------------------------------------------
-# Drawback: Every class files are rebuild, even if single java file was changed.
-# This is because the way the custom command is setup, every class file depends on every the source
-# files. Which means all of the class files are rebuilt even if one source file changes.
-# There is no easy solution to this problem. If I try to create one command for each source and
-# class file and compile a single source file, the javac complains of missing class definations (as
-# the file which includes the defination was not included in the compilation).
+
+    # Collates Jar file of its parent targets and adds them as dependencies when compiling source
+    # files. This ensures that the source files are recompiled if any one of its parent jar file
+    # changes.
+    # This step is required, simply add_dependencies does not ensure the above - even if parent jar
+    # file is rebuilt, the child/dependent is not rebuild.
+    foreach(target IN LISTS ADDJAR_DEPENDS)
+        get_target_property(target_jar_file ${target} JAR_FILE)
+        if (target_jar_file)
+          list(APPEND DEPENDENT_JAR_FILES_ABS ${target_jar_file})
+        endif()
+    endforeach()
+
+    # DRAWBACK:
+    # Every class files are rebuild, even if single java file was changed.
+    # This is because the way the custom command is setup, every class file depends on every source
+    # files. Which means all of the class files are rebuilt even if one source file changes.
+    # SOLUTION:
+    # There is no easy solution to this problem. If I try to create one command for each source and
+    # class file and compile a single source file, the javac complains of missing class definitions
+    # (as the file which includes the definition was not included in the compilation). This
+    # solution will only work if we compile source files in the perfect order, and add class path
+    # each dependent class file previously generated. I assume this is what `Maven` or other build
+    # systems do when compiling java projects.
     add_custom_command(
         OUTPUT ${JAVA_CLASS_FILES_ABS}
-        DEPENDS ${JAVA_SOURCE_FILES_ABS}
+        DEPENDS ${JAVA_SOURCE_FILES_ABS} ${DEPENDENT_JAR_FILES_ABS}
         COMMAND ${Java_JAVAC_EXECUTABLE} ${CMAKE_JAVA_COMPILE_FLAGS}
                                          -cp "${JAVA_CP}"
                                          -d ${JAVA_CLASS_DIR} ${JAVA_SOURCE_FILES_ABS})
