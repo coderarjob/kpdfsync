@@ -1,4 +1,15 @@
 
+function(generate_project_version target app_settings_file namespace)
+add_custom_target(${target}-get-ver ALL
+    DEPENDS ${app_settings_file}
+    COMMAND ${CMAKE_COMMAND}
+            -Dinfile=${CMAKE_CURRENT_SOURCE_DIR}/${app_settings_file}
+            -Doutfile=${JAVA_CLASS_DIR}/${namespace}/${app_settings_file}
+            -Dsourcedir=${CMAKE_CURRENT_SOURCE_DIR}
+            -P ${CMAKE_SOURCE_DIR}/cmake/get-version.cmake
+    COMMENT "Generating version for ${target}")
+endfunction()
+
 # ==================================================================================================
 # Adds rules to create a resource file, which overrides the default rule (which is to just copy
 # resource files from source to destination)
