@@ -1,4 +1,14 @@
 
+# ==================================================================================================
+# Calls GetVersion.cmake script, which builds the output `post_file` file, by replacing strings
+# ${BUILD_ID} and ${COMMIT_ID} with values retrieved from programs on the system.
+#
+# BUILD_ID is set to date in the format YYMMDD. Requires, `date` in Linux or `powershell` in
+# Windows. If they are not found BUILD_ID is set to `Unknown`.
+#
+# COMMIT_ID is set to the last git commit ID of the last commit in the current folder.
+# Requires, `git`.If Git is not found COMMIT_ID is set to `Unknown`.
+# ==================================================================================================
 function(ConfigureVersionInFile target pre_file post_file)
 
     add_custom_target(${target} ALL
@@ -12,6 +22,10 @@ function(ConfigureVersionInFile target pre_file post_file)
                 -P ${CMAKE_SOURCE_DIR}/cmake/GetVersion.cmake)
 endfunction()
 
+# ==================================================================================================
+# Not to be called directly.
+# Retrieves last commit ID of the last commit in the current folder.
+# ==================================================================================================
 function(GetCommitID var)
     find_package(Git)
 
@@ -26,6 +40,10 @@ function(GetCommitID var)
 
 endfunction()
 
+# ==================================================================================================
+# Not to be called directly.
+# Build ID is date in YYMMDD format.
+# ==================================================================================================
 function(GetBuildID var)
     if(UNIX)
         find_program(DATE date)
@@ -50,6 +68,13 @@ function(GetBuildID var)
 
 endfunction()
 
+# ==================================================================================================
+# Not to be called directly.
+# Main function which takes the build id and commit id and calls configure_file to make the actual
+# replacement.
+# Note that `configure_file` in CMake Version >= 3.10, will only replace the output file (here
+# post_file) if the contents change.
+# ==================================================================================================
 function(CreateVersion)
     set(COMMIT_ID Unknown)
     set(BUILD_ID Unknown)

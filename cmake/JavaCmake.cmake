@@ -25,7 +25,7 @@ endif()
 # A custom target is of this name is created which depends on the JAR_FILE.
 #
 # JAR_FILE
-# Absolute file name of jar file. Directories will be createed if not exist.
+# Absolute file name of jar file. Directories will be created if not exist.
 #
 # SOURCES
 # Java source files are based at CMAKE_CURRENT_LIST_DIR are compiled into
