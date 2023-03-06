@@ -1,18 +1,13 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 project(coderarjob.kpdfsync LANGUAGES Java)
 
-set(NS coderarjob/kpdfsync/poc)
-set(APP_SETTINGS_FILE res/app.settings)
-
-generate_project_version(${PROJECT_NAME} ${APP_SETTINGS_FILE} ${NS})
-
 add_jar(
     TARGET
         ${PROJECT_NAME}
     JAR_FILE
         ${KPDFSYNC_BIN_DIR}/${PROJECT_NAME}.jar
     NAMESPACE
-        ${NS}
+        coderarjob/kpdfsync/poc
     CLASSPATH
         ${KPDFSYNC_LIBS_DIR}/pdfclown.jar
     DEPENDS
@@ -36,7 +31,7 @@ add_jar(
         PageResource.java
         PdfFixer.java
     RESOURCES
-        ${APP_SETTINGS_FILE}
+        res/app.settings
         res/attention.png
         res/cancel.png
         res/check-mark.png
