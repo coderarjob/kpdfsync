@@ -54,8 +54,9 @@ endif()
 # DEPENDS
 # Parent target(s) which the current target depends on. This ensures the following:
 # - Determines build order; parent dependencies are build before child ones.
-# - Current target is rebuild if jar file of one of its parent target changes; it does this by
-#   adding Jar files of each of the parent target into the current target.
+# - If any of the targets provided, is created by add_jar, this function adds its Jar files
+#   into the current target so that the when the jar file updates the current target is also
+#   rebuild. (If the target is not created by add_jar then only build order is ensured.)
 #
 # MANIFEST
 # Manifest file is based at CMAKE_CURRENT_LIST_DIR are added to the jar file.
