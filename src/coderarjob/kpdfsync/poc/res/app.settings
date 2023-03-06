@@ -1,2 +1,2 @@
-# This is the settings file for coderarjob.ajl package.
+# This is the settings file for coderarjob.kpdfsync.poc package.
 app.version = @KPDFSYNC_VER@-@KPDFSYNC_TAG@+${BUILD_ID}-${COMMIT_ID}
