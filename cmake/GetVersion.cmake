@@ -33,9 +33,12 @@ function(GetCommitID var)
         execute_process(
             COMMAND git log --format=%h -n 1 ${source_dir}
             OUTPUT_STRIP_TRAILING_WHITESPACE
-            OUTPUT_VARIABLE commit_id)
+            OUTPUT_VARIABLE commit_id
+            RESULT_VARIABLE exit_code)
 
-        set(${var} ${commit_id} PARENT_SCOPE)
+        if (NOT exit_code)
+            set(${var} ${commit_id} PARENT_SCOPE)
+        endif()
     endif()
 
 endfunction()
@@ -61,9 +64,12 @@ function(GetBuildID var)
         execute_process(
             COMMAND ${date_command}
             OUTPUT_STRIP_TRAILING_WHITESPACE
-            OUTPUT_VARIABLE build_id)
+            OUTPUT_VARIABLE build_id
+            RESULT_VARIABLE exit_code)
 
-        set(${var} ${build_id} PARENT_SCOPE)
+        if (NOT exit_code)
+            set(${var} ${build_id} PARENT_SCOPE)
+        endif()
     endif()
 
 endfunction()
