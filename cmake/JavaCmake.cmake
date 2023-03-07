@@ -167,7 +167,7 @@ function(add_jar)
     endforeach()
 
     # ---------------------------------------------------------------------------------------------
-    add_custom_target(${ADDJAR_TARGET} ALL
+    add_custom_target(${ADDJAR_TARGET}
         DEPENDS ${JAVA_JAR_FILE_ABS})
 
     # Set `JAR_FILE` property - Absolute path to the jar file of the target.
