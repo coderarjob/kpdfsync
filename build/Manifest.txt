@@ -1,2 +1,0 @@
-Main-Class: coderarjob.kpdfsync.poc.Main
-Class-Path: pdfclown.jar ajl.jar libkpdfsync.jar
