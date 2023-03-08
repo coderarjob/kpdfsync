@@ -12,7 +12,6 @@
 function(ConfigureVersionInFile target pre_file post_file)
 
     add_custom_target(${target}
-        DEPENDS ${pre_file}
         BYPRODUCTS ${post_file}
         COMMAND ${CMAKE_COMMAND}
                 -DCreateVersion=1
