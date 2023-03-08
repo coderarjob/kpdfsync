@@ -83,3 +83,5 @@ Install (Update for Universal C Runtime)[https://support.microsoft.com/en-us/kb/
 * PDF Clown library is used to read and highlight on PDF files. PDF Clown library is covered under
 LGPL (GNU Lesser General Public License).
 More information and source code can be found here [http://www.pdfclown.org](http://www.pdfclown.org)
+
+* Poppler is covered under GPL3 license.
