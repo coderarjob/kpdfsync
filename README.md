@@ -60,16 +60,19 @@ Here is the rough roadmap of the development.
 
 ----
 
-Once you have installed the dependencies, and downloaded the release binaries, to start Kpdfsync,
-execute `kpdfsync` file in Linux/Mac OS or `kpdfsync.bat` in Windows.
+## Installation
 
-## Minimum requirements
+Once you have downloaded the [release binaries](https://github.com/coderarjob/kpdfsync/releases), and the minimum requirements are met,
+to start Kpdfsync, execute the `kpdfsync` file in Linux/Mac OS or `kpdfsync.bat` in Windows.
+
+### Minimum requirements
 - JRE 1.8 __Note: JRE headless will not work.__
 - Linux, Windows 7, Mac OS Sierra(\*)
-- Linux: poppler-utils
-- Windows: poppler-utils is included with the release. (will work out of the box)
+- Linux: poppler-utils(\*\*)
+- Windows: poppler-utils(\*\*) is included with the release. (will work out of the box)
 
 (\*) PDF fixing feature does not work on Mac OS.
+(\*\*) Required only for PDF fixing feature.
 
 ----
 
