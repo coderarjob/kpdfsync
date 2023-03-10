@@ -14,8 +14,8 @@ set(KPDFSYNC_PACK_DIR ${KPDFSYNC_RELEASE_DIR}/current)
 set(KPDFSYNC_RELEASE_RESOURCE_DIR ${KPDFSYNC_RELEASE_DIR}/resource)
 
 set(KPDFSYNC_JDK_VER_TARGET 8)
-set(KPDFSYNC_VER 0.10.0 CACHE STRING "Application version.")
-set(KPDFSYNC_TAG alpha CACHE STRING "Application version tag.")
+set(KPDFSYNC_VER 0.0.0   CACHE STRING "Application version.")
+set(KPDFSYNC_TAG <undef> CACHE STRING "Application version tag.")
 
 # Used by cmake/JavaCmake.cmake
 set(CMAKE_JAVA_COMPILE_FLAGS -target ${KPDFSYNC_JDK_VER_TARGET}
