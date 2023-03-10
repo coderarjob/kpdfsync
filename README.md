@@ -58,24 +58,46 @@ Here is the rough roadmap of the development.
 - [ ] Finalizing and optimizing the Graphical User Interface.
 - [ ] **Beta Release**
 
-## Requirements
-- JRE 1.8 or higher __Note: JRE headless will not work.__
-- Linux, Windows
-- Mac OS
+----
 
-**Note:** PDF fixing feature is not available on the Mac.
+Once you have installed the dependencies, and downloaded the release binaries, to start Kpdfsync,
+execute `kpdfsync` file in Linux/Mac OS or `kpdfsync.bat` in Windows.
 
-#### For fixing feature to work, you require the following:
-* Linux: poppler-utils
-* Windows: poppler-utils is included with the release.
-* Mac OS: __Not supported__
+## Minimum requirements
+- JRE 1.8 __Note: JRE headless will not work.__
+- Linux, Windows 7, Mac OS Sierra(\*)
+- Linux: poppler-utils
+- Windows: poppler-utils is included with the release. (will work out of the box)
 
-**Note:** This is a new feature, which can resolve few of the PDF errors, but not all. New fixes
-will be added later on.
+(\*) PDF fixing feature does not work on Mac OS.
+
+----
+
+## Building from source
+
+### Prerequisites
+- Linux, Windows 7, Mac OS Sierra
+- JDK 8
+- CMake 3.10
+
+### Steps
+
+Clone the repo or download the source. Then to build, run the following command at the top-level of
+the source directory.
+
+This will build jar files in `build/bin` directory, then run `build/bin/coderarjob.kpdfsync.jar`.
+
+```
+$ cmake -Bbuild
+$ cd build
+$ cmake --build . run
+```
+
+----
 
 ## Troubleshooting
 
-#### (Windows) Error: api-ms-win-crt-runtime-l1-1-0.dll is missing.
+* (Windows) Error: api-ms-win-crt-runtime-l1-1-0.dll is missing.
 Install (Update for Universal C Runtime)[https://support.microsoft.com/en-us/kb/2999226]
 
 ## 3rd-party License
