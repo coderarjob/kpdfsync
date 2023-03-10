@@ -75,7 +75,7 @@ execute `kpdfsync` file in Linux/Mac OS or `kpdfsync.bat` in Windows.
 
 ## Building from source
 
-### Prerequisites
+### Minimum requirements
 - Linux, Windows 7, Mac OS Sierra
 - JDK 8
 - CMake 3.10
