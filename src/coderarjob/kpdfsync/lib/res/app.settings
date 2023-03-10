@@ -1,2 +1,2 @@
 # This is the settings file for coderarjob.kpdfsync.lib package.
-app.version = <kpdfsync-ver>-<tag>+<build>-<commitid>
+app.version = @KPDFSYNC_VER@-@KPDFSYNC_TAG@+${BUILD_ID}-${COMMIT_ID}
