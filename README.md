@@ -2,10 +2,12 @@
 
 ![Screenshot](/docs/images/screenshot_alpha.png)
 
-I sometimes read PDF documents on my Kindle and anyone who does the same, knows that highlights and
-notes taken on the Kindle are not saved on the PDF file itself. This presents a huge problem
-archiving my notes and to redo the highlights and copy the notes manually on to the PDF later on
-is not practical for me.
+When reading PDF documents on Kindle, the major annoyance is that the it does not save the
+highlights and notes on the files themselves.
+
+As the highlights and notes can only seen on a Kindle, reading the PDF file in any other device is
+like reading the file from the start. This also means that I cannot have backup of the file (with
+the annotations from Kindle) or share it with anyone.
 
 This software tries to provide a solution. **kpdfsync** reads the ‘My Clippings.txt’ text file for
 the highlights and notes and then applies them in the correct place on a PDF file.
