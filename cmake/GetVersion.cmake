@@ -17,7 +17,7 @@ function(ConfigureVersionInFile target pre_file post_file)
                 -DCreateVersion=1
                 -Dinfile=${pre_file}
                 -Doutfile=${post_file}
-                -Dsourcedir=${CMAKE_CURRENT_SOURCE_DIR}
+                -Dsource_dir=${CMAKE_CURRENT_SOURCE_DIR}
                 -P ${CMAKE_SOURCE_DIR}/cmake/GetVersion.cmake)
 endfunction()
 
@@ -30,7 +30,7 @@ function(GetCommitID var)
 
     if (Git_FOUND)
         execute_process(
-            COMMAND git log --format=%h -n 1 ${source_dir}
+            COMMAND git log --format=%h -n 1 "${source_dir}"
             OUTPUT_STRIP_TRAILING_WHITESPACE
             OUTPUT_VARIABLE commit_id
             RESULT_VARIABLE exit_code)
