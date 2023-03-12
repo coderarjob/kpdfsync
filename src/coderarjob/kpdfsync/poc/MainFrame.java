@@ -859,11 +859,12 @@ public class MainFrame extends javax.swing.JFrame
     logoLabel.setToolTipText("");
 
     headerSubtitleLabel.setForeground(new java.awt.Color(255, 255, 255));
-    headerSubtitleLabel.setText("<html>Annotates PDF files with highlights and notes made on a Kindle.</html>\n");
+    headerSubtitleLabel.setText("<html>When reading PDF files on a Kindle, the highlights/notes are not saved on the PDF files directly.<p>" +
+                                      "Kpdfsync reads Kindle 'My Clippings.txt' file and applies highlights/notes to corresponding PDF files.</html>\n");
 
     headerTItleLabel.setFont(new java.awt.Font("Dialog", 1, 12)); // NOI18N
     headerTItleLabel.setForeground(new java.awt.Color(255, 255, 255));
-    headerTItleLabel.setText("PDF Annotator for Kindle");
+    headerTItleLabel.setText("Kindle PDF file annotator - Applies highlights and notes to Pdf files");
 
     javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(headerPanel);
     headerPanel.setLayout(headerPanelLayout);
