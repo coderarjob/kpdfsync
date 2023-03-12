@@ -24,6 +24,7 @@ public class MainFrame extends javax.swing.JFrame
   private enum ApplicationStatus
   {
     NOT_STARTED,
+    CLIPPING_FILE_SELECTED, PARSER_CREATION_FAILED,
     CLIPPINGS_FILE_PARSE_STARTED, CLIPPINGS_FILE_PARSE_COMPLETED, CLIPPINGS_FILE_PARSE_FAILED,
     BOOK_TITLE_SELECTED,
     PDF_SELECTED,
@@ -76,6 +77,7 @@ public class MainFrame extends javax.swing.JFrame
   /* Kindle Parser event handler*/
   private void parserErrorHander (String fileName, long offset, String error, ParserResult result)
   {
+    // Warning instead of Error, because, parsing continues past the error line.
     addStatusLine (StatusTypes.WARNING, "'%s' at %d", error, offset);
   }
 
@@ -101,16 +103,31 @@ public class MainFrame extends javax.swing.JFrame
     if (fileChooser.showOpenDialog (this) != JFileChooser.APPROVE_OPTION)
       return;
 
-    setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_STARTED);
-
     File file= fileChooser.getSelectedFile ();
     clippingsFileTextBox.setText (file.getAbsolutePath());
 
+    selectKindleVersionComboBox.removeAllItems();
+    selectKindleVersionComboBox.addItem(null);
+    selectKindleVersionComboBox.addItem(KindleParserV1.getParserName());
+    selectKindleVersionComboBox.addItem(KindleParserV2.getParserName());
+    selectKindleVersionComboBox.setSelectedIndex(-1);
+
+    setStatus (ApplicationStatus.CLIPPING_FILE_SELECTED);
+  }
+  private void selectKindleVersionComboBoxActionPerformed(ActionEvent evt)
+  {
+    if (selectKindleVersionComboBox.getSelectedItem() == null)
+      return;
+
+    String filePath = clippingsFileTextBox.getText ();
     parseClippingsThread = new Thread (new Runnable () {
       public void run () {
         try {
-          addStatusLine (StatusTypes.INFORMATION, "Parsing %s ...", file.getName());
-          createNewParser (file.getAbsolutePath());
+          addStatusLine (StatusTypes.INFORMATION, "Parsing %s ...", filePath);
+          setStatus (ApplicationStatus.CLIPPINGS_FILE_PARSE_STARTED);
+
+          createNewParser (filePath);
+          createMatcher();
           mClippingsFile = new KindleClippingsFile(mParser);
 
           ArrayList<String> titles = Collections.list(mClippingsFile.getBookTitles());
@@ -262,6 +279,43 @@ public class MainFrame extends javax.swing.JFrame
   {
   }
 
+
+  private void parserKindleSupportInfoButtonActionPerformed(ActionEvent evt) {
+    if (mParser == null)
+      return;
+
+    String message = "<html>"
+           .concat("<b>%s</b><br><br>")
+           .concat("Supported Kindle Firmware versions:")
+           .concat("<ul>%s</ul>")
+           .concat("<i>The above list is <b>not complete</b> and can also <b>be wrong</b>.<br>")
+           .concat("Your Clippings file could very well be compatible with this parser.<br>")
+           .concat("<br><b>If parsing fails, please select another parser.<b></i><br><br>")
+           .concat("From what I have seen while developing this software, the older kindles<br>")
+           .concat("have a bit different format than newer ones. So this means to extract<br>")
+           .concat("the information out of a Clippings file, you must select a parser <br>")
+           .concat("which understands the format of your Clippings file.<br><br>")
+           .concat("For corrections or bug fixes either <br>")
+           .concat("1. Send me an email at ")
+           .concat("<a href=\"%s\">%s</a>, or <br>")
+           .concat("2. Raise an issue at ")
+           .concat("<a href=\"%s\">%s</a></html>");
+
+    String versions = "";
+    for (String ver : mParser.getSupportedKindleVersions())
+      versions = versions.concat("<li>" + ver + "</li>");
+
+    message = String.format(message,
+                            mParser.toString(),
+                            versions,
+                            "mailto:arjobmukherjee@gmail.com",
+                            "arjobmukherjee@gmail.com",
+                            "https://github.com/coderarjob/kpdfsync/issues",
+                            "https://github.com/coderarjob/kpdfsync/issues");
+
+    JOptionPane.showMessageDialog(this, message, "Clippings parser information",
+                                  JOptionPane.INFORMATION_MESSAGE);
+  }
 
   private void cancelButtonActionPerformed(ActionEvent evt)
   {
@@ -465,17 +519,29 @@ public class MainFrame extends javax.swing.JFrame
 
   private void createNewParser (String fileName) throws FileNotFoundException, IOException
   {
-    mParser = new KindleParserV1 (fileName);
-    mParser.setParserEvents (new ParserEvents ()
-        {
-          public void onError (String fileName, long offset, String error, ParserResult result)
+    String parserName = (String)selectKindleVersionComboBox.getSelectedItem();
+    try {
+      mParser = ParserFactory.getParser(parserName, fileName);
+      mParser.setParserEvents (new ParserEvents ()
           {
-            parserErrorHander (fileName, offset, error, result);
-          }
-          public void onSuccess (String fileName, long offset, ParserResult result)
-          { }
-        });
+            public void onError (String fileName, long offset, String error, ParserResult result)
+            {
+              parserErrorHander (fileName, offset, error, result);
+            }
+            public void onSuccess (String fileName, long offset, ParserResult result)
+            { }
+          });
+    }
+    catch (Exception ex)
+    {
+      addStatusLine (StatusTypes.ERROR, "Cannot access Clippings file: " + ex.getMessage());
+      setStatus (ApplicationStatus.PARSER_CREATION_FAILED);
+      reportException (ex);
+    }
+  }
 
+  private void createMatcher()
+  {
     mMatcher = new BasicMatcher();
     mMatcher.setPatternMatcherEventsHandler(new PatternMatcherEvents ()
         {
@@ -628,11 +694,19 @@ public class MainFrame extends javax.swing.JFrame
     cancelButton.setEnabled (false);
     pageNumbersList.setEnabled (true);
     highlightsList.setEnabled (true);
+    selectKindleVersionComboBox.setEnabled (false);
+    parserKindleSupportInfoButton.setEnabled (true);
 
     switch (status)
     {
       case NOT_STARTED:
         statusLabel.setText ("Ready. Provide a Kindle Clippings file.");
+        break;
+      case PARSER_CREATION_FAILED:
+        statusLabel.setText ("Could not create parser.");
+        break;
+      case CLIPPING_FILE_SELECTED:
+        statusLabel.setText ("Kindle Clippings file selected. Please select Kindle Version.");
         break;
       case CLIPPINGS_FILE_PARSE_COMPLETED:
         statusLabel.setText ("Parsing complete. Select the book title you want to highlight.");
@@ -666,17 +740,24 @@ public class MainFrame extends javax.swing.JFrame
         statusListModel.clear ();
         selectBookNameComboBox.removeAllItems ();
         browseClippingsFileButton.setEnabled (true);
+        parserKindleSupportInfoButton.setEnabled (false);
+        break;
+      case CLIPPING_FILE_SELECTED:
+        selectBookNameComboBox.removeAllItems ();
+        browseClippingsFileButton.setEnabled (true);
+        selectKindleVersionComboBox.setEnabled (true);
+        parserKindleSupportInfoButton.setEnabled (false);
         break;
       case CLIPPINGS_FILE_PARSE_COMPLETED:
         selectBookNameComboBox.setEnabled (true);
         browseClippingsFileButton.setEnabled (true);
         break;
       case CLIPPINGS_FILE_PARSE_FAILED:
-        statusLabel.setText ("Parsing failed");
+      case PARSER_CREATION_FAILED:      // intentional falling
         browseClippingsFileButton.setEnabled (true);
+        selectKindleVersionComboBox.setEnabled (true);
         break;
       case BOOK_TITLE_SELECTED:
-        statusListModel.clear ();
         selectBookNameComboBox.setEnabled (true);
         browseClippingsFileButton.setEnabled (true);
         browsePdfFileButton.setEnabled (true);
@@ -694,7 +775,7 @@ public class MainFrame extends javax.swing.JFrame
         matchThressholdSpinner.setEnabled (true);
         fixPDFButton.setEnabled (true);
         break;
-      case CLIPPINGS_FILE_PARSE_STARTED: // intentional falling
+      case CLIPPINGS_FILE_PARSE_STARTED:
         pageNumbersList.setEnabled (false);
         highlightsList.setEnabled (false);
         statusListModel.clear ();
@@ -755,6 +836,9 @@ public class MainFrame extends javax.swing.JFrame
     pdfSkipPagesSpinner = new javax.swing.JSpinner();
     matchThressholdLabel = new javax.swing.JLabel();
     matchThressholdSpinner = new javax.swing.JSpinner();
+    selectKindleVersionLabel = new javax.swing.JLabel();
+    selectKindleVersionComboBox = new javax.swing.JComboBox<>();
+    parserKindleSupportInfoButton = new javax.swing.JButton();
 
     fileChooser.setAcceptAllFileFilterUsed(false);
     fileChooser.setSelectedFile(new java.io.File("/home/coder/  "));
@@ -775,11 +859,12 @@ public class MainFrame extends javax.swing.JFrame
     logoLabel.setToolTipText("");
 
     headerSubtitleLabel.setForeground(new java.awt.Color(255, 255, 255));
-    headerSubtitleLabel.setText("<html>Annotates PDF files with highlights and notes made on a Kindle.</html>\n");
+    headerSubtitleLabel.setText("<html>When reading PDF files on a Kindle, the highlights/notes are not saved on the PDF files directly.<p>" +
+                                      "Kpdfsync reads Kindle 'My Clippings.txt' file and applies highlights/notes to corresponding PDF files.</html>\n");
 
     headerTItleLabel.setFont(new java.awt.Font("Dialog", 1, 12)); // NOI18N
     headerTItleLabel.setForeground(new java.awt.Color(255, 255, 255));
-    headerTItleLabel.setText("PDF Annotator for Kindle");
+    headerTItleLabel.setText("Kindle PDF file annotator - Applies highlights and notes to Pdf files");
 
     javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(headerPanel);
     headerPanel.setLayout(headerPanelLayout);
@@ -801,7 +886,7 @@ public class MainFrame extends javax.swing.JFrame
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(headerSubtitleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-      .addComponent(logoLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+      .addComponent(logoLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
     );
 
     clippingsFileLabel.setLabelFor(clippingsFileTextBox);
@@ -969,6 +1054,23 @@ public class MainFrame extends javax.swing.JFrame
     matchThressholdSpinner.setModel(new javax.swing.SpinnerNumberModel());
     matchThressholdSpinner.setValue(90);
 
+    selectKindleVersionLabel.setLabelFor(clippingsFileTextBox);
+    selectKindleVersionLabel.setText("Select Kindle Version:");
+
+    selectKindleVersionComboBox.setMaximumRowCount(16);
+    selectKindleVersionComboBox.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        selectKindleVersionComboBoxActionPerformed(evt);
+      }
+    });
+
+    parserKindleSupportInfoButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/coderarjob/kpdfsync/poc/res/info.png"))); // NOI18N
+    parserKindleSupportInfoButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        parserKindleSupportInfoButtonActionPerformed(evt);
+      }
+    });
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
@@ -984,15 +1086,19 @@ public class MainFrame extends javax.swing.JFrame
               .addComponent(pageNumbersScrollPane)
               .addComponent(highlightsScrollPane)
               .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                   .addComponent(selectBookNameLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
-                  .addComponent(clippingsFileLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(37, 37, 37)
+                  .addComponent(clippingsFileLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
+                  .addComponent(selectKindleVersionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                   .addComponent(clippingsFileTextBox)
-                  .addComponent(selectBookNameComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                  .addComponent(selectBookNameComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                  .addComponent(selectKindleVersionComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(browseClippingsFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                  .addComponent(browseClippingsFileButton, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                  .addComponent(parserKindleSupportInfoButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)))
               .addGroup(layout.createSequentialGroup()
                 .addComponent(pageNumbersLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
@@ -1019,20 +1125,25 @@ public class MainFrame extends javax.swing.JFrame
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(layout.createSequentialGroup()
-        .addComponent(headerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(browseClippingsFileButton)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
           .addGroup(layout.createSequentialGroup()
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-              .addComponent(clippingsFileTextBox)
-              .addComponent(clippingsFileLabel))
+            .addComponent(headerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+              .addComponent(clippingsFileLabel)
+              .addComponent(browseClippingsFileButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+              .addComponent(clippingsFileTextBox))
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-              .addComponent(selectBookNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-              .addComponent(selectBookNameLabel))
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(pageNumbersLabel)))
+              .addComponent(selectKindleVersionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+              .addComponent(selectKindleVersionLabel)))
+          .addComponent(parserKindleSupportInfoButton))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(selectBookNameComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(selectBookNameLabel))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(pageNumbersLabel)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(pageNumbersScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1060,6 +1171,8 @@ public class MainFrame extends javax.swing.JFrame
     pack();
   }// </editor-fold>//GEN-END:initComponents
 
+
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton browseClippingsFileButton;
   private javax.swing.JButton browsePdfFileButton;
@@ -1080,6 +1193,7 @@ public class MainFrame extends javax.swing.JFrame
   private javax.swing.JLabel pageNumbersLabel;
   private javax.swing.JList<PageResource> pageNumbersList;
   private javax.swing.JScrollPane pageNumbersScrollPane;
+  private javax.swing.JButton parserKindleSupportInfoButton;
   private javax.swing.JLabel pdfSkipPagesLabel;
   private javax.swing.JSpinner pdfSkipPagesSpinner;
   private javax.swing.JButton proceedButton;
@@ -1087,6 +1201,8 @@ public class MainFrame extends javax.swing.JFrame
   private javax.swing.JComboBox<String> selectBookNameComboBox;
   private javax.swing.JLabel selectBookNameLabel;
   private javax.swing.JLabel selectHighlightLabel;
+  private javax.swing.JComboBox<String> selectKindleVersionComboBox;
+  private javax.swing.JLabel selectKindleVersionLabel;
   private javax.swing.JLabel selectPdfFileLabel;
   private javax.swing.JTextField selectPdfFileTextBox;
   private javax.swing.JLabel statusLabel;
