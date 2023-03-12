@@ -51,7 +51,7 @@ Here is the rough roadmap of the development.
 - [X] Bug Fixes: Some minor fixes in UI
 - [X] Feature: Added new parser for reading older Kindle Clippings format.
 - [X] UI change to select different parsers.
-- [ ] **Alpha Release 4**
+- [X] **Alpha Release 4**
 
 ----
 
